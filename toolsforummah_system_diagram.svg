@@ -1,0 +1,499 @@
+<svg viewBox="0 0 1200 950" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Enhanced Gradients -->
+    <linearGradient id="islamicGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1B5E20;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#2E7D32;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4CAF50;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF8F00;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#FFB300;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFD54F;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0D47A1;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1976D2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#42A5F5;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="redGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#BF360C;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#FF5722;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF8A65;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A148C;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#7B1FA2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#BA68C8;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="brownGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3E2723;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#5D4037;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8D6E63;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Enhanced Filters -->
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="3" dy="3" stdDeviation="4" flood-opacity="0.4"/>
+    </filter>
+    
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Islamic Pattern -->
+    <pattern id="islamicPattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+      <rect width="40" height="40" fill="#fafafa"/>
+      <circle cx="20" cy="20" r="12" fill="none" stroke="#e8f5e8" stroke-width="1" opacity="0.3"/>
+      <path d="M20,8 L32,20 L20,32 L8,20 Z" fill="#e8f5e8" opacity="0.15"/>
+      <circle cx="20" cy="20" r="6" fill="none" stroke="#e8f5e8" stroke-width="0.5" opacity="0.5"/>
+    </pattern>
+    
+    <!-- Arrow Markers -->
+    <marker id="arrowhead" markerWidth="12" markerHeight="8" 
+            refX="11" refY="4" orient="auto" markerUnits="strokeWidth">
+      <polygon points="0 0, 12 4, 0 8" fill="#2E7D32" opacity="0.8" />
+    </marker>
+    
+    <marker id="goldArrow" markerWidth="12" markerHeight="8" 
+            refX="11" refY="4" orient="auto" markerUnits="strokeWidth">
+      <polygon points="0 0, 12 4, 0 8" fill="#FF8F00" opacity="0.8" />
+    </marker>
+  </defs>
+  
+  <!-- Enhanced Background -->
+  <rect width="1200" height="950" fill="url(#islamicPattern)"/>
+  
+  <!-- Decorative Border -->
+  <rect width="1200" height="950" fill="none" stroke="url(#islamicGreen)" stroke-width="4" opacity="0.6"/>
+  
+  <!-- Main Title with enhanced styling -->
+  <g transform="translate(600, 25)">
+    <rect x="-300" y="-15" width="600" height="40" rx="20" fill="url(#goldGradient)" filter="url(#shadow)"/>
+    <text x="0" y="0" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white">
+      🕌 ToolsForUmmah - Clean Architecture
+    </text>
+    <text x="0" y="15" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white" opacity="0.9">
+      Islamic App Development Framework
+    </text>
+  </g>
+  
+  <!-- PRESENTATION LAYER -->
+  <g id="presentationLayer">
+    <rect x="50" y="80" width="1100" height="160" rx="15" fill="url(#islamicGreen)" filter="url(#shadow)"/>
+    <text x="600" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="white">
+      🎨 Presentation Layer (Flutter UI)
+    </text>
+    
+    <!-- Enhanced UI Components -->
+    <rect x="80" y="130" width="140" height="90" rx="10" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="150" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1B5E20">
+      📱 Screens &amp; Pages
+    </text>
+    <text x="150" y="165" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">• HomeScreen</text>
+    <text x="150" y="178" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">• ZakatCalculatorScreen</text>
+    <text x="150" y="191" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">• PrayerTimesScreen</text>
+    <text x="150" y="204" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">• QiblaCompassScreen</text>
+    
+    <rect x="240" y="130" width="140" height="90" rx="10" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="310" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1B5E20">
+      🧩 Custom Widgets
+    </text>
+    <text x="310" y="165" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">• IslamicAppBar</text>
+    <text x="310" y="178" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">• QiblaCompassWidget</text>
+    <text x="310" y="191" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">• PrayerTimeCard</text>
+    <text x="310" y="204" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">• ZakatInputForm</text>
+    
+    <rect x="400" y="130" width="140" height="90" rx="10" fill="url(#goldGradient)" filter="url(#shadow)"/>
+    <text x="470" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+      🧠 State Management
+    </text>
+    <text x="470" y="165" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• Riverpod Providers</text>
+    <text x="470" y="178" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• StateNotifiers</text>
+    <text x="470" y="191" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• AsyncValues</text>
+    <text x="470" y="204" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• FutureProviders</text>
+    
+    <rect x="560" y="130" width="140" height="90" rx="10" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="630" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1B5E20">
+      🎭 View Controllers
+    </text>
+    <text x="630" y="165" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">• ZakatController</text>
+    <text x="630" y="178" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">• PrayerController</text>
+    <text x="630" y="191" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">• QiblaController</text>
+    <text x="630" y="204" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">• FastingController</text>
+    
+    <rect x="720" y="130" width="140" height="90" rx="10" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="790" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1B5E20">
+      🌐 Localization &amp; i18n
+    </text>
+    <text x="790" y="165" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">• English (EN)</text>
+    <text x="790" y="178" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">• Bengali (BN)</text>
+    <text x="790" y="191" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">• Arabic (AR)</text>
+    <text x="790" y="204" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">• RTL Support</text>
+    
+    <rect x="880" y="130" width="140" height="90" rx="10" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="950" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1B5E20">
+      🎨 Theming &amp; Design
+    </text>
+    <text x="950" y="165" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">• Islamic Color Scheme</text>
+    <text x="950" y="178" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">• Arabic Typography</text>
+    <text x="950" y="191" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">• Material Design 3</text>
+    <text x="950" y="204" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">• Dark/Light Modes</text>
+  </g>
+  
+  <!-- DOMAIN LAYER -->
+  <g id="domainLayer">
+    <rect x="50" y="270" width="1100" height="150" rx="15" fill="url(#blueGradient)" filter="url(#shadow)"/>
+    <text x="600" y="300" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="white">
+      🏛️ Domain Layer (Business Logic &amp; Islamic Rules)
+    </text>
+    
+    <rect x="80" y="320" width="130" height="80" rx="10" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="145" y="340" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#0D47A1">
+      📦 Entities
+    </text>
+    <text x="145" y="355" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• ZakatCalculation</text>
+    <text x="145" y="367" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• Prayer</text>
+    <text x="145" y="379" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• FastingDay</text>
+    <text x="145" y="391" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• HijriDate</text>
+    
+    <rect x="230" y="320" width="130" height="80" rx="10" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="295" y="340" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#0D47A1">
+      ⚙️ Use Cases
+    </text>
+    <text x="295" y="355" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• CalculateZakatUseCase</text>
+    <text x="295" y="367" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• GetPrayerTimesUseCase</text>
+    <text x="295" y="379" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• TrackFastingUseCase</text>
+    <text x="295" y="391" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• FindQiblaUseCase</text>
+    
+    <rect x="380" y="320" width="130" height="80" rx="10" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="445" y="340" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#0D47A1">
+      🔌 Repository Contracts
+    </text>
+    <text x="445" y="355" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• IZakatRepository</text>
+    <text x="445" y="367" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• IPrayerRepository</text>
+    <text x="445" y="379" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• IQuranRepository</text>
+    <text x="445" y="391" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• IUserRepository</text>
+    
+    <rect x="530" y="320" width="130" height="80" rx="10" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="595" y="340" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#0D47A1">
+      💎 Value Objects
+    </text>
+    <text x="595" y="355" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• Money (Nisab)</text>
+    <text x="595" y="367" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• GeoCoordinate</text>
+    <text x="595" y="379" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• QiblaDirection</text>
+    <text x="595" y="391" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• IslamicTime</text>
+    
+    <rect x="680" y="320" width="130" height="80" rx="10" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="745" y="340" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#0D47A1">
+      📏 Islamic Business Rules
+    </text>
+    <text x="745" y="355" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• NisabValidator</text>
+    <text x="745" y="367" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• PrayerTimeCalculator</text>
+    <text x="745" y="379" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• ZakatRateCalculator</text>
+    <text x="745" y="391" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• QiblaCalculator</text>
+    
+    <rect x="830" y="320" width="130" height="80" rx="10" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="895" y="340" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#0D47A1">
+      🔧 Domain Services
+    </text>
+    <text x="895" y="355" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• IslamicCalculator</text>
+    <text x="895" y="367" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• HijriConverter</text>
+    <text x="895" y="379" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• LocationService</text>
+    <text x="895" y="391" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• TimezoneDeterminer</text>
+    
+    <rect x="980" y="320" width="130" height="80" rx="10" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="1045" y="340" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#0D47A1">
+      📢 Domain Events
+    </text>
+    <text x="1045" y="355" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• ZakatCalculated</text>
+    <text x="1045" y="367" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• PrayerTimeReached</text>
+    <text x="1045" y="379" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• FastingCompleted</text>
+    <text x="1045" y="391" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• QiblaFound</text>
+  </g>
+  
+  <!-- DATA LAYER -->
+  <g id="dataLayer">
+    <rect x="50" y="450" width="1100" height="150" rx="15" fill="url(#redGradient)" filter="url(#shadow)"/>
+    <text x="600" y="480" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="white">
+      💾 Data Layer (Infrastructure &amp; External Services)
+    </text>
+    
+    <rect x="80" y="500" width="135" height="80" rx="10" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="147" y="520" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#BF360C">
+      🗄️ Repository Impl.
+    </text>
+    <text x="147" y="535" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• ZakatRepositoryImpl</text>
+    <text x="147" y="547" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• PrayerRepositoryImpl</text>
+    <text x="147" y="559" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• QuranRepositoryImpl</text>
+    <text x="147" y="571" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• UserRepositoryImpl</text>
+    
+    <rect x="235" y="500" width="135" height="80" rx="10" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="302" y="520" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#BF360C">
+      📡 Data Sources
+    </text>
+    <text x="302" y="535" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• RemoteDataSource</text>
+    <text x="302" y="547" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• LocalDataSource</text>
+    <text x="302" y="559" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• CacheDataSource</text>
+    <text x="302" y="571" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• OfflineDataSource</text>
+    
+    <rect x="390" y="500" width="135" height="80" rx="10" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="457" y="520" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#BF360C">
+      🌐 API Clients
+    </text>
+    <text x="457" y="535" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• QuranApiClient</text>
+    <text x="457" y="547" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• AlAdhanApiClient</text>
+    <text x="457" y="559" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• IslamicFinderApi</text>
+    <text x="457" y="571" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• GoldPriceApiClient</text>
+    
+    <rect x="545" y="500" width="135" height="80" rx="10" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="612" y="520" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#BF360C">
+      💿 Local Storage
+    </text>
+    <text x="612" y="535" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• HiveBoxes</text>
+    <text x="612" y="547" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• SQLite (Drift)</text>
+    <text x="612" y="559" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• SharedPreferences</text>
+    <text x="612" y="571" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• SecureStorage</text>
+    
+    <rect x="700" y="500" width="135" height="80" rx="10" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="767" y="520" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#BF360C">
+      📋 DTOs &amp; Models
+    </text>
+    <text x="767" y="535" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• ZakatCalculationDto</text>
+    <text x="767" y="547" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• PrayerTimesDto</text>
+    <text x="767" y="559" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• QuranVerseDto</text>
+    <text x="767" y="571" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• UserProfileDto</text>
+    
+    <rect x="855" y="500" width="135" height="80" rx="10" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="922" y="520" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#BF360C">
+      🌐 Network Layer
+    </text>
+    <text x="922" y="535" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• Dio HTTP Client</text>
+    <text x="922" y="547" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• Request Interceptors</text>
+    <text x="922" y="559" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• Error Handling</text>
+    <text x="922" y="571" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• Retry Logic</text>
+    
+    <rect x="1010" y="500" width="130" height="80" rx="10" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="1075" y="520" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#BF360C">
+      📁 File Management
+    </text>
+    <text x="1075" y="535" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• PDF Generator</text>
+    <text x="1075" y="547" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• File Manager</text>
+    <text x="1075" y="559" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• Asset Loader</text>
+    <text x="1075" y="571" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">• Image Processing</text>
+  </g>
+  
+  <!-- CORE LAYER -->
+  <g id="coreLayer">
+    <rect x="50" y="630" width="1100" height="130" rx="15" fill="url(#purpleGradient)" filter="url(#shadow)"/>
+    <text x="600" y="660" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="white">
+      ⚡ Core/Shared Layer (Cross-Cutting Concerns)
+    </text>
+    
+    <rect x="80" y="680" width="135" height="60" rx="8" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="147" y="700" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#4A148C">
+      🔧 Utilities &amp; Helpers
+    </text>
+    <text x="147" y="715" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">Extensions • Validators • Constants</text>
+    <text x="147" y="727" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">Islamic Calendar • Number Utils</text>
+    
+    <rect x="235" y="680" width="135" height="60" rx="8" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="302" y="700" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#4A148C">
+      🚨 Error Handling
+    </text>
+    <text x="302" y="715" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">Failures • Exceptions • Either</text>
+    <text x="302" y="727" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">Custom Error Types • Result</text>
+    
+    <rect x="390" y="680" width="135" height="60" rx="8" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="457" y="700" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#4A148C">
+      📝 Logging &amp; Analytics
+    </text>
+    <text x="457" y="715" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">Debug Logs • Firebase Analytics</text>
+    <text x="457" y="727" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">Crashlytics • Performance</text>
+    
+    <rect x="545" y="680" width="135" height="60" rx="8" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="612" y="700" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#4A148C">
+      💉 Dependency Injection
+    </text>
+    <text x="612" y="715" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">Riverpod Providers • GetIt</text>
+    <text x="612" y="727" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">Service Locator • DI Container</text>
+    
+    <rect x="700" y="680" width="135" height="60" rx="8" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="767" y="700" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#4A148C">
+      ⚙️ Configuration
+    </text>
+    <text x="767" y="715" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">Environment Config • API Keys</text>
+    <text x="767" y="727" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">Feature Flags • Settings</text>
+    
+    <rect x="855" y="680" width="135" height="60" rx="8" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="922" y="700" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#4A148C">
+      🛡️ Security &amp; Auth
+    </text>
+    <text x="922" y="715" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">Encryption • Biometric Auth</text>
+    <text x="922" y="727" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">JWT • OAuth • Privacy</text>
+    
+    <rect x="1010" y="680" width="130" height="60" rx="8" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="1075" y="700" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#4A148C">
+      🧪 Testing Framework
+    </text>
+    <text x="1075" y="715" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">Unit • Widget • Integration</text>
+    <text x="1075" y="727" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">Mocks • Golden Tests</text>
+  </g>
+  
+  <!-- PLATFORM SERVICES LAYER -->
+  <g id="platformLayer">
+    <rect x="50" y="790" width="1100" height="110" rx="15" fill="url(#brownGradient)" filter="url(#shadow)"/>
+    <text x="600" y="820" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="white">
+      📱 Platform Services (Device Integration &amp; Native Features)
+    </text>
+    
+    <rect x="90" y="840" width="115" height="50" rx="8" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="147" y="860" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#3E2723">
+      📍 Location Services
+    </text>
+    <text x="147" y="873" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#666">GPS • Geolocator • Qibla</text>
+    <text x="147" y="883" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#666">Background Location</text>
+    
+    <rect x="220" y="840" width="115" height="50" rx="8" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="277" y="860" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#3E2723">
+      🔔 Notifications
+    </text>
+    <text x="277" y="873" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#666">Prayer Reminders • Athan</text>
+    <text x="277" y="883" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#666">Push Notifications</text>
+    
+    <rect x="350" y="840" width="115" height="50" rx="8" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="407" y="860" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#3E2723">
+      🎵 Audio Player
+    </text>
+    <text x="407" y="873" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#666">Quran Recitation • Athan</text>
+    <text x="407" y="883" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#666">Background Audio</text>
+    
+    <rect x="480" y="840" width="115" height="50" rx="8" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="537" y="860" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#3E2723">
+      🧭 Compass/Sensors
+    </text>
+    <text x="537" y="873" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#666">Magnetometer • Gyroscope</text>
+    <text x="537" y="883" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#666">Device Orientation</text>
+    
+    <rect x="610" y="840" width="115" height="50" rx="8" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="667" y="860" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#3E2723">
+      📷 File System
+    </text>
+    <text x="667" y="873" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#666">PDF Export • Images</text>
+    <text x="667" y="883" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#666">Document Sharing</text>
+    
+    <rect x="740" y="840" width="115" height="50" rx="8" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="797" y="860" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#3E2723">
+      🔐 Biometric Auth
+    </text>
+    <text x="797" y="873" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#666">Fingerprint • Face ID</text>
+    <text x="797" y="883" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#666">Local Authentication</text>
+    
+    <rect x="870" y="840" width="115" height="50" rx="8" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="927" y="860" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#3E2723">
+      📲 App Lifecycle
+    </text>
+    <text x="927" y="873" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#666">Background Tasks</text>
+    <text x="927" y="883" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#666">State Management</text>
+    
+    <rect x="1000" y="840" width="115" height="50" rx="8" fill="white" opacity="0.95" filter="url(#shadow)"/>
+    <text x="1057" y="860" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#3E2723">
+      🌐 Connectivity
+    </text>
+    <text x="1057" y="873" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#666">Network Status</text>
+    <text x="1057" y="883" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#666">Offline Support</text>
+  </g>
+  
+  <!-- DEPENDENCY FLOW ARROWS -->
+  <g id="dependencyFlow">
+    <!-- Main vertical arrows -->
+    <line x1="600" y1="240" x2="600" y2="270" stroke="url(#islamicGreen)" stroke-width="3" marker-end="url(#arrowhead)"/>
+    <line x1="600" y1="420" x2="600" y2="450" stroke="url(#islamicGreen)" stroke-width="3" marker-end="url(#arrowhead)"/>
+    <line x1="600" y1="600" x2="600" y2="630" stroke="url(#islamicGreen)" stroke-width="3" marker-end="url(#arrowhead)"/>
+    <line x1="600" y1="760" x2="600" y2="790" stroke="url(#islamicGreen)" stroke-width="3" marker-end="url(#arrowhead)"/>
+    
+    <!-- Horizontal connection arrows showing data flow -->
+    <path d="M 470,175 Q 500,185 530,175" stroke="url(#goldGradient)" stroke-width="2" fill="none" marker-end="url(#goldArrow)"/>
+    <path d="M 445,360 Q 475,370 505,360" stroke="url(#goldGradient)" stroke-width="2" fill="none" marker-end="url(#goldArrow)"/>
+    
+    <!-- Dependency Labels with enhanced styling -->
+    <g transform="translate(620, 255)">
+      <rect x="-30" y="-8" width="60" height="16" rx="8" fill="white" opacity="0.9" stroke="url(#islamicGreen)" stroke-width="1"/>
+      <text x="0" y="0" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="#1B5E20">Depends on</text>
+    </g>
+    
+    <g transform="translate(620, 435)">
+      <rect x="-30" y="-8" width="60" height="16" rx="8" fill="white" opacity="0.9" stroke="url(#islamicGreen)" stroke-width="1"/>
+      <text x="0" y="0" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="#1B5E20">Implements</text>
+    </g>
+    
+    <g transform="translate(620, 615)">
+      <rect x="-25" y="-8" width="50" height="16" rx="8" fill="white" opacity="0.9" stroke="url(#islamicGreen)" stroke-width="1"/>
+      <text x="0" y="0" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="#1B5E20">Uses</text>
+    </g>
+    
+    <g transform="translate(620, 775)">
+      <rect x="-30" y="-8" width="60" height="16" rx="8" fill="white" opacity="0.9" stroke="url(#islamicGreen)" stroke-width="1"/>
+      <text x="0" y="0" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="#1B5E20">Accesses</text>
+    </g>
+  </g>
+  
+  <!-- ISLAMIC DECORATIVE ELEMENTS -->
+  <g id="decorativeElements">
+    <!-- Enhanced corner decorations -->
+    <g transform="translate(30, 30)">
+      <circle r="18" fill="url(#goldGradient)" opacity="0.9" filter="url(#glow)"/>
+      <path d="M-12,-12 L12,-12 L12,12 L-12,12 Z" fill="white" opacity="0.8" transform="rotate(45)"/>
+      <circle r="8" fill="url(#islamicGreen)" opacity="0.7"/>
+    </g>
+    
+    <g transform="translate(1170, 30)">
+      <circle r="18" fill="url(#goldGradient)" opacity="0.9" filter="url(#glow)"/>
+      <path d="M-12,-12 L12,-12 L12,12 L-12,12 Z" fill="white" opacity="0.8" transform="rotate(45)"/>
+      <circle r="8" fill="url(#islamicGreen)" opacity="0.7"/>
+    </g>
+    
+    <g transform="translate(30, 920)">
+      <circle r="18" fill="url(#goldGradient)" opacity="0.9" filter="url(#glow)"/>
+      <path d="M-12,-12 L12,-12 L12,12 L-12,12 Z" fill="white" opacity="0.8" transform="rotate(45)"/>
+      <circle r="8" fill="url(#islamicGreen)" opacity="0.7"/>
+    </g>
+    
+    <g transform="translate(1170, 920)">
+      <circle r="18" fill="url(#goldGradient)" opacity="0.9" filter="url(#glow)"/>
+      <path d="M-12,-12 L12,-12 L12,12 L-12,12 Z" fill="white" opacity="0.8" transform="rotate(45)"/>
+      <circle r="8" fill="url(#islamicGreen)" opacity="0.7"/>
+    </g>
+  </g>
+  
+  <!-- ENHANCED LEGEND AND FOOTER -->
+  <g id="legendFooter">
+    <rect x="200" y="915" width="800" height="25" rx="12" fill="white" opacity="0.95" stroke="url(#islamicGreen)" stroke-width="2" filter="url(#shadow)"/>
+    <text x="600" y="935" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1B5E20">
+      📖 Clean Architecture Principle: Outer layers depend on inner layers only • Dependency Inversion
+    </text>
+    
+    <!-- Islamic pattern footer decoration -->
+    <rect x="50" y="945" width="1100" height="3" fill="url(#islamicGreen)" opacity="0.6"/>
+    
+    <!-- Small Islamic geometric patterns -->
+    <g transform="translate(150, 935)">
+      <circle r="6" fill="url(#goldGradient)" opacity="0.7"/>
+      <path d="M-3,-3 L3,-3 L3,3 L-3,3 Z" fill="white" opacity="0.9" transform="rotate(45)"/>
+    </g>
+    
+    <g transform="translate(1050, 935)">
+      <circle r="6" fill="url(#goldGradient)" opacity="0.7"/>
+      <path d="M-3,-3 L3,-3 L3,3 L-3,3 Z" fill="white" opacity="0.9" transform="rotate(45)"/>
+    </g>
+  </g>
+</svg>

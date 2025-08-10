@@ -1,0 +1,120 @@
+<svg viewBox="0 0 375 812" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Islamic gradient backgrounds -->
+    <linearGradient id="welcomeBackground" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F5F5DC;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#FAF0E6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFF8DC;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="buttonGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2E7D32;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4CAF50;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Islamic geometric pattern -->
+    <pattern id="islamicPattern" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
+      <rect width="80" height="80" fill="none"/>
+      <circle cx="40" cy="40" r="25" fill="none" stroke="#E6D4B7" stroke-width="1" opacity="0.3"/>
+      <path d="M40,15 L55,40 L40,65 L25,40 Z" fill="none" stroke="#E6D4B7" stroke-width="1" opacity="0.2"/>
+      <circle cx="40" cy="40" r="12" fill="none" stroke="#E6D4B7" stroke-width="0.5" opacity="0.4"/>
+      <path d="M40,28 L48,40 L40,52 L32,40 Z" fill="#E6D4B7" opacity="0.1"/>
+    </pattern>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="375" height="812" fill="url(#welcomeBackground)"/>
+  <rect width="375" height="812" fill="url(#islamicPattern)" opacity="0.5"/>
+  
+  <!-- Status bar area -->
+  <rect x="0" y="0" width="375" height="44" fill="rgba(0,0,0,0.05)"/>
+  
+  <!-- Main content area -->
+  <g transform="translate(0, 100)">
+    
+    <!-- Top decorative element -->
+    <g transform="translate(187.5, 80)">
+      <circle r="60" fill="none" stroke="#D4B996" stroke-width="2" opacity="0.4"/>
+      <circle r="40" fill="none" stroke="#D4B996" stroke-width="1" opacity="0.6"/>
+      <circle r="25" fill="#E6D4B7" opacity="0.3"/>
+      <path d="M-15,-15 L15,-15 L15,15 L-15,15 Z" fill="none" stroke="#C19A6B" stroke-width="1" opacity="0.5" transform="rotate(45)"/>
+    </g>
+    
+    <!-- Arabic greeting - main text -->
+    <text x="187.5" y="220" text-anchor="middle" 
+          font-family="Amiri, serif" 
+          font-size="28" 
+          font-weight="600" 
+          fill="#8B4513" 
+          letter-spacing="1px">
+      السلام عليكم ورحمة الله وبركاته
+    </text>
+    
+    <!-- English subtitle -->
+    <text x="187.5" y="280" text-anchor="middle" 
+          font-family="Noto Sans, sans-serif" 
+          font-size="18" 
+          font-weight="400" 
+          fill="#5D4037" 
+          opacity="0.9">
+      Welcome to your new
+    </text>
+    
+    <text x="187.5" y="310" text-anchor="middle" 
+          font-family="Noto Sans, sans-serif" 
+          font-size="18" 
+          font-weight="600" 
+          fill="#5D4037">
+      spiritual companion
+    </text>
+    
+    <!-- Decorative divider -->
+    <g transform="translate(187.5, 350)">
+      <circle cx="-30" cy="0" r="3" fill="#C19A6B" opacity="0.6"/>
+      <circle cx="0" cy="0" r="4" fill="#8B4513" opacity="0.7"/>
+      <circle cx="30" cy="0" r="3" fill="#C19A6B" opacity="0.6"/>
+      <line x1="-25" y1="0" x2="-8" y2="0" stroke="#C19A6B" stroke-width="1" opacity="0.4"/>
+      <line x1="8" y1="0" x2="25" y2="0" stroke="#C19A6B" stroke-width="1" opacity="0.4"/>
+    </g>
+    
+    <!-- Continue button - centered both vertically and horizontally -->
+    <g transform="translate(187.5, 450)">
+      <!-- Button shadow -->
+      <circle r="32" fill="#000" opacity="0.1" transform="translate(2, 4)"/>
+      
+      <!-- Main button -->
+      <circle r="30" fill="url(#buttonGradient)"/>
+      <circle r="28" fill="none" stroke="#fff" stroke-width="1" opacity="0.3"/>
+      
+      <!-- Arrow icon -->
+      <path d="M-8,-5 L5,0 L-8,5 M-2,0 L8,0" 
+            stroke="white" 
+            stroke-width="2.5" 
+            stroke-linecap="round" 
+            stroke-linejoin="round" 
+            fill="none"/>
+    </g>
+    
+    <!-- Bottom decorative elements -->
+    <g transform="translate(187.5, 550)">
+      <path d="M-50,0 Q-25,-10 0,0 Q25,-10 50,0" 
+            fill="none" 
+            stroke="#D4B996" 
+            stroke-width="1" 
+            opacity="0.4"/>
+      <circle cx="-40" cy="0" r="2" fill="#C19A6B" opacity="0.5"/>
+      <circle cx="40" cy="0" r="2" fill="#C19A6B" opacity="0.5"/>
+    </g>
+    
+  </g>
+  
+  <!-- Bottom area with subtle text -->
+  <text x="187.5" y="760" text-anchor="middle" 
+        font-family="Noto Sans, sans-serif" 
+        font-size="12" 
+        fill="#8B4513" 
+        opacity="0.5">
+    Tap to continue
+  </text>
+  
+</svg>

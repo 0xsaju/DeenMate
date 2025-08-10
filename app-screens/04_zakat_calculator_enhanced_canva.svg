@@ -1,0 +1,116 @@
+<svg viewBox="0 0 375 812" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="zakatGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2E7D32;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4CAF50;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFA000;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Phone Frame -->
+  <rect width="375" height="812" rx="25" fill="#000000"/>
+  <rect x="3" y="3" width="369" height="806" rx="22" fill="#FFFFFF"/>
+  
+  <!-- Status Bar -->
+  <rect x="3" y="3" width="369" height="44" rx="22" fill="url(#zakatGradient)"/>
+  <text x="20" y="28" fill="white" font-size="14" font-weight="600">9:41</text>
+  <text x="320" y="28" fill="white" font-size="12">100%</text>
+  <rect x="325" y="20" width="20" height="10" rx="2" fill="white" opacity="0.8"/>
+  
+  <!-- App Bar -->
+  <rect x="3" y="47" width="369" height="56" fill="url(#zakatGradient)"/>
+  <text x="20" y="80" fill="white" font-size="18">←</text>
+  <text x="187" y="80" text-anchor="middle" fill="white" font-size="18" font-weight="600">Zakat Calculator | যাকাত ক্যালকুলেটর</text>
+  <text x="340" y="80" fill="white" font-size="18">💾</text>
+  
+  <!-- Progress Indicator -->
+  <rect x="24" y="115" width="327" height="6" rx="3" fill="#E0E0E0"/>
+  <rect x="24" y="115" width="130" height="6" rx="3" fill="#4CAF50"/>
+  <text x="24" y="135" fill="#4CAF50" font-size="12" font-weight="600">Step 3 of 8 | ধাপ ৩/৮</text>
+  
+  <!-- Current Section Header -->
+  <rect x="16" y="150" width="343" height="60" rx="12" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="24" y="158" width="40" height="40" rx="10" fill="#FFF3E0"/>
+  <text x="44" y="183" text-anchor="middle" fill="#FF8F00" font-size="20">🏆</text>
+  <text x="76" y="172" fill="#2E7D32" font-size="16" font-weight="bold">Precious Metals | মূল্যবান ধাতু</text>
+  <text x="76" y="190" fill="#666" font-size="13">Gold &amp; Silver assets | স্বর্ণ ও রূপার সম্পদ</text>
+  <text x="76" y="203" fill="#999" font-size="11">Enter your gold and silver holdings</text>
+  
+  <!-- Live Metal Prices Card -->
+  <rect x="16" y="225" width="343" height="80" rx="12" fill="url(#goldGradient)" stroke="#FFA000" stroke-width="1"/>
+  <text x="32" y="245" fill="white" font-size="14" font-weight="bold">Live Metal Prices | লাইভ দাম</text>
+  <text x="32" y="260" fill="white" font-size="11" opacity="0.9">Updated 2 minutes ago</text>
+  
+  <rect x="32" y="270" width="150" height="25" rx="4" fill="white" opacity="0.2"/>
+  <text x="45" y="282" fill="white" font-size="10">Gold/স্বর্ণ</text>
+  <text x="45" y="295" fill="white" font-size="14" font-weight="bold">৳6,850/bhori</text>
+  
+  <rect x="195" y="270" width="150" height="25" rx="4" fill="white" opacity="0.2"/>
+  <text x="208" y="282" fill="white" font-size="10">Silver/রূপা</text>
+  <text x="208" y="295" fill="white" font-size="14" font-weight="bold">৳95/bhori</text>
+  
+  <!-- Gold Input Section -->
+  <rect x="16" y="320" width="343" height="120" rx="12" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="32" y="340" fill="#333" font-size="16" font-weight="bold">Gold Holdings | স্বর্ণের সম্পদ</text>
+  
+  <text x="32" y="360" fill="#666" font-size="13">Weight in Bhori | ভরি এককে ওজন</text>
+  <rect x="32" y="365" width="280" height="40" rx="8" fill="#F5F5F5" stroke="#DDD"/>
+  <text x="45" y="385" fill="#333" font-size="16">12.5</text>
+  <text x="250" y="385" fill="#666" font-size="14">bhori | ভরি</text>
+  
+  <text x="32" y="420" fill="#4CAF50" font-size="14" font-weight="600">Estimated Value: ৳85,625</text>
+  <text x="32" y="435" fill="#666" font-size="11">Zakatable amount (if held for 1 year)</text>
+  
+  <!-- Silver Input Section -->
+  <rect x="16" y="455" width="343" height="120" rx="12" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="32" y="475" fill="#333" font-size="16" font-weight="bold">Silver Holdings | রূপার সম্পদ</text>
+  
+  <text x="32" y="495" fill="#666" font-size="13">Weight in Bhori | ভরি এককে ওজন</text>
+  <rect x="32" y="500" width="280" height="40" rx="8" fill="#F5F5F5" stroke="#DDD"/>
+  <text x="45" y="520" fill="#333" font-size="16">0</text>
+  <text x="250" y="520" fill="#666" font-size="14">bhori | ভরি</text>
+  
+  <text x="32" y="555" fill="#999" font-size="14">Estimated Value: ৳0</text>
+  <text x="32" y="570" fill="#666" font-size="11">Add silver jewelry, coins, or bullion</text>
+  
+  <!-- Nisab Information -->
+  <rect x="16" y="590" width="343" height="80" rx="12" fill="#E8F5E8" stroke="#4CAF50" stroke-width="1"/>
+  <text x="32" y="610" fill="#2E7D32" font-size="14" font-weight="bold">💡 Nisab Information | নিসাব তথ্য</text>
+  <text x="32" y="630" fill="#333" font-size="12">Gold Nisab: 7.5 tola (৮৭.৪৮ গ্রাম)</text>
+  <text x="32" y="645" fill="#333" font-size="12">Silver Nisab: 52.5 tola (৬১২.৩৬ গ্রাম)</text>
+  <text x="32" y="660" fill="#4CAF50" font-size="11" font-weight="600">✓ Your gold exceeds nisab threshold</text>
+  
+  <!-- Navigation Buttons -->
+  <rect x="16" y="685" width="165" height="45" rx="22" fill="white" stroke="#DDD" stroke-width="1"/>
+  <text x="98" y="710" text-anchor="middle" fill="#666" font-size="16">← Previous</text>
+  
+  <rect x="194" y="685" width="165" height="45" rx="22" fill="url(#zakatGradient)"/>
+  <text x="276" y="710" text-anchor="middle" fill="white" font-size="16" font-weight="600">Next →</text>
+  
+  <!-- Bottom Navigation -->
+  <rect x="3" y="750" width="369" height="62" rx="0 0 22 22" fill="white"/>
+  <rect x="3" y="740" width="369" height="20" fill="white"/>
+  <line x1="3" y1="750" x2="372" y2="750" stroke="#E0E0E0" stroke-width="1"/>
+  
+  <!-- Nav Items -->
+  <text x="55" y="778" text-anchor="middle" fill="#666" font-size="16">🏠</text>
+  <text x="55" y="795" text-anchor="middle" fill="#666" font-size="10">Home</text>
+  
+  <text x="125" y="778" text-anchor="middle" fill="#666" font-size="16">🕌</text>
+  <text x="125" y="795" text-anchor="middle" fill="#666" font-size="10">Prayer</text>
+  
+  <rect x="170" y="765" width="50" height="35" rx="8" fill="#E8F5E8"/>
+  <text x="195" y="778" text-anchor="middle" fill="#2E7D32" font-size="16">🧮</text>
+  <text x="195" y="795" text-anchor="middle" fill="#2E7D32" font-size="10" font-weight="600">Zakat</text>
+  
+  <text x="265" y="778" text-anchor="middle" fill="#666" font-size="16">🧭</text>
+  <text x="265" y="795" text-anchor="middle" fill="#666" font-size="10">Qibla</text>
+  
+  <text x="335" y="778" text-anchor="middle" fill="#666" font-size="16">⋯</text>
+  <text x="335" y="795" text-anchor="middle" fill="#666" font-size="10">More</text>
+</svg>

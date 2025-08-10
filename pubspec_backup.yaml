@@ -1,0 +1,191 @@
+name: tools_for_ummah
+description: The most comprehensive, user-friendly Islamic utility platform for the global Muslim community
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  
+  # State Management
+  riverpod: ^2.4.9
+  flutter_riverpod: ^2.4.9
+  riverpod_annotation: ^2.3.3
+  
+  # Navigation
+  go_router: ^12.1.3
+  
+  # HTTP & Network
+  dio: ^5.4.0
+  connectivity_plus: ^5.0.2
+  internet_connection_checker: ^1.0.0+1
+  dartz: ^0.10.1  # Functional programming for error handling
+  
+  # Local Storage
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  shared_preferences: ^2.2.2
+  path_provider: ^2.1.2
+  sqflite: ^2.3.2  # For complex Islamic data storage
+  
+  # PDF Generation & File Handling
+  pdf: ^3.10.7
+  printing: ^5.12.0
+  file_picker: ^6.1.1
+  open_file: ^3.3.2  # For opening generated PDFs
+  share_plus: ^7.2.2  # For sharing Zakat reports
+  
+  # Permissions & Device
+  permission_handler: ^11.2.0
+  geolocator: ^10.1.0
+  device_info_plus: ^9.1.2
+  
+  # Audio & Compass
+  just_audio: ^0.9.36
+  audio_session: ^0.1.18  # Better audio session management
+  # compass_plus: ^0.1.0  # Temporarily disabled
+  sensors_plus: ^4.0.2  # Additional sensor support
+  
+  # UI & Utils
+  cupertino_icons: ^1.0.6
+  intl: ^0.20.2
+  json_annotation: ^4.8.1
+  freezed_annotation: ^2.4.1
+  
+  # Islamic Calculations & Features
+  # flutter_qiblah: ^2.2.0  # Temporarily disabled
+  # adhan: ^1.0.0  # Temporarily disabled
+  # hijri: ^3.0.1  # Temporarily disabled - Hijri calendar calculations
+  
+  # Charts & Visualization
+  fl_chart: ^0.66.0
+  # syncfusion_flutter_charts: ^24.2.9  # Temporarily disabled - For advanced Zakat analytics
+  
+  # Image & Media
+  image_picker: ^1.0.7
+  cached_network_image: ^3.3.1
+  flutter_svg: ^2.0.9  # For Islamic geometric patterns
+  
+  # UI Enhancement
+  shimmer: ^3.0.0
+  lottie: ^2.7.0
+  flutter_animate: ^4.5.0  # Smooth animations for Islamic UI
+  flutter_staggered_grid_view: ^0.7.0  # For dashboard layout
+  
+  # Notifications
+  flutter_local_notifications: ^16.3.2
+  firebase_messaging: ^14.7.10  # For prayer time notifications
+  
+  # Security & Analytics
+  crypto: ^3.0.3  # For secure will generation
+  uuid: ^4.3.3  # For unique Islamic content IDs
+  
+  # Additional Islamic Features
+  flutter_islamic_icons: ^1.0.0  # Islamic iconography
+  arabic_numbers: ^1.0.0  # Arabic-Indic numerals
+  
+  # Miscellaneous
+  url_launcher: ^6.2.4  # For external Islamic resources
+  package_info_plus: ^5.0.1  # App version info
+  flutter_native_splash: ^2.3.10  # Islamic-themed splash screen
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+  
+  # Code Generation
+  build_runner: ^2.4.7
+  riverpod_generator: ^2.3.9
+  custom_lint: ^0.5.7
+  riverpod_lint: ^2.3.7
+  
+  # Hive & JSON Generation
+  hive_generator: ^2.0.1
+  json_serializable: ^6.7.1
+  freezed: ^2.4.7
+  
+  # Testing
+  mockito: ^5.4.4
+  faker: ^2.1.0  # For test data generation
+  integration_test:
+    sdk: flutter
+  
+  # Performance & Analysis
+  flutter_launcher_icons: ^0.13.1
+  change_app_package_name: ^1.1.0
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/audio/
+    - assets/fonts/
+    - assets/data/
+    - assets/icons/
+    - assets/islamic_patterns/  # Geometric Islamic patterns
+    - assets/translations/      # Localization files
+    - assets/audio/athan/       # Different Muadhin voices
+    - assets/data/prayer_times/ # Offline prayer time data
+    - assets/data/hadith/       # Curated Hadith database
+  
+  fonts:
+    # Arabic & Islamic Fonts
+    - family: Amiri
+      fonts:
+        - asset: assets/fonts/Amiri-Regular.ttf
+        - asset: assets/fonts/Amiri-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Amiri-Italic.ttf
+          style: italic
+    
+    - family: NotoSansArabic
+      fonts:
+        - asset: assets/fonts/NotoSansArabic-Regular.ttf
+        - asset: assets/fonts/NotoSansArabic-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/NotoSansArabic-Light.ttf
+          weight: 300
+    
+    # Quran-specific fonts
+    - family: UthmanicHafs
+      fonts:
+        - asset: assets/fonts/UthmanicHafs-Regular.ttf
+    
+    # Bengali support
+    - family: NotoSansBengali
+      fonts:
+        - asset: assets/fonts/NotoSansBengali-Regular.ttf
+        - asset: assets/fonts/NotoSansBengali-Bold.ttf
+          weight: 700
+    
+    # English & Numbers
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Regular.ttf
+        - asset: assets/fonts/Roboto-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Roboto-Light.ttf
+          weight: 300
+
+# Additional Configuration
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icons/app_icon.png"
+  adaptive_icon_background: "#2E7D32"
+  adaptive_icon_foreground: "assets/icons/app_icon_foreground.png"
+
+flutter_native_splash:
+  color: "#2E7D32"
+  image: "assets/images/splash_logo.png"
+  android_12:
+    image: "assets/images/splash_logo_android12.png"
+    color: "#2E7D32"

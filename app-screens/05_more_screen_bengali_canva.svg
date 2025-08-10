@@ -1,0 +1,132 @@
+<svg viewBox="0 0 375 812" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="moreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#5D4037;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8D6E63;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Phone Frame -->
+  <rect width="375" height="812" rx="25" fill="#000000"/>
+  <rect x="3" y="3" width="369" height="806" rx="22" fill="#FFFFFF"/>
+  
+  <!-- Status Bar -->
+  <rect x="3" y="3" width="369" height="44" rx="22" fill="url(#moreGradient)"/>
+  <text x="20" y="28" fill="white" font-size="14" font-weight="600">9:41</text>
+  <text x="320" y="28" fill="white" font-size="12">100%</text>
+  <rect x="325" y="20" width="20" height="10" rx="2" fill="white" opacity="0.8"/>
+  
+  <!-- App Bar -->
+  <rect x="3" y="47" width="369" height="56" fill="url(#moreGradient)"/>
+  <text x="187" y="80" text-anchor="middle" fill="white" font-size="18" font-weight="600">More Features | আরও ফিচার</text>
+  
+  <!-- Islamic Header -->
+  <rect x="3" y="103" width="369" height="80" fill="url(#moreGradient)"/>
+  <text x="187" y="130" text-anchor="middle" fill="white" font-size="20">جزاك الله خيراً</text>
+  <text x="187" y="150" text-anchor="middle" fill="white" font-size="12" opacity="0.9">May Allah reward you with goodness</text>
+  <text x="187" y="165" text-anchor="middle" fill="white" font-size="12" opacity="0.8">আল্লাহ আপনাকে কল্যাণ দান করুন</text>
+  
+  <!-- Features Grid -->
+  <!-- Row 1 -->
+  <rect x="16" y="200" width="167" height="120" rx="16" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="24" y="208" width="151" height="40" rx="8" fill="#F3E5F5"/>
+  <rect x="32" y="216" width="32" height="32" rx="8" fill="#9C27B0" opacity="0.2"/>
+  <text x="48" y="236" text-anchor="middle" fill="#9C27B0" font-size="18">🌙</text>
+  <text x="80" y="225" fill="#9C27B0" font-size="14" font-weight="bold">Sawm Tracker</text>
+  <text x="80" y="240" fill="#666" font-size="12">সিয়াম ট্র্যাকার</text>
+  <text x="32" y="270" fill="#333" font-size="13" font-weight="600">Track your fasting</text>
+  <text x="32" y="285" fill="#666" font-size="11">Monitor Ramadan fasting progress</text>
+  <text x="32" y="300" fill="#999" font-size="10">Coming Soon | শীঘ্রই আসছে</text>
+  
+  <rect x="192" y="200" width="167" height="120" rx="16" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="200" y="208" width="151" height="40" rx="8" fill="#EFEBE9"/>
+  <rect x="208" y="216" width="32" height="32" rx="8" fill="#795548" opacity="0.2"/>
+  <text x="224" y="236" text-anchor="middle" fill="#795548" font-size="18">📜</text>
+  <text x="256" y="225" fill="#795548" font-size="14" font-weight="bold">Islamic Will</text>
+  <text x="256" y="240" fill="#666" font-size="12">ইসলামিক উইল</text>
+  <text x="208" y="270" fill="#333" font-size="13" font-weight="600">Generate Islamic will</text>
+  <text x="208" y="285" fill="#666" font-size="11">According to Shariah law</text>
+  <text x="208" y="300" fill="#999" font-size="10">Coming Soon | শীঘ্রই আসছে</text>
+  
+  <!-- Row 2 -->
+  <rect x="16" y="335" width="167" height="120" rx="16" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="24" y="343" width="151" height="40" rx="8" fill="#E8EAF6"/>
+  <rect x="32" y="351" width="32" height="32" rx="8" fill="#3F51B5" opacity="0.2"/>
+  <text x="48" y="371" text-anchor="middle" fill="#3F51B5" font-size="18">📊</text>
+  <text x="80" y="360" fill="#3F51B5" font-size="14" font-weight="bold">History</text>
+  <text x="80" y="375" fill="#666" font-size="12">ইতিহাস</text>
+  <text x="32" y="405" fill="#333" font-size="13" font-weight="600">View calculations</text>
+  <text x="32" y="420" fill="#666" font-size="11">Past Zakat calculations</text>
+  <text x="32" y="435" fill="#3F51B5" font-size="10" font-weight="600">Available | উপলব্ধ</text>
+  
+  <rect x="192" y="335" width="167" height="120" rx="16" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="200" y="343" width="151" height="40" rx="8" fill="#FFEBEE"/>
+  <rect x="208" y="351" width="32" height="32" rx="8" fill="#FF5722" opacity="0.2"/>
+  <text x="224" y="371" text-anchor="middle" fill="#FF5722" font-size="18">📈</text>
+  <text x="256" y="360" fill="#FF5722" font-size="14" font-weight="bold">Reports</text>
+  <text x="256" y="375" fill="#666" font-size="12">রিপোর্ট</text>
+  <text x="208" y="405" fill="#333" font-size="13" font-weight="600">Generate reports</text>
+  <text x="208" y="420" fill="#666" font-size="11">PDF Zakat statements</text>
+  <text x="208" y="435" fill="#FF5722" font-size="10" font-weight="600">Available | উপলব্ধ</text>
+  
+  <!-- Row 3 -->
+  <rect x="16" y="470" width="167" height="120" rx="16" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="24" y="478" width="151" height="40" rx="8" fill="#E8F5E8"/>
+  <rect x="32" y="486" width="32" height="32" rx="8" fill="#4CAF50" opacity="0.2"/>
+  <text x="48" y="506" text-anchor="middle" fill="#4CAF50" font-size="18">👤</text>
+  <text x="80" y="495" fill="#4CAF50" font-size="14" font-weight="bold">Profile</text>
+  <text x="80" y="510" fill="#666" font-size="12">প্রোফাইল</text>
+  <text x="32" y="540" fill="#333" font-size="13" font-weight="600">Manage profile</text>
+  <text x="32" y="555" fill="#666" font-size="11">Personal information</text>
+  <text x="32" y="570" fill="#4CAF50" font-size="10" font-weight="600">Available | উপলব্ধ</text>
+  
+  <rect x="192" y="470" width="167" height="120" rx="16" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="200" y="478" width="151" height="40" rx="8" fill="#E0F2F1"/>
+  <rect x="208" y="486" width="32" height="32" rx="8" fill="#009688" opacity="0.2"/>
+  <text x="224" y="506" text-anchor="middle" fill="#009688" font-size="18">⚙️</text>
+  <text x="256" y="495" fill="#009688" font-size="14" font-weight="bold">Settings</text>
+  <text x="256" y="510" fill="#666" font-size="12">সেটিংস</text>
+  <text x="208" y="540" fill="#333" font-size="13" font-weight="600">App preferences</text>
+  <text x="208" y="555" fill="#666" font-size="11">Language, notifications</text>
+  <text x="208" y="570" fill="#009688" font-size="10" font-weight="600">Available | উপলব্ধ</text>
+  
+  <!-- Language Settings Quick Access -->
+  <rect x="16" y="605" width="343" height="60" rx="12" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="24" y="613" width="40" height="40" rx="10" fill="#E3F2FD"/>
+  <text x="44" y="638" text-anchor="middle" fill="#1565C0" font-size="20">🌐</text>
+  <text x="76" y="628" fill="#1565C0" font-size="14" font-weight="bold">Language Settings | ভাষা সেটিংস</text>
+  <text x="76" y="645" fill="#666" font-size="12">Switch between English, Bengali &amp; Arabic</text>
+  <text x="76" y="657" fill="#999" font-size="10">ইংরেজি, বাংলা ও আরবির মধ্যে পরিবর্তন করুন</text>
+  
+  <!-- Bengali Toggle -->
+  <rect x="280" y="620" width="60" height="30" rx="15" fill="#4CAF50"/>
+  <circle cx="325" cy="635" r="12" fill="white"/>
+  <text x="325" y="640" text-anchor="middle" fill="#4CAF50" font-size="10" font-weight="bold">বাং</text>
+  
+  <!-- App Info -->
+  <text x="187" y="695" text-anchor="middle" fill="#999" font-size="11">ToolsForUmmah v2.0 Enhanced UI</text>
+  <text x="187" y="710" text-anchor="middle" fill="#999" font-size="10">بارك الله فيكم - May Allah bless you</text>
+  
+  <!-- Bottom Navigation -->
+  <rect x="3" y="750" width="369" height="62" rx="0 0 22 22" fill="white"/>
+  <rect x="3" y="740" width="369" height="20" fill="white"/>
+  <line x1="3" y1="750" x2="372" y2="750" stroke="#E0E0E0" stroke-width="1"/>
+  
+  <!-- Nav Items -->
+  <text x="55" y="778" text-anchor="middle" fill="#666" font-size="16">🏠</text>
+  <text x="55" y="795" text-anchor="middle" fill="#666" font-size="10">Home</text>
+  
+  <text x="125" y="778" text-anchor="middle" fill="#666" font-size="16">🕌</text>
+  <text x="125" y="795" text-anchor="middle" fill="#666" font-size="10">Prayer</text>
+  
+  <text x="195" y="778" text-anchor="middle" fill="#666" font-size="16">🧮</text>
+  <text x="195" y="795" text-anchor="middle" fill="#666" font-size="10">Zakat</text>
+  
+  <text x="265" y="778" text-anchor="middle" fill="#666" font-size="16">🧭</text>
+  <text x="265" y="795" text-anchor="middle" fill="#666" font-size="10">Qibla</text>
+  
+  <rect x="310" y="765" width="50" height="35" rx="8" fill="#EFEBE9"/>
+  <text x="335" y="778" text-anchor="middle" fill="#5D4037" font-size="16">⋯</text>
+  <text x="335" y="795" text-anchor="middle" fill="#5D4037" font-size="10" font-weight="600">More</text>
+</svg>

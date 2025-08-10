@@ -1,0 +1,125 @@
+<svg viewBox="0 0 375 812" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="islamicGreenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2E7D32;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4CAF50;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="prayerBlueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1565C0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#42A5F5;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="cardGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F5F5F5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Phone Frame -->
+  <rect width="375" height="812" rx="25" fill="#000000"/>
+  <rect x="3" y="3" width="369" height="806" rx="22" fill="#FFFFFF"/>
+  
+  <!-- Status Bar -->
+  <rect x="3" y="3" width="369" height="44" rx="22" fill="url(#islamicGreenGradient)"/>
+  <text x="20" y="28" fill="white" font-size="14" font-weight="600">9:41</text>
+  <text x="320" y="28" fill="white" font-size="12">100%</text>
+  <rect x="325" y="20" width="20" height="10" rx="2" fill="white" opacity="0.8"/>
+  
+  <!-- Islamic Header -->
+  <rect x="3" y="47" width="369" height="120" fill="url(#islamicGreenGradient)"/>
+  <text x="187" y="80" text-anchor="middle" fill="white" font-size="20" font-weight="bold">ToolsForUmmah</text>
+  <text x="187" y="105" text-anchor="middle" fill="white" font-size="16">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم</text>
+  <text x="187" y="125" text-anchor="middle" fill="white" font-size="11" opacity="0.9">In the name of Allah, the Most Gracious, the Most Merciful</text>
+  <text x="187" y="140" text-anchor="middle" fill="white" font-size="11" opacity="0.8">পরম করুণাময় ও অসীম দয়ালু আল্লাহর নামে</text>
+  
+  <!-- Islamic Greeting Card -->
+  <rect x="16" y="180" width="343" height="80" rx="16" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="24" y="188" width="327" height="64" rx="12" fill="#E8F5E8" opacity="0.3"/>
+  <text x="187" y="210" text-anchor="middle" fill="#2E7D32" font-size="16" font-weight="600">السَّلاَمُ عَلَيْكُمْ وَرَحْمَةُ اللهِ وَبَرَكَاتُهُ</text>
+  <text x="187" y="230" text-anchor="middle" fill="#333" font-size="13">Peace be upon you and Allah's mercy and blessings</text>
+  <text x="187" y="245" text-anchor="middle" fill="#666" font-size="12">আপনার উপর শান্তি ও আল্লাহর রহমত ও বরকত হোক</text>
+  
+  <!-- Next Prayer Countdown Card -->
+  <rect x="16" y="275" width="343" height="160" rx="20" fill="url(#prayerBlueGradient)" stroke="#1565C0" stroke-width="1"/>
+  
+  <!-- Card Header -->
+  <text x="32" y="300" fill="white" font-size="12" opacity="0.8">Next Prayer | পরবর্তী নামাজ</text>
+  <text x="32" y="325" fill="white" font-size="26" font-weight="bold">Maghrib</text>
+  <text x="130" y="325" fill="white" font-size="18" opacity="0.8">مغرب</text>
+  <text x="32" y="345" fill="white" font-size="14" opacity="0.7">মাগরিব</text>
+  
+  <!-- Prayer Icon -->
+  <circle cx="320" cy="310" r="24" fill="white" opacity="0.2"/>
+  <path d="M312,302 L328,302 L328,318 L312,318 Z M320,295 L320,300 M320,320 L320,325" stroke="white" stroke-width="2" fill="none"/>
+  
+  <!-- Time Info Container -->
+  <rect x="32" y="360" width="295" height="50" rx="12" fill="white" opacity="0.15"/>
+  
+  <!-- Prayer Time -->
+  <text x="80" y="375" text-anchor="middle" fill="white" font-size="10" opacity="0.8">Prayer Time | সময়</text>
+  <text x="80" y="395" text-anchor="middle" fill="white" font-size="16" font-weight="bold">6:45 PM</text>
+  
+  <!-- Separator -->
+  <line x1="160" y1="370" x2="160" y2="400" stroke="white" opacity="0.3"/>
+  
+  <!-- Remaining Time -->
+  <text x="240" y="375" text-anchor="middle" fill="white" font-size="10" opacity="0.8">Remaining | বাকি</text>
+  <text x="240" y="395" text-anchor="middle" fill="white" font-size="16" font-weight="bold">2h 15m</text>
+  
+  <!-- Quick Actions -->
+  <text x="24" y="465" fill="#2E7D32" font-size="18" font-weight="bold">Quick Actions | দ্রুত কার্যক্রম</text>
+  
+  <!-- Action Cards Row 1 -->
+  <rect x="16" y="480" width="167" height="100" rx="16" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="24" y="488" width="32" height="32" rx="8" fill="#E8F5E8"/>
+  <text x="40" y="508" text-anchor="middle" fill="#2E7D32" font-size="18">🧮</text>
+  <text x="24" y="535" fill="#2E7D32" font-size="14" font-weight="bold">Zakat Calculator</text>
+  <text x="24" y="550" fill="#666" font-size="11">যাকাত ক্যালকুলেটর</text>
+  <text x="24" y="565" fill="#999" font-size="9">Calculate obligation</text>
+  
+  <rect x="192" y="480" width="167" height="100" rx="16" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="200" y="488" width="32" height="32" rx="8" fill="#E3F2FD"/>
+  <text x="216" y="508" text-anchor="middle" fill="#1565C0" font-size="18">🕐</text>
+  <text x="200" y="535" fill="#1565C0" font-size="14" font-weight="bold">Prayer Times</text>
+  <text x="200" y="550" fill="#666" font-size="11">নামাজের সময়</text>
+  <text x="200" y="565" fill="#999" font-size="9">Today's schedule</text>
+  
+  <!-- Action Cards Row 2 -->
+  <rect x="16" y="595" width="167" height="100" rx="16" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="24" y="603" width="32" height="32" rx="8" fill="#FFF3E0"/>
+  <text x="40" y="623" text-anchor="middle" fill="#FF8F00" font-size="18">🧭</text>
+  <text x="24" y="650" fill="#FF8F00" font-size="14" font-weight="bold">Qibla Finder</text>
+  <text x="24" y="665" fill="#666" font-size="11">কিবলার দিক</text>
+  <text x="24" y="680" fill="#999" font-size="9">Find direction</text>
+  
+  <rect x="192" y="595" width="167" height="100" rx="16" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="200" y="603" width="32" height="32" rx="8" fill="#F3E5F5"/>
+  <text x="216" y="623" text-anchor="middle" fill="#7B1FA2" font-size="18">📖</text>
+  <text x="200" y="650" fill="#7B1FA2" font-size="14" font-weight="bold">Islamic Content</text>
+  <text x="200" y="665" fill="#666" font-size="11">ইসলামিক কন্টেন্ট</text>
+  <text x="200" y="680" fill="#999" font-size="9">Daily Quran &amp; Hadith</text>
+  
+  <!-- Bottom Navigation -->
+  <rect x="3" y="750" width="369" height="62" rx="0 0 22 22" fill="white"/>
+  <rect x="3" y="740" width="369" height="20" fill="white"/>
+  <line x1="3" y1="750" x2="372" y2="750" stroke="#E0E0E0" stroke-width="1"/>
+  
+  <!-- Nav Items -->
+  <rect x="30" y="765" width="50" height="35" rx="8" fill="#E8F5E8"/>
+  <text x="55" y="778" text-anchor="middle" fill="#2E7D32" font-size="16">🏠</text>
+  <text x="55" y="795" text-anchor="middle" fill="#2E7D32" font-size="10" font-weight="600">Home</text>
+  
+  <text x="125" y="778" text-anchor="middle" fill="#666" font-size="16">🕌</text>
+  <text x="125" y="795" text-anchor="middle" fill="#666" font-size="10">Prayer</text>
+  
+  <text x="195" y="778" text-anchor="middle" fill="#666" font-size="16">🧮</text>
+  <text x="195" y="795" text-anchor="middle" fill="#666" font-size="10">Zakat</text>
+  
+  <text x="265" y="778" text-anchor="middle" fill="#666" font-size="16">🧭</text>
+  <text x="265" y="795" text-anchor="middle" fill="#666" font-size="10">Qibla</text>
+  
+  <text x="335" y="778" text-anchor="middle" fill="#666" font-size="16">⋯</text>
+  <text x="335" y="795" text-anchor="middle" fill="#666" font-size="10">More</text>
+</svg>

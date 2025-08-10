@@ -1,0 +1,278 @@
+<svg viewBox="0 0 375 812" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="locationBackground" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFF3E0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Button gradient -->
+    <linearGradient id="continueButton" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF8F00;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFB74D;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Dropdown gradients -->
+    <linearGradient id="countryDropdown" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFF8E1;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="cityDropdown" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFF8E1;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Location pattern -->
+    <pattern id="locationPattern" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
+      <rect width="50" height="50" fill="none"/>
+      <circle cx="25" cy="25" r="18" fill="none" stroke="#FFE0B2" stroke-width="0.5" opacity="0.4"/>
+      <circle cx="25" cy="25" r="8" fill="#FFE0B2" opacity="0.1"/>
+      <path d="M25,15 L30,25 L25,35 L20,25 Z" fill="none" stroke="#FFE0B2" stroke-width="0.3" opacity="0.3"/>
+    </pattern>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="375" height="812" fill="url(#locationBackground)"/>
+  <rect width="375" height="812" fill="url(#locationPattern)" opacity="0.5"/>
+  
+  <!-- Status bar -->
+  <rect x="0" y="0" width="375" height="44" fill="rgba(255, 143, 0, 0.05)"/>
+  
+  <!-- Progress indicator -->
+  <g transform="translate(187.5, 70)">
+    <circle cx="-40" cy="0" r="6" fill="#FFB74D"/>
+    <circle cx="-15" cy="0" r="6" fill="#FFB74D"/>
+    <circle cx="10" cy="0" r="6" fill="#FFB74D"/>
+    <circle cx="35" cy="0" r="6" fill="#FFB74D"/>
+    
+    <!-- Connecting lines -->
+    <line x1="-34" y1="0" x2="-21" y2="0" stroke="#FFB74D" stroke-width="2"/>
+    <line x1="-9" y1="0" x2="4" y2="0" stroke="#FFB74D" stroke-width="2"/>
+    <line x1="16" y1="0" x2="29" y2="0" stroke="#FFB74D" stroke-width="2"/>
+  </g>
+  
+  <!-- Main content -->
+  <g transform="translate(0, 150)">
+    
+    <!-- Header icon -->
+    <g transform="translate(187.5, 60)">
+      <circle r="35" fill="#FFE0B2" opacity="0.8"/>
+      <circle r="28" fill="none" stroke="#FF8F00" stroke-width="1.5" opacity="0.6"/>
+      <text x="0" y="8" text-anchor="middle" font-size="28" fill="#FF8F00">📍</text>
+    </g>
+    
+    <!-- Title -->
+    <text x="187.5" y="150" text-anchor="middle" 
+          font-family="Noto Sans, sans-serif" 
+          font-size="24" 
+          font-weight="600" 
+          fill="#2E2E2E">
+      Set Location for Salah Time
+    </text>
+    
+    <!-- Description -->
+    <text x="187.5" y="185" text-anchor="middle" 
+          font-family="Noto Sans, sans-serif" 
+          font-size="16" 
+          font-weight="400" 
+          fill="#666666" 
+          opacity="0.9">
+      Choose your country and city for
+    </text>
+    
+    <text x="187.5" y="210" text-anchor="middle" 
+          font-family="Noto Sans, sans-serif" 
+          font-size="16" 
+          font-weight="400" 
+          fill="#666666" 
+          opacity="0.9">
+      accurate prayer time calculations
+    </text>
+    
+    <!-- Country dropdown -->
+    <g transform="translate(187.5, 270)">
+      <!-- Dropdown shadow -->
+      <rect x="-140" y="2" width="280" height="60" rx="12" fill="#000" opacity="0.06"/>
+      
+      <!-- Main dropdown -->
+      <rect x="-140" y="0" width="280" height="60" rx="12" 
+            fill="url(#countryDropdown)" 
+            stroke="#FF8F00" 
+            stroke-width="2" 
+            opacity="0.9"/>
+      
+      <!-- Flag icon background -->
+      <rect x="-130" y="10" width="40" height="40" rx="8" fill="#FFE0B2"/>
+      <text x="-110" y="35" text-anchor="middle" font-size="20" fill="#FF8F00">🇧🇩</text>
+      
+      <!-- Selected option text -->
+      <text x="-80" y="22" 
+            font-family="Noto Sans, sans-serif" 
+            font-size="12" 
+            font-weight="500" 
+            fill="#FF8F00" 
+            opacity="0.8">
+        Country
+      </text>
+      
+      <text x="-80" y="42" 
+            font-family="Noto Sans, sans-serif" 
+            font-size="16" 
+            font-weight="600" 
+            fill="#2E2E2E">
+        Bangladesh
+      </text>
+      
+      <!-- Dropdown arrow -->
+      <path d="M110,-3 L120,7 L130,-3" 
+            fill="none" 
+            stroke="#FF8F00" 
+            stroke-width="2" 
+            stroke-linecap="round" 
+            stroke-linejoin="round"/>
+    </g>
+    
+    <!-- City dropdown -->
+    <g transform="translate(187.5, 350)">
+      <!-- Dropdown shadow -->
+      <rect x="-140" y="2" width="280" height="60" rx="12" fill="#000" opacity="0.06"/>
+      
+      <!-- Main dropdown -->
+      <rect x="-140" y="0" width="280" height="60" rx="12" 
+            fill="url(#cityDropdown)" 
+            stroke="#FF8F00" 
+            stroke-width="2" 
+            opacity="0.9"/>
+      
+      <!-- City icon background -->
+      <rect x="-130" y="10" width="40" height="40" rx="8" fill="#FFE0B2"/>
+      <text x="-110" y="35" text-anchor="middle" font-size="20" fill="#FF8F00">🏙️</text>
+      
+      <!-- Selected option text -->
+      <text x="-80" y="22" 
+            font-family="Noto Sans, sans-serif" 
+            font-size="12" 
+            font-weight="500" 
+            fill="#FF8F00" 
+            opacity="0.8">
+        City
+      </text>
+      
+      <text x="-80" y="42" 
+            font-family="Noto Sans, sans-serif" 
+            font-size="16" 
+            font-weight="600" 
+            fill="#2E2E2E">
+        Dhaka
+      </text>
+      
+      <!-- Dropdown arrow -->
+      <path d="M110,-3 L120,7 L130,-3" 
+            fill="none" 
+            stroke="#FF8F00" 
+            stroke-width="2" 
+            stroke-linecap="round" 
+            stroke-linejoin="round"/>
+    </g>
+    
+    <!-- Location info card -->
+    <g transform="translate(187.5, 450)">
+      <rect x="-160" y="0" width="320" height="90" rx="16" 
+            fill="white" 
+            stroke="#FFE0B2" 
+            stroke-width="1"/>
+      
+      <!-- GPS icon -->
+      <circle cx="-130" cy="25" r="12" fill="#FFE0B2"/>
+      <text x="-130" y="30" text-anchor="middle" font-size="12" fill="#FF8F00">🛰️</text>
+      
+      <text x="-110" y="20" 
+            font-family="Noto Sans, sans-serif" 
+            font-size="14" 
+            font-weight="600" 
+            fill="#FF8F00">
+        Precise Location Detection
+      </text>
+      
+      <text x="-110" y="40" 
+            font-family="Noto Sans, sans-serif" 
+            font-size="13" 
+            font-weight="400" 
+            fill="#666666" 
+            opacity="0.9">
+        We use your location to calculate prayer
+      </text>
+      
+      <text x="-110" y="58" 
+            font-family="Noto Sans, sans-serif" 
+            font-size="13" 
+            font-weight="400" 
+            fill="#666666" 
+            opacity="0.9">
+        times with maximum accuracy for your area.
+      </text>
+      
+      <text x="-110" y="80" 
+            font-family="Noto Sans, sans-serif" 
+            font-size="12" 
+            font-weight="500" 
+            fill="#FF8F00">
+        Coordinates: 23.8103°N, 90.4125°E
+      </text>
+    </g>
+    
+    <!-- Popular cities -->
+    <g transform="translate(187.5, 570)">
+      <text x="0" y="0" text-anchor="middle" 
+            font-family="Noto Sans, sans-serif" 
+            font-size="14" 
+            font-weight="500" 
+            fill="#999999">
+        Popular cities in Bangladesh:
+      </text>
+      
+      <text x="0" y="25" text-anchor="middle" 
+            font-family="Noto Sans, sans-serif" 
+            font-size="13" 
+            fill="#666666">
+        Dhaka • Chittagong • Sylhet • Rajshahi
+      </text>
+      
+      <text x="0" y="45" text-anchor="middle" 
+            font-family="Noto Sans, sans-serif" 
+            font-size="13" 
+            fill="#666666">
+        Khulna • Barisal • Rangpur • Comilla
+      </text>
+    </g>
+    
+  </g>
+  
+  <!-- Continue button at bottom -->
+  <g transform="translate(187.5, 700)">
+    <!-- Button shadow -->
+    <circle r="32" fill="#000" opacity="0.1" transform="translate(2, 4)"/>
+    
+    <!-- Main button -->
+    <circle r="30" fill="url(#continueButton)"/>
+    <circle r="28" fill="none" stroke="#fff" stroke-width="1" opacity="0.3"/>
+    
+    <!-- Arrow icon -->
+    <path d="M-8,-5 L5,0 L-8,5 M-2,0 L8,0" 
+          stroke="white" 
+          stroke-width="2.5" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" 
+          fill="none"/>
+  </g>
+  
+  <!-- Bottom helper text -->
+  <text x="187.5" y="760" text-anchor="middle" 
+        font-family="Noto Sans, sans-serif" 
+        font-size="12" 
+        fill="#999999">
+    Continue
+  </text>
+  
+</svg>

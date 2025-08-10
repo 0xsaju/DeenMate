@@ -1,0 +1,453 @@
+<svg viewBox="0 0 1400 900" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Enhanced Gradients matching the individual screens -->
+    <linearGradient id="islamicGreenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2E7D32;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4CAF50;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="prayerBlueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1565C0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#42A5F5;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="zakatGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2E7D32;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4CAF50;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="moreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#5D4037;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8D6E63;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1400" height="900" fill="#F8F9FA"/>
+  
+  <!-- Title -->
+  <text x="700" y="40" text-anchor="middle" fill="#2E7D32" font-size="32" font-weight="bold">ToolsForUmmah - Enhanced UI Navigation Flow</text>
+  <text x="700" y="70" text-anchor="middle" fill="#666" font-size="18">Bengali Islamic App with Cultural Integration • বাংলা ইসলামিক অ্যাপ</text>
+  
+  <!-- Phone 1: Enhanced Home Dashboard -->
+  <g transform="translate(70, 100)">
+    <rect width="200" height="400" rx="20" fill="#000000" stroke="#CCC" stroke-width="2"/>
+    <rect x="2" y="2" width="196" height="396" rx="18" fill="#FFFFFF"/>
+    
+    <!-- Status Bar -->
+    <rect x="2" y="2" width="196" height="28" rx="18" fill="url(#islamicGreenGradient)"/>
+    <text x="12" y="20" fill="white" font-size="9" font-weight="600">9:41</text>
+    <text x="170" y="20" fill="white" font-size="8">100%</text>
+    
+    <!-- Islamic Header -->
+    <rect x="2" y="30" width="196" height="65" fill="url(#islamicGreenGradient)"/>
+    <text x="100" y="48" text-anchor="middle" fill="white" font-size="12" font-weight="bold">ToolsForUmmah</text>
+    <text x="100" y="60" text-anchor="middle" fill="white" font-size="9">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم</text>
+    <text x="100" y="72" text-anchor="middle" fill="white" font-size="7" opacity="0.9">In the name of Allah</text>
+    <text x="100" y="82" text-anchor="middle" fill="white" font-size="7" opacity="0.8">পরম করুণাময় আল্লাহর নামে</text>
+    
+    <!-- Islamic Greeting Card -->
+    <rect x="10" y="105" width="180" height="40" rx="10" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+    <rect x="14" y="109" width="172" height="32" rx="6" fill="#E8F5E8" opacity="0.5"/>
+    <text x="100" y="120" text-anchor="middle" fill="#2E7D32" font-size="8" font-weight="600">السَّلاَمُ عَلَيْكُمْ</text>
+    <text x="100" y="130" text-anchor="middle" fill="#333" font-size="7">Peace be upon you</text>
+    <text x="100" y="138" text-anchor="middle" fill="#666" font-size="6">আপনার উপর শান্তি হোক</text>
+    
+    <!-- Next Prayer Countdown Card -->
+    <rect x="10" y="155" width="180" height="80" rx="12" fill="url(#prayerBlueGradient)" stroke="#1565C0" stroke-width="1"/>
+    <text x="18" y="170" fill="white" font-size="7" opacity="0.8">Next Prayer | পরবর্তী নামাজ</text>
+    <text x="18" y="185" fill="white" font-size="14" font-weight="bold">Maghrib</text>
+    <text x="70" y="185" fill="white" font-size="10" opacity="0.8">مغرب</text>
+    <text x="18" y="198" fill="white" font-size="8" opacity="0.7">মাগরিব</text>
+    
+    <!-- Prayer countdown details -->
+    <rect x="18" y="208" width="164" height="20" rx="6" fill="white" opacity="0.15"/>
+    <text x="40" y="215" text-anchor="middle" fill="white" font-size="6" opacity="0.8">Time</text>
+    <text x="40" y="223" text-anchor="middle" fill="white" font-size="8" font-weight="bold">6:45 PM</text>
+    <text x="140" y="215" text-anchor="middle" fill="white" font-size="6" opacity="0.8">Remaining</text>
+    <text x="140" y="223" text-anchor="middle" fill="white" font-size="8" font-weight="bold">2h 15m</text>
+    
+    <!-- Quick Actions -->
+    <text x="14" y="252" fill="#2E7D32" font-size="10" font-weight="bold">Quick Actions | দ্রুত কার্যক্রম</text>
+    
+    <!-- Action Cards Row 1 -->
+    <rect x="10" y="260" width="88" height="50" rx="10" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+    <rect x="14" y="264" width="16" height="16" rx="4" fill="#E8F5E8"/>
+    <text x="22" y="275" text-anchor="middle" fill="#2E7D32" font-size="10">🧮</text>
+    <text x="14" y="288" fill="#2E7D32" font-size="7" font-weight="bold">Zakat Calculator</text>
+    <text x="14" y="298" fill="#666" font-size="6">যাকাত ক্যালকুলেটর</text>
+    <text x="14" y="306" fill="#999" font-size="5">Calculate</text>
+    
+    <rect x="102" y="260" width="88" height="50" rx="10" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+    <rect x="106" y="264" width="16" height="16" rx="4" fill="#E3F2FD"/>
+    <text x="114" y="275" text-anchor="middle" fill="#1565C0" font-size="10">🕐</text>
+    <text x="106" y="288" fill="#1565C0" font-size="7" font-weight="bold">Prayer Times</text>
+    <text x="106" y="298" fill="#666" font-size="6">নামাজের সময়</text>
+    <text x="106" y="306" fill="#999" font-size="5">Schedule</text>
+    
+    <!-- Bottom Navigation -->
+    <rect x="2" y="350" width="196" height="48" rx="0 0 18 18" fill="white"/>
+    <line x1="2" y1="350" x2="198" y2="350" stroke="#E0E0E0" stroke-width="1"/>
+    
+    <!-- Nav Items -->
+    <rect x="15" y="360" width="28" height="20" rx="4" fill="#E8F5E8"/>
+    <text x="29" y="369" text-anchor="middle" fill="#2E7D32" font-size="8">🏠</text>
+    <text x="29" y="380" text-anchor="middle" fill="#2E7D32" font-size="5" font-weight="600">হোম</text>
+    
+    <text x="60" y="369" text-anchor="middle" fill="#666" font-size="8">🕌</text>
+    <text x="60" y="380" text-anchor="middle" fill="#666" font-size="5">নামাজ</text>
+    
+    <text x="91" y="369" text-anchor="middle" fill="#666" font-size="8">🧮</text>
+    <text x="91" y="380" text-anchor="middle" fill="#666" font-size="5">যাকাত</text>
+    
+    <text x="122" y="369" text-anchor="middle" fill="#666" font-size="8">🧭</text>
+    <text x="122" y="380" text-anchor="middle" fill="#666" font-size="5">কিবলা</text>
+    
+    <text x="153" y="369" text-anchor="middle" fill="#666" font-size="8">⋯</text>
+    <text x="153" y="380" text-anchor="middle" fill="#666" font-size="5">আরও</text>
+  </g>
+  
+  <!-- Arrow 1 -->
+  <path d="M 290 300 Q 330 280 370 300" stroke="#4CAF50" stroke-width="3" fill="none"/>
+  <polygon points="365,296 375,300 365,304" fill="#4CAF50"/>
+  <text x="330" y="275" text-anchor="middle" fill="#4CAF50" font-size="10" font-weight="bold">Tap নামাজ</text>
+  
+  <!-- Phone 2: Prayer Times Screen -->
+  <g transform="translate(370, 100)">
+    <rect width="200" height="400" rx="20" fill="#000000" stroke="#CCC" stroke-width="2"/>
+    <rect x="2" y="2" width="196" height="396" rx="18" fill="#F8F9FA"/>
+    
+    <!-- Status Bar -->
+    <rect x="2" y="2" width="196" height="28" rx="18" fill="url(#prayerBlueGradient)"/>
+    <text x="12" y="20" fill="white" font-size="9" font-weight="600">9:41</text>
+    <text x="170" y="20" fill="white" font-size="8">100%</text>
+    
+    <!-- App Bar -->
+    <rect x="2" y="30" width="196" height="32" fill="url(#prayerBlueGradient)"/>
+    <text x="12" y="48" fill="white" font-size="10">←</text>
+    <text x="100" y="48" text-anchor="middle" fill="white" font-size="10" font-weight="600">Prayer Times | নামাজের সময়</text>
+    <text x="180" y="48" fill="white" font-size="10">⚙</text>
+    
+    <!-- Date Header -->
+    <rect x="10" y="72" width="180" height="32" rx="6" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+    <text x="16" y="84" fill="#2E7D32" font-size="8" font-weight="bold">Today | আজ</text>
+    <text x="16" y="95" fill="#666" font-size="7">Friday, 15 Ramadan 1445</text>
+    <text x="16" y="102" fill="#666" font-size="6">জুমা, ১৫ রমজান ১৪৪৫</text>
+    <circle cx="175" cy="88" r="8" fill="#4CAF50" opacity="0.1"/>
+    <text x="175" y="92" text-anchor="middle" fill="#4CAF50" font-size="8">🌙</text>
+    
+    <!-- Current Prayer Card (Fajr Completed) -->
+    <rect x="10" y="114" width="180" height="40" rx="8" fill="white" stroke="#2E7D32" stroke-width="2"/>
+    <rect x="16" y="119" width="24" height="24" rx="6" fill="#2E7D32"/>
+    <text x="28" y="133" text-anchor="middle" fill="white" font-size="10">🌅</text>
+    <text x="48" y="127" fill="#2E7D32" font-size="8" font-weight="bold">Fajr | ফজর</text>
+    <text x="48" y="137" fill="#333" font-size="7">5:15 AM</text>
+    <text x="48" y="146" fill="#4CAF50" font-size="6" font-weight="600">✓ Completed</text>
+    <text x="160" y="130" text-anchor="middle" fill="#2E7D32" font-size="6">Next in</text>
+    <text x="160" y="140" text-anchor="middle" fill="#2E7D32" font-size="8" font-weight="bold">7h 45m</text>
+    
+    <!-- Upcoming Prayer Cards -->
+    <rect x="10" y="164" width="180" height="35" rx="6" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+    <rect x="16" y="169" width="20" height="20" rx="4" fill="#FFF3E0"/>
+    <text x="26" y="181" text-anchor="middle" fill="#FF8F00" font-size="8">☀️</text>
+    <text x="42" y="176" fill="#333" font-size="7" font-weight="600">Dhuhr | যুহর</text>
+    <text x="42" y="185" fill="#666" font-size="6">1:20 PM</text>
+    <text x="42" y="192" fill="#FF8F00" font-size="5">in 6h 5m</text>
+    
+    <rect x="10" y="209" width="180" height="35" rx="6" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+    <rect x="16" y="214" width="20" height="20" rx="4" fill="#F3E5F5"/>
+    <text x="26" y="226" text-anchor="middle" fill="#7B1FA2" font-size="8">🌤</text>
+    <text x="42" y="221" fill="#333" font-size="7" font-weight="600">Asr | আসর</text>
+    <text x="42" y="230" fill="#666" font-size="6">4:45 PM</text>
+    <text x="42" y="237" fill="#7B1FA2" font-size="5">in 9h 30m</text>
+    
+    <rect x="10" y="254" width="180" height="35" rx="6" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+    <rect x="16" y="259" width="20" height="20" rx="4" fill="#FFEBEE"/>
+    <text x="26" y="271" text-anchor="middle" fill="#D84315" font-size="8">🌆</text>
+    <text x="42" y="266" fill="#333" font-size="7" font-weight="600">Maghrib | মাগরিব</text>
+    <text x="42" y="275" fill="#666" font-size="6">6:30 PM</text>
+    <text x="42" y="282" fill="#D84315" font-size="5">in 11h 15m</text>
+    
+    <!-- Quick Stats -->
+    <rect x="10" y="299" width="180" height="40" rx="6" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+    <text x="16" y="312" fill="#2E7D32" font-size="7" font-weight="bold">Today's Progress | আজকের অগ্রগতি</text>
+    <rect x="16" y="320" width="50" height="15" rx="3" fill="#E8F5E8"/>
+    <text x="41" y="325" text-anchor="middle" fill="#2E7D32" font-size="5" font-weight="600">Prayers</text>
+    <text x="41" y="332" text-anchor="middle" fill="#2E7D32" font-size="7" font-weight="bold">1/5</text>
+    <rect x="74" y="320" width="50" height="15" rx="3" fill="#FFF3E0"/>
+    <text x="99" y="325" text-anchor="middle" fill="#FF8F00" font-size="5" font-weight="600">Streak</text>
+    <text x="99" y="332" text-anchor="middle" fill="#FF8F00" font-size="7" font-weight="bold">7 days</text>
+    
+    <!-- Bottom Navigation -->
+    <rect x="2" y="350" width="196" height="48" rx="0 0 18 18" fill="white"/>
+    <line x1="2" y1="350" x2="198" y2="350" stroke="#E0E0E0" stroke-width="1"/>
+    
+    <!-- Nav Items -->
+    <text x="29" y="369" text-anchor="middle" fill="#666" font-size="8">🏠</text>
+    <text x="29" y="380" text-anchor="middle" fill="#666" font-size="5">হোম</text>
+    
+    <rect x="45" y="360" width="28" height="20" rx="4" fill="#E3F2FD"/>
+    <text x="59" y="369" text-anchor="middle" fill="#1565C0" font-size="8">🕌</text>
+    <text x="59" y="380" text-anchor="middle" fill="#1565C0" font-size="5" font-weight="600">নামাজ</text>
+    
+    <text x="90" y="369" text-anchor="middle" fill="#666" font-size="8">🧮</text>
+    <text x="90" y="380" text-anchor="middle" fill="#666" font-size="5">যাকাত</text>
+    
+    <text x="121" y="369" text-anchor="middle" fill="#666" font-size="8">🧭</text>
+    <text x="121" y="380" text-anchor="middle" fill="#666" font-size="5">কিবলা</text>
+    
+    <text x="152" y="369" text-anchor="middle" fill="#666" font-size="8">⋯</text>
+    <text x="152" y="380" text-anchor="middle" fill="#666" font-size="5">আরও</text>
+  </g>
+  
+  <!-- Arrow 2 -->
+  <path d="M 590 300 Q 630 280 670 300" stroke="#4CAF50" stroke-width="3" fill="none"/>
+  <polygon points="665,296 675,300 665,304" fill="#4CAF50"/>
+  <text x="630" y="275" text-anchor="middle" fill="#4CAF50" font-size="10" font-weight="bold">Tap যাকাত</text>
+  
+  <!-- Phone 3: Zakat Calculator -->
+  <g transform="translate(670, 100)">
+    <rect width="200" height="400" rx="20" fill="#000000" stroke="#CCC" stroke-width="2"/>
+    <rect x="2" y="2" width="196" height="396" rx="18" fill="#F8F9FA"/>
+    
+    <!-- Status Bar -->
+    <rect x="2" y="2" width="196" height="28" rx="18" fill="url(#zakatGradient)"/>
+    <text x="12" y="20" fill="white" font-size="9" font-weight="600">9:41</text>
+    <text x="170" y="20" fill="white" font-size="8">100%</text>
+    
+    <!-- App Bar -->
+    <rect x="2" y="30" width="196" height="32" fill="url(#zakatGradient)"/>
+    <text x="12" y="48" fill="white" font-size="10">←</text>
+    <text x="100" y="48" text-anchor="middle" fill="white" font-size="10" font-weight="600">Zakat Calculator</text>
+    <text x="180" y="48" fill="white" font-size="10">💾</text>
+    
+    <!-- Progress Indicator -->
+    <rect x="16" y="72" width="168" height="4" rx="2" fill="#E0E0E0"/>
+    <rect x="16" y="72" width="67" height="4" rx="2" fill="#4CAF50"/>
+    <text x="16" y="86" fill="#4CAF50" font-size="7" font-weight="600">Step 3 of 8 | ধাপ ৩/৮</text>
+    
+    <!-- Current Section Header -->
+    <rect x="10" y="96" width="180" height="32" rx="8" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+    <rect x="16" y="101" width="20" height="20" rx="5" fill="#FFF3E0"/>
+    <text x="26" y="113" text-anchor="middle" fill="#FF8F00" font-size="10">🏆</text>
+    <text x="42" y="108" fill="#2E7D32" font-size="8" font-weight="bold">Precious Metals</text>
+    <text x="42" y="118" fill="#666" font-size="7">মূল্যবান ধাতু</text>
+    <text x="42" y="125" fill="#999" font-size="6">Gold &amp; Silver assets</text>
+    
+    <!-- Live Metal Prices Card -->
+    <rect x="10" y="138" width="180" height="48" rx="8" fill="#FFD700" stroke="#FFA000" stroke-width="1"/>
+    <text x="18" y="152" fill="white" font-size="8" font-weight="bold">Live Metal Prices | লাইভ দাম</text>
+    <text x="18" y="162" fill="white" font-size="6" opacity="0.9">Updated 2 minutes ago</text>
+    
+    <rect x="18" y="168" width="78" height="12" rx="2" fill="white" opacity="0.2"/>
+    <text x="22" y="174" fill="white" font-size="5">Gold</text>
+    <text x="22" y="180" fill="white" font-size="7" font-weight="bold">৳6,850/bhori</text>
+    
+    <rect x="104" y="168" width="78" height="12" rx="2" fill="white" opacity="0.2"/>
+    <text x="108" y="174" fill="white" font-size="5">Silver</text>
+    <text x="108" y="180" fill="white" font-size="7" font-weight="bold">৳95/bhori</text>
+    
+    <!-- Gold Input Section -->
+    <rect x="10" y="196" width="180" height="75" rx="8" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+    <text x="18" y="210" fill="#333" font-size="8" font-weight="bold">Gold Holdings | স্বর্ণের সম্পদ</text>
+    
+    <text x="18" y="222" fill="#666" font-size="6">Weight in Bhori | ভরি এককে ওজন</text>
+    <rect x="18" y="227" width="148" height="24" rx="4" fill="#F5F5F5" stroke="#DDD"/>
+    <text x="26" y="241" fill="#333" font-size="9">12.5</text>
+    <text x="130" y="241" fill="#666" font-size="7">bhori</text>
+    
+    <text x="18" y="263" fill="#4CAF50" font-size="7" font-weight="600">Estimated Value: ৳85,625</text>
+    <text x="18" y="270" fill="#666" font-size="6">Zakatable amount</text>
+    
+    <!-- Nisab Information -->
+    <rect x="10" y="281" width="180" height="48" rx="8" fill="#E8F5E8" stroke="#4CAF50" stroke-width="1"/>
+    <text x="18" y="295" fill="#2E7D32" font-size="8" font-weight="bold">💡 Nisab Information</text>
+    <text x="18" y="305" fill="#333" font-size="6">Gold Nisab: 7.5 tola (৮৭.৪৮ গ্রাম)</text>
+    <text x="18" y="313" fill="#333" font-size="6">Silver Nisab: 52.5 tola (৬১২.৩৬ গ্রাম)</text>
+    <text x="18" y="321" fill="#4CAF50" font-size="6" font-weight="600">✓ Your gold exceeds nisab</text>
+    
+    <!-- Bottom Navigation -->
+    <rect x="2" y="350" width="196" height="48" rx="0 0 18 18" fill="white"/>
+    <line x1="2" y1="350" x2="198" y2="350" stroke="#E0E0E0" stroke-width="1"/>
+    
+    <!-- Nav Items -->
+    <text x="29" y="369" text-anchor="middle" fill="#666" font-size="8">🏠</text>
+    <text x="29" y="380" text-anchor="middle" fill="#666" font-size="5">হোম</text>
+    
+    <text x="59" y="369" text-anchor="middle" fill="#666" font-size="8">🕌</text>
+    <text x="59" y="380" text-anchor="middle" fill="#666" font-size="5">নামাজ</text>
+    
+    <rect x="76" y="360" width="28" height="20" rx="4" fill="#E8F5E8"/>
+    <text x="90" y="369" text-anchor="middle" fill="#2E7D32" font-size="8">🧮</text>
+    <text x="90" y="380" text-anchor="middle" fill="#2E7D32" font-size="5" font-weight="600">যাকাত</text>
+    
+    <text x="121" y="369" text-anchor="middle" fill="#666" font-size="8">🧭</text>
+    <text x="121" y="380" text-anchor="middle" fill="#666" font-size="5">কিবলা</text>
+    
+    <text x="152" y="369" text-anchor="middle" fill="#666" font-size="8">⋯</text>
+    <text x="152" y="380" text-anchor="middle" fill="#666" font-size="5">আরও</text>
+  </g>
+  
+  <!-- Arrow 3 -->
+  <path d="M 890 300 Q 930 280 970 300" stroke="#4CAF50" stroke-width="3" fill="none"/>
+  <polygon points="965,296 975,300 965,304" fill="#4CAF50"/>
+  <text x="930" y="275" text-anchor="middle" fill="#4CAF50" font-size="10" font-weight="bold">Tap আরও</text>
+  
+  <!-- Phone 4: More Screen -->
+  <g transform="translate(970, 100)">
+    <rect width="200" height="400" rx="20" fill="#000000" stroke="#CCC" stroke-width="2"/>
+    <rect x="2" y="2" width="196" height="396" rx="18" fill="#F8F9FA"/>
+    
+    <!-- Status Bar -->
+    <rect x="2" y="2" width="196" height="28" rx="18" fill="url(#moreGradient)"/>
+    <text x="12" y="20" fill="white" font-size="9" font-weight="600">9:41</text>
+    <text x="170" y="20" fill="white" font-size="8">100%</text>
+    
+    <!-- App Bar -->
+    <rect x="2" y="30" width="196" height="32" fill="url(#moreGradient)"/>
+    <text x="100" y="48" text-anchor="middle" fill="white" font-size="10" font-weight="600">More Features | আরও ফিচার</text>
+    
+    <!-- Islamic Header -->
+    <rect x="2" y="62" width="196" height="48" fill="url(#moreGradient)"/>
+    <text x="100" y="78" text-anchor="middle" fill="white" font-size="12">جزاك الله خيراً</text>
+    <text x="100" y="90" text-anchor="middle" fill="white" font-size="7" opacity="0.9">May Allah reward you</text>
+    <text x="100" y="100" text-anchor="middle" fill="white" font-size="7" opacity="0.8">আল্লাহ আপনাকে কল্যাণ দান করুন</text>
+    
+    <!-- Features Grid -->
+    <!-- Row 1 -->
+    <rect x="10" y="120" width="88" height="75" rx="10" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+    <rect x="16" y="128" width="76" height="24" rx="4" fill="#F3E5F5"/>
+    <rect x="20" y="132" width="16" height="16" rx="4" fill="#9C27B0" opacity="0.2"/>
+    <text x="28" y="142" text-anchor="middle" fill="#9C27B0" font-size="8">🌙</text>
+    <text x="42" y="140" fill="#9C27B0" font-size="7" font-weight="bold">Sawm Tracker</text>
+    <text x="42" y="148" fill="#666" font-size="6">সিয়াম ট্র্যাকার</text>
+    <text x="20" y="162" fill="#333" font-size="6" font-weight="600">Track fasting</text>
+    <text x="20" y="171" fill="#666" font-size="5">Monitor progress</text>
+    <text x="20" y="179" fill="#999" font-size="5">Coming Soon</text>
+    <text x="20" y="186" fill="#999" font-size="5">শীঘ্রই আসছে</text>
+    
+    <rect x="102" y="120" width="88" height="75" rx="10" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+    <rect x="108" y="128" width="76" height="24" rx="4" fill="#EFEBE9"/>
+    <rect x="112" y="132" width="16" height="16" rx="4" fill="#795548" opacity="0.2"/>
+    <text x="120" y="142" text-anchor="middle" fill="#795548" font-size="8">📜</text>
+    <text x="134" y="140" fill="#795548" font-size="7" font-weight="bold">Islamic Will</text>
+    <text x="134" y="148" fill="#666" font-size="6">ইসলামিক উইল</text>
+    <text x="112" y="162" fill="#333" font-size="6" font-weight="600">Generate will</text>
+    <text x="112" y="171" fill="#666" font-size="5">Shariah compliant</text>
+    <text x="112" y="179" fill="#999" font-size="5">Coming Soon</text>
+    <text x="112" y="186" fill="#999" font-size="5">শীঘ্রই আসছে</text>
+    
+    <!-- Row 2 -->
+    <rect x="10" y="205" width="88" height="75" rx="10" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+    <rect x="16" y="213" width="76" height="24" rx="4" fill="#E8EAF6"/>
+    <rect x="20" y="217" width="16" height="16" rx="4" fill="#3F51B5" opacity="0.2"/>
+    <text x="28" y="227" text-anchor="middle" fill="#3F51B5" font-size="8">📊</text>
+    <text x="42" y="225" fill="#3F51B5" font-size="7" font-weight="bold">History</text>
+    <text x="42" y="233" fill="#666" font-size="6">ইতিহাস</text>
+    <text x="20" y="247" fill="#333" font-size="6" font-weight="600">View calculations</text>
+    <text x="20" y="256" fill="#666" font-size="5">Past calculations</text>
+    <text x="20" y="264" fill="#3F51B5" font-size="5" font-weight="600">Available</text>
+    <text x="20" y="271" fill="#3F51B5" font-size="5">উপলব্ধ</text>
+    
+    <rect x="102" y="205" width="88" height="75" rx="10" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+    <rect x="108" y="213" width="76" height="24" rx="4" fill="#E0F2F1"/>
+    <rect x="112" y="217" width="16" height="16" rx="4" fill="#009688" opacity="0.2"/>
+    <text x="120" y="227" text-anchor="middle" fill="#009688" font-size="8">⚙️</text>
+    <text x="134" y="225" fill="#009688" font-size="7" font-weight="bold">Settings</text>
+    <text x="134" y="233" fill="#666" font-size="6">সেটিংস</text>
+    <text x="112" y="247" fill="#333" font-size="6" font-weight="600">App preferences</text>
+    <text x="112" y="256" fill="#666" font-size="5">Language, notifications</text>
+    <text x="112" y="264" fill="#009688" font-size="5" font-weight="600">Available</text>
+    <text x="112" y="271" fill="#009688" font-size="5">উপলব্ধ</text>
+    
+    <!-- Language Settings -->
+    <rect x="10" y="290" width="180" height="40" rx="8" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+    <rect x="16" y="296" width="20" height="20" rx="5" fill="#E3F2FD"/>
+    <text x="26" y="308" text-anchor="middle" fill="#1565C0" font-size="10">🌐</text>
+    <text x="42" y="304" fill="#1565C0" font-size="8" font-weight="bold">Language Settings</text>
+    <text x="42" y="313" fill="#666" font-size="6">ভাষা সেটিংস</text>
+    <text x="42" y="321" fill="#666" font-size="6">English, Bengali &amp; Arabic</text>
+    
+    <!-- Bengali Toggle -->
+    <rect x="150" y="302" width="30" height="15" rx="7" fill="#4CAF50"/>
+    <circle cx="165" cy="309" r="6" fill="white"/>
+    <text x="165" y="312" text-anchor="middle" fill="#4CAF50" font-size="5" font-weight="bold">বাং</text>
+    
+    <!-- Bottom Navigation -->
+    <rect x="2" y="350" width="196" height="48" rx="0 0 18 18" fill="white"/>
+    <line x1="2" y1="350" x2="198" y2="350" stroke="#E0E0E0" stroke-width="1"/>
+    
+    <!-- Nav Items -->
+    <text x="29" y="369" text-anchor="middle" fill="#666" font-size="8">🏠</text>
+    <text x="29" y="380" text-anchor="middle" fill="#666" font-size="5">হোম</text>
+    
+    <text x="59" y="369" text-anchor="middle" fill="#666" font-size="8">🕌</text>
+    <text x="59" y="380" text-anchor="middle" fill="#666" font-size="5">নামাজ</text>
+    
+    <text x="90" y="369" text-anchor="middle" fill="#666" font-size="8">🧮</text>
+    <text x="90" y="380" text-anchor="middle" fill="#666" font-size="5">যাকাত</text>
+    
+    <text x="121" y="369" text-anchor="middle" fill="#666" font-size="8">🧭</text>
+    <text x="121" y="380" text-anchor="middle" fill="#666" font-size="5">কিবলা</text>
+    
+    <rect x="138" y="360" width="28" height="20" rx="4" fill="#EFEBE9"/>
+    <text x="152" y="369" text-anchor="middle" fill="#5D4037" font-size="8">⋯</text>
+    <text x="152" y="380" text-anchor="middle" fill="#5D4037" font-size="5" font-weight="600">আরও</text>
+  </g>
+  
+  <!-- Enhanced Feature Highlights -->
+  <text x="700" y="630" text-anchor="middle" fill="#2E7D32" font-size="24" font-weight="bold">🎨 Enhanced UI/UX Features Showcased</text>
+  
+  <!-- Feature boxes -->
+  <rect x="80" y="650" width="260" height="200" rx="12" fill="white" stroke="#E0E0E0" stroke-width="2"/>
+  <text x="210" y="675" text-anchor="middle" fill="#2E7D32" font-size="16" font-weight="bold">🕌 Islamic Design System</text>
+  <text x="100" y="695" fill="#333" font-size="11">✓ Traditional Islamic green, gold, blue gradients</text>
+  <text x="100" y="710" fill="#333" font-size="11">✓ Arabic typography (بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم)</text>
+  <text x="100" y="725" fill="#333" font-size="11">✓ Bengali font integration (Noto Sans Bengali)</text>
+  <text x="100" y="740" fill="#333" font-size="11">✓ Prayer-time specific color themes</text>
+  <text x="100" y="755" fill="#333" font-size="11">✓ Material 3 with Islamic aesthetics</text>
+  <text x="100" y="770" fill="#333" font-size="11">✓ Cultural card design with proper contrast</text>
+  <text x="100" y="785" fill="#333" font-size="11">✓ Islamic geometric patterns integration</text>
+  <text x="100" y="800" fill="#333" font-size="11">✓ Time-aware Islamic greetings system</text>
+  <text x="100" y="815" fill="#333" font-size="11">✓ Category-based color coding (Quran=Purple)</text>
+  <text x="100" y="830" fill="#333" font-size="11">✓ Authentic Arabic text with transliterations</text>
+  
+  <rect x="360" y="650" width="260" height="200" rx="12" fill="white" stroke="#E0E0E0" stroke-width="2"/>
+  <text x="490" y="675" text-anchor="middle" fill="#1565C0" font-size="16" font-weight="bold">🇧🇩 Bengali Cultural Integration</text>
+  <text x="380" y="695" fill="#333" font-size="11">✓ Comprehensive Bengali translations</text>
+  <text x="380" y="710" fill="#333" font-size="11">✓ Islamic terms in Bengali context (নামাজ, যাকাত)</text>
+  <text x="380" y="725" fill="#333" font-size="11">✓ Trilingual UI (English/Bengali/Arabic)</text>
+  <text x="380" y="740" fill="#333" font-size="11">✓ Cultural greeting adaptations</text>
+  <text x="380" y="755" fill="#333" font-size="11">✓ Bangladesh-specific units (bhori, taka)</text>
+  <text x="380" y="770" fill="#333" font-size="11">✓ Regional Islamic calendar integration</text>
+  <text x="380" y="785" fill="#333" font-size="11">✓ Bengali flag color preferences</text>
+  <text x="380" y="800" fill="#333" font-size="11">✓ Cultural Islamic blessings (জুমা মুবারক)</text>
+  <text x="380" y="815" fill="#333" font-size="11">✓ Local Islamic practices support</text>
+  <text x="380" y="830" fill="#333" font-size="11">✓ Ramadan and Hijri calendar awareness</text>
+  
+  <rect x="640" y="650" width="260" height="200" rx="12" fill="white" stroke="#E0E0E0" stroke-width="2"/>
+  <text x="770" y="675" text-anchor="middle" fill="#7B1FA2" font-size="16" font-weight="bold">📱 Enhanced Navigation UX</text>
+  <text x="660" y="695" fill="#333" font-size="11">✓ Bottom tab navigation with Bengali labels</text>
+  <text x="660" y="710" fill="#333" font-size="11">✓ Smooth state transitions and highlighting</text>
+  <text x="660" y="725" fill="#333" font-size="11">✓ Context-aware active states</text>
+  <text x="660" y="740" fill="#333" font-size="11">✓ Islamic icon theming throughout</text>
+  <text x="660" y="755" fill="#333" font-size="11">✓ One-handed mobile-first usability</text>
+  <text x="660" y="770" fill="#333" font-size="11">✓ Information-dense card layouts</text>
+  <text x="660" y="785" fill="#333" font-size="11">✓ Progressive step indicators (Zakat)</text>
+  <text x="660" y="800" fill="#333" font-size="11">✓ Real-time countdown timers</text>
+  <text x="660" y="815" fill="#333" font-size="11">✓ Prayer completion tracking</text>
+  <text x="660" y="830" fill="#333" font-size="11">✓ Accessibility-focused design</text>
+  
+  <rect x="920" y="650" width="260" height="200" rx="12" fill="white" stroke="#E0E0E0" stroke-width="2"/>
+  <text x="1050" y="675" text-anchor="middle" fill="#FF8F00" font-size="16" font-weight="bold">🌟 Information Architecture</text>
+  <text x="940" y="695" fill="#333" font-size="11">✓ Rich content cards with multiple data points</text>
+  <text x="940" y="710" fill="#333" font-size="11">✓ Daily Islamic content (Quran, Hadith, Dua)</text>
+  <text x="940" y="725" fill="#333" font-size="11">✓ Live metal prices for Zakat calculation</text>
+  <text x="940" y="740" fill="#333" font-size="11">✓ Prayer streak and progress tracking</text>
+  <text x="940" y="755" fill="#333" font-size="11">✓ Nisab threshold information display</text>
+  <text x="940" y="770" fill="#333" font-size="11">✓ Islamic calendar and date integration</text>
+  <text x="940" y="785" fill="#333" font-size="11">✓ Step-by-step calculation wizards</text>
+  <text x="940" y="800" fill="#333" font-size="11">✓ Proper Islamic references and citations</text>
+  <text x="940" y="815" fill="#333" font-size="11">✓ Feature availability status indicators</text>
+  <text x="940" y="830" fill="#333" font-size="11">✓ Beautiful typography hierarchy</text>
+</svg>

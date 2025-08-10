@@ -1,0 +1,280 @@
+<svg viewBox="0 0 375 812" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="mazhabBackground" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F3E5F5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Button gradient -->
+    <linearGradient id="continueButton" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7B1FA2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#BA68C8;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Selected option gradient -->
+    <linearGradient id="selectedOption" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E1BEE7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F3E5F5;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Subtle pattern -->
+    <pattern id="scholarPattern" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+      <rect width="60" height="60" fill="none"/>
+      <circle cx="30" cy="30" r="20" fill="none" stroke="#E1BEE7" stroke-width="0.5" opacity="0.2"/>
+      <circle cx="30" cy="30" r="10" fill="#E1BEE7" opacity="0.05"/>
+    </pattern>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="375" height="812" fill="url(#mazhabBackground)"/>
+  <rect width="375" height="812" fill="url(#scholarPattern)" opacity="0.4"/>
+  
+  <!-- Status bar -->
+  <rect x="0" y="0" width="375" height="44" fill="rgba(123, 31, 162, 0.05)"/>
+  
+  <!-- Progress indicator -->
+  <g transform="translate(187.5, 70)">
+    <circle cx="-40" cy="0" r="6" fill="#BA68C8"/>
+    <circle cx="-15" cy="0" r="6" fill="#BA68C8"/>
+    <circle cx="10" cy="0" r="6" fill="#BA68C8"/>
+    <circle cx="35" cy="0" r="6" fill="#BA68C8"/>
+    
+    <!-- Connecting lines -->
+    <line x1="-34" y1="0" x2="-21" y2="0" stroke="#BA68C8" stroke-width="2"/>
+    <line x1="-9" y1="0" x2="4" y2="0" stroke="#BA68C8" stroke-width="2"/>
+    <line x1="16" y1="0" x2="29" y2="0" stroke="#BA68C8" stroke-width="2"/>
+  </g>
+  
+  <!-- Main content -->
+  <g transform="translate(0, 150)">
+    
+    <!-- Header icon -->
+    <g transform="translate(187.5, 60)">
+      <circle r="35" fill="#E1BEE7" opacity="0.8"/>
+      <circle r="28" fill="none" stroke="#7B1FA2" stroke-width="1.5" opacity="0.6"/>
+      <text x="0" y="8" text-anchor="middle" font-size="28" fill="#7B1FA2">📚</text>
+    </g>
+    
+    <!-- Title -->
+    <text x="187.5" y="150" text-anchor="middle" 
+          font-family="Noto Sans, sans-serif" 
+          font-size="24" 
+          font-weight="600" 
+          fill="#2E2E2E">
+      Select Your Mazhab
+    </text>
+    
+    <!-- Description -->
+    <text x="187.5" y="185" text-anchor="middle" 
+          font-family="Noto Sans, sans-serif" 
+          font-size="16" 
+          font-weight="400" 
+          fill="#666666" 
+          opacity="0.9">
+      Choose your school of Islamic
+    </text>
+    
+    <text x="187.5" y="210" text-anchor="middle" 
+          font-family="Noto Sans, sans-serif" 
+          font-size="16" 
+          font-weight="400" 
+          fill="#666666" 
+          opacity="0.9">
+      jurisprudence for prayer calculations
+    </text>
+    
+    <!-- Option 1: Hanafi (Selected) -->
+    <g transform="translate(187.5, 280)">
+      <!-- Option shadow -->
+      <rect x="-150" y="2" width="300" height="100" rx="16" fill="#000" opacity="0.08"/>
+      
+      <!-- Main option card -->
+      <rect x="-150" y="0" width="300" height="100" rx="16" 
+            fill="url(#selectedOption)" 
+            stroke="#7B1FA2" 
+            stroke-width="3"/>
+      
+      <!-- Selection indicator -->
+      <circle cx="120" cy="25" r="12" fill="#7B1FA2"/>
+      <path d="M115,25 L118,28 L125,20" 
+            fill="none" 
+            stroke="white" 
+            stroke-width="2.5" 
+            stroke-linecap="round" 
+            stroke-linejoin="round"/>
+      
+      <!-- Icon background -->
+      <rect x="-135" y="15" width="50" height="50" rx="12" fill="#FFFFFF" opacity="0.9"/>
+      <text x="-110" y="45" text-anchor="middle" font-size="24" fill="#7B1FA2">🕌</text>
+      
+      <!-- Option text -->
+      <text x="-75" y="30" 
+            font-family="Noto Sans, sans-serif" 
+            font-size="18" 
+            font-weight="700" 
+            fill="#7B1FA2">
+        Hanafi
+      </text>
+      
+      <text x="-75" y="50" 
+            font-family="Noto Sans, sans-serif" 
+            font-size="14" 
+            font-weight="400" 
+            fill="#4A148C" 
+            opacity="0.8">
+        Most widely followed mazhab
+      </text>
+      
+      <text x="-75" y="68" 
+            font-family="Noto Sans, sans-serif" 
+            font-size="13" 
+            font-weight="400" 
+            fill="#666666" 
+            opacity="0.7">
+        Founded by Imam Abu Hanifa
+      </text>
+      
+      <text x="-75" y="85" 
+            font-family="Noto Sans, sans-serif" 
+            font-size="12" 
+            font-weight="500" 
+            fill="#7B1FA2" 
+            opacity="0.9">
+        Popular in Turkey, Central Asia, India
+      </text>
+    </g>
+    
+    <!-- Option 2: Others -->
+    <g transform="translate(187.5, 400)">
+      <!-- Option shadow -->
+      <rect x="-150" y="2" width="300" height="100" rx="16" fill="#000" opacity="0.05"/>
+      
+      <!-- Main option card -->
+      <rect x="-150" y="0" width="300" height="100" rx="16" 
+            fill="#FFFFFF" 
+            stroke="#E0E0E0" 
+            stroke-width="2"/>
+      
+      <!-- Selection indicator (unselected) -->
+      <circle cx="120" cy="25" r="12" fill="none" stroke="#E0E0E0" stroke-width="2"/>
+      
+      <!-- Icon background -->
+      <rect x="-135" y="15" width="50" height="50" rx="12" fill="#F8F9FA"/>
+      <text x="-110" y="45" text-anchor="middle" font-size="24" fill="#666666">📖</text>
+      
+      <!-- Option text -->
+      <text x="-75" y="25" 
+            font-family="Noto Sans, sans-serif" 
+            font-size="16" 
+            font-weight="600" 
+            fill="#333333">
+        Shafi'i, Maliki, Hanbali
+      </text>
+      
+      <text x="-75" y="45" 
+            font-family="Noto Sans, sans-serif" 
+            font-size="14" 
+            font-weight="400" 
+            fill="#666666">
+        Other major schools of thought
+      </text>
+      
+      <text x="-75" y="63" 
+            font-family="Noto Sans, sans-serif" 
+            font-size="11" 
+            font-weight="400" 
+            fill="#999999">
+        Shafi'i: Southeast Asia, East Africa
+      </text>
+      
+      <text x="-75" y="77" 
+            font-family="Noto Sans, sans-serif" 
+            font-size="11" 
+            font-weight="400" 
+            fill="#999999">
+        Maliki: North and West Africa
+      </text>
+      
+      <text x="-75" y="91" 
+            font-family="Noto Sans, sans-serif" 
+            font-size="11" 
+            font-weight="400" 
+            fill="#999999">
+        Hanbali: Arabian Peninsula
+      </text>
+    </g>
+    
+    <!-- Information note -->
+    <g transform="translate(187.5, 520)">
+      <rect x="-160" y="0" width="320" height="80" rx="12" 
+            fill="white" 
+            stroke="#E1BEE7" 
+            stroke-width="1"/>
+      
+      <!-- Info icon -->
+      <circle cx="-130" cy="25" r="12" fill="#E1BEE7"/>
+      <text x="-130" y="30" text-anchor="middle" font-size="12" fill="#7B1FA2">💡</text>
+      
+      <text x="-110" y="20" 
+            font-family="Noto Sans, sans-serif" 
+            font-size="14" 
+            font-weight="600" 
+            fill="#7B1FA2">
+        Why does this matter?
+      </text>
+      
+      <text x="-110" y="38" 
+            font-family="Noto Sans, sans-serif" 
+            font-size="12" 
+            font-weight="400" 
+            fill="#666666">
+        Different mazahib have slight variations in prayer
+      </text>
+      
+      <text x="-110" y="54" 
+            font-family="Noto Sans, sans-serif" 
+            font-size="12" 
+            font-weight="400" 
+            fill="#666666">
+        time calculations, especially for Fajr and Isha.
+      </text>
+      
+      <text x="-110" y="72" 
+            font-family="Noto Sans, sans-serif" 
+            font-size="11" 
+            font-weight="500" 
+            fill="#7B1FA2">
+        You can change this anytime in settings.
+      </text>
+    </g>
+    
+  </g>
+  
+  <!-- Continue button at bottom -->
+  <g transform="translate(187.5, 700)">
+    <!-- Button shadow -->
+    <circle r="32" fill="#000" opacity="0.1" transform="translate(2, 4)"/>
+    
+    <!-- Main button -->
+    <circle r="30" fill="url(#continueButton)"/>
+    <circle r="28" fill="none" stroke="#fff" stroke-width="1" opacity="0.3"/>
+    
+    <!-- Arrow icon -->
+    <path d="M-8,-5 L5,0 L-8,5 M-2,0 L8,0" 
+          stroke="white" 
+          stroke-width="2.5" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" 
+          fill="none"/>
+  </g>
+  
+  <!-- Bottom helper text -->
+  <text x="187.5" y="760" text-anchor="middle" 
+        font-family="Noto Sans, sans-serif" 
+        font-size="12" 
+        fill="#999999">
+    Continue
+  </text>
+  
+</svg>
