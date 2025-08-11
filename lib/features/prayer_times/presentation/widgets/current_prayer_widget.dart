@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/theme/app_theme.dart';
-import '../../../../core/utils/islamic_utils.dart';
-import '../../domain/entities/prayer_times.dart';
+import '../../domain/entities/prayer_tracking.dart';
 
 /// Widget displaying the current prayer status with beautiful Islamic design
 class CurrentPrayerWidget extends ConsumerWidget {
@@ -14,33 +12,32 @@ class CurrentPrayerWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final gradientColors = _headerGradient();
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppTheme.lightTheme.colorScheme.primary,
-            AppTheme.lightTheme.colorScheme.primary.withOpacity(0.8),
-          ],
+          colors: gradientColors,
         ),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: gradientColors.first.withOpacity(0.4)),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.3),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+            color: gradientColors.first.withOpacity(0.25),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Column(
         children: [
           _buildCurrentPrayerHeader(),
-          const SizedBox(height: 20),
-          _buildCurrentPrayerInfo(),
           const SizedBox(height: 16),
+          _buildCurrentPrayerInfo(),
+          const SizedBox(height: 12),
           _buildPrayerStatusRow(),
         ],
       ),
@@ -55,7 +52,7 @@ class CurrentPrayerWidget extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Current Prayer',
+              'Current Prayer | বর্তমান নামাজ',
               style: TextStyle(
                 color: Colors.white.withOpacity(0.9),
                 fontSize: 14,
@@ -69,6 +66,15 @@ class CurrentPrayerWidget extends ConsumerWidget {
                 color: Colors.white,
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              _getCurrentPrayerArabicName(),
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.85),
+                fontSize: 16,
+                fontFamily: 'NotoSansArabic',
               ),
             ),
           ],
@@ -93,7 +99,7 @@ class CurrentPrayerWidget extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
+        color: Colors.white.withOpacity(0.12),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: Colors.white.withOpacity(0.3),
@@ -103,8 +109,8 @@ class CurrentPrayerWidget extends ConsumerWidget {
         children: [
           Expanded(
             child: _buildInfoColumn(
-              'Prayer Time',
-              prayerDetail.time.getFormattedTime(),
+              'Prayer Time | সময়',
+              'Current Time',
               Icons.access_time,
             ),
           ),
@@ -115,7 +121,7 @@ class CurrentPrayerWidget extends ConsumerWidget {
           ),
           Expanded(
             child: _buildInfoColumn(
-              'Remaining',
+              'Remaining | বাকি',
               _formatDuration(prayerDetail.timeUntilNextPrayer),
               Icons.timer,
             ),
@@ -219,41 +225,88 @@ class CurrentPrayerWidget extends ConsumerWidget {
     );
   }
 
+  List<Color> _headerGradient() {
+    // Color-code header by prayer to match design accents
+    switch (prayerDetail.currentPrayer?.toLowerCase()) {
+      case 'fajr':
+        return [const Color(0xFF3F51B5), const Color(0xFF7986CB)];
+      case 'sunrise':
+        return [const Color(0xFFFFB300), const Color(0xFFFFE082)];
+      case 'dhuhr':
+        return [const Color(0xFF1565C0), const Color(0xFF42A5F5)];
+      case 'asr':
+        return [const Color(0xFF7B1FA2), const Color(0xFFBA68C8)];
+      case 'maghrib':
+        return [const Color(0xFFD84315), const Color(0xFFFF7043)];
+      case 'isha':
+        return [const Color(0xFF5D4037), const Color(0xFF8D6E63)];
+      case 'midnight':
+        return [const Color(0xFF263238), const Color(0xFF455A64)];
+      default:
+        return [const Color(0xFF3F51B5), const Color(0xFF7986CB)];
+    }
+  }
+
   String _getCurrentPrayerName() {
-    switch (prayerDetail.name) {
-      case PrayerTime.fajr:
+    switch (prayerDetail.currentPrayer?.toLowerCase()) {
+      case 'fajr':
         return 'Fajr';
-      case PrayerTime.sunrise:
+      case 'sunrise':
         return 'Sunrise';
-      case PrayerTime.dhuhr:
+      case 'dhuhr':
         return 'Dhuhr';
-      case PrayerTime.asr:
+      case 'asr':
         return 'Asr';
-      case PrayerTime.maghrib:
+      case 'maghrib':
         return 'Maghrib';
-      case PrayerTime.isha:
+      case 'isha':
         return 'Isha';
-      case PrayerTime.midnight:
+      case 'midnight':
         return 'Midnight';
+      default:
+        return 'Prayer';
+    }
+  }
+
+  String _getCurrentPrayerArabicName() {
+    switch (prayerDetail.currentPrayer?.toLowerCase()) {
+      case 'fajr':
+        return 'فجر';
+      case 'sunrise':
+        return 'شروق';
+      case 'dhuhr':
+        return 'ظهر';
+      case 'asr':
+        return 'عصر';
+      case 'maghrib':
+        return 'مغرب';
+      case 'isha':
+        return 'عشاء';
+      case 'midnight':
+        return 'منتصف الليل';
+      default:
+        return 'صلاة';
     }
   }
 
   IconData _getCurrentPrayerIcon() {
-    switch (prayerDetail.name) {
-      case PrayerTime.fajr:
+    switch (prayerDetail.currentPrayer?.toLowerCase()) {
+      case 'fajr':
         return Icons.wb_twilight;
-      case PrayerTime.sunrise:
+      case 'sunrise':
         return Icons.wb_sunny;
-      case PrayerTime.dhuhr:
+      case 'dhuhr':
         return Icons.wb_sunny_outlined;
-      case PrayerTime.asr:
+      case 'asr':
         return Icons.wb_cloudy;
-      case PrayerTime.maghrib:
+      case 'maghrib':
         return Icons.wb_twilight;
-      case PrayerTime.isha:
+      case 'isha':
         return Icons.nightlight;
-      case PrayerTime.midnight:
+      case 'midnight':
         return Icons.bedtime;
+      default:
+        return Icons.mosque;
     }
   }
 

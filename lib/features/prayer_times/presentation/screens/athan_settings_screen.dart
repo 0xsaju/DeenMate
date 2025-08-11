@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/islamic_utils.dart' as islamic_utils;
 import '../../domain/entities/athan_settings.dart';
 import '../providers/notification_providers.dart';
 import '../widgets/athan_preview_widget.dart';
@@ -674,8 +675,8 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
   }
 
   Widget _buildRamadanStatus() {
-    final isRamadan = IslamicUtils.isRamadan();
-    final daysRemaining = IslamicUtils.getRamadanDaysRemaining();
+    final isRamadan = islamic_utils.IslamicUtils.isRamadan();
+    final daysRemaining = islamic_utils.IslamicUtils.getRamadanDaysRemaining();
     
     return Container(
       padding: const EdgeInsets.all(20),

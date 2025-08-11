@@ -117,7 +117,6 @@ class BengaliStrings {
     'evening': 'সন্ধ্যা',
     'night': 'রাত',
     'dawn': 'ভোর',
-    'sunrise': 'সূর্যোদয়',
     'sunset': 'সূর্যাস্ত',
     'midnight': 'মধ্যরাত',
     

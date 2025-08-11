@@ -36,7 +36,7 @@ class ThemedAppBar extends StatelessWidget implements PreferredSizeWidget {
     return DecoratedBox(
       decoration: gradient != null
           ? BoxDecoration(gradient: gradient)
-          : null,
+          : const BoxDecoration(),
       child: AppBar(
         title: title ??
             (titleText != null

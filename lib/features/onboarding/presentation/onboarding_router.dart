@@ -126,8 +126,8 @@ class OnboardingRouter {
         context.go(complete);
         break;
       case complete:
-        // Navigate to main app
-        context.go('/home');
+        // Navigate to main app root
+        context.go('/');
         break;
     }
   }

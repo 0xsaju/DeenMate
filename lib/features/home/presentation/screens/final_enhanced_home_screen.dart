@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../../../core/theme/islamic_theme.dart';
+
+import '../../../../core/routing/app_router.dart';
 import '../widgets/islamic_bottom_navigation.dart';
-import '../widgets/optimized_quick_action_card.dart';
-import 'prayer_times_screen.dart';
-import 'zakat_calculator_screen.dart';
-import 'qibla_finder_screen.dart';
-import 'islamic_content_screen.dart';
+
 
 /// Final enhanced home screen with optimized layout
 /// Matches the exact UI/UX design from app-screens directory
@@ -79,13 +77,13 @@ class _FinalEnhancedHomeScreenState extends State<FinalEnhancedHomeScreen> {
       case 1: // Prayer
         _navigateToPrayerTimes();
         break;
-      case 2: // Zakat
-        _navigateToZakat();
+              // case 2: // Zakat
+        //   _navigateToZakat();
         break;
-      case 3: // Qibla
+      case 2: // Qibla
         _navigateToQibla();
         break;
-      case 4: // More
+      case 3: // More
         // TODO: Navigate to more screen
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -108,7 +106,7 @@ class _FinalEnhancedHomeScreenState extends State<FinalEnhancedHomeScreen> {
         children: [
           // App Title
           Text(
-            'ToolsForUmmah',
+            'DeenMate',
             style: GoogleFonts.notoSans(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -403,17 +401,17 @@ class _FinalEnhancedHomeScreenState extends State<FinalEnhancedHomeScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              // Zakat Calculator
-              Expanded(
-                child: _buildActionCard(
-                  icon: '🧮',
-                  title: 'Zakat Calculator',
-                  subtitle: 'যাকাত ক্যালকুলেটর',
-                  description: 'Calculate obligation',
-                  color: const Color(0xFF2E7D32),
-                  onTap: _navigateToZakat,
-                ),
-              ),
+              // Zakat Calculator (temporarily disabled)
+              // Expanded(
+              //   child: _buildActionCard(
+              //     icon: '🧮',
+              //     title: 'Zakat Calculator',
+              //     subtitle: 'যাকাত ক্যালকুলেটর',
+              //     description: 'Calculate obligation',
+              //     color: const Color(0xFF2E7D32),
+              //     onTap: _navigateToZakat,
+              //   ),
+              // ),
               
               const SizedBox(width: 16),
               
@@ -565,38 +563,18 @@ class _FinalEnhancedHomeScreenState extends State<FinalEnhancedHomeScreen> {
   }
 
   void _navigateToPrayerTimes() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const PrayerTimesScreen(),
-      ),
-    );
+    context.go(AppRouter.prayerTimes);
   }
 
-  void _navigateToZakat() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const ZakatCalculatorScreen(),
-      ),
-    );
-  }
+  // void _navigateToZakat() {
+  //   context.go(AppRouter.zakatCalculator);
+  // }
 
   void _navigateToQibla() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const QiblaFinderScreen(),
-      ),
-    );
+    context.go(AppRouter.qiblaFinder);
   }
 
   void _navigateToIslamicContent() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const IslamicContentScreen(),
-      ),
-    );
+    context.go('/islamic-content');
   }
 }

@@ -100,6 +100,26 @@ class CalculationMethodService {
     );
   }
 
+  /// Compare two calculation methods
+  Map<String, dynamic> compareMethod(CalculationMethod method, Location location) {
+    final isRegional = _isRegionalMethod(method, location);
+    final isWorldwide = _isWorldwideMethod(method);
+    
+    return {
+      'method': method.displayName,
+      'region': isRegional ? location.country : 'Worldwide',
+      'description': 'Standard calculation method',
+      'fajrAngle': method.fajrAngle,
+      'ishaAngle': method.ishaAngle,
+      'ishaInterval': method.ishaInterval,
+      'organization': method.organization,
+      'isCustom': method.isCustom,
+      'isRecommended': isRegional || isWorldwide,
+      'regionalMatch': isRegional,
+      'suitability': isRegional ? 95 : (isWorldwide ? 85 : 70),
+    };
+  }
+
   /// Get method description
   String getMethodDescription(CalculationMethod method, Location location) {
     final buffer = StringBuffer(method.displayName);

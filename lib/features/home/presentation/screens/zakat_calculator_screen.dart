@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../core/theme/islamic_theme.dart';
+
 
 class ZakatCalculatorScreen extends StatefulWidget {
   const ZakatCalculatorScreen({super.key});
@@ -43,7 +43,7 @@ class _ZakatCalculatorScreenState extends State<ZakatCalculatorScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+                      onPressed: () => Navigator.pop(context),
         ),
         actions: [
           IconButton(

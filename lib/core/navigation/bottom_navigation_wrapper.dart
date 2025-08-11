@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../routing/app_router.dart';
 import '../theme/app_theme.dart';
+import '../localization/strings.dart';
 
 /// Bottom Navigation Wrapper for DeenMate
 /// Provides Islamic-themed bottom navigation without breaking existing routing
@@ -72,7 +73,7 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
                 Icons.home,
                 color: AppTheme.lightTheme.colorScheme.primary,
               ),
-              label: 'Home',
+              label: S.t(context, 'home', 'Home'),
             ),
             NavigationDestination(
               icon: const Icon(Icons.access_time_outlined),
@@ -80,7 +81,7 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
                 Icons.access_time,
                 color: AppTheme.lightTheme.colorScheme.primary,
               ),
-              label: 'Prayer',
+              label: S.t(context, 'prayer', 'Prayer'),
             ),
             NavigationDestination(
               icon: const Icon(Icons.calculate_outlined),
@@ -88,7 +89,7 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
                 Icons.calculate,
                 color: AppTheme.lightTheme.colorScheme.primary,
               ),
-              label: 'Zakat',
+              label: S.t(context, 'zakat', 'Zakat'),
             ),
             NavigationDestination(
               icon: const Icon(Icons.explore_outlined),
@@ -96,7 +97,7 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
                 Icons.explore,
                 color: AppTheme.lightTheme.colorScheme.primary,
               ),
-              label: 'Qibla',
+              label: S.t(context, 'qibla', 'Qibla'),
             ),
             NavigationDestination(
               icon: const Icon(Icons.more_horiz),
@@ -104,7 +105,7 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
                 Icons.menu,
                 color: AppTheme.lightTheme.colorScheme.primary,
               ),
-              label: 'More',
+              label: S.t(context, 'more', 'More'),
             ),
           ],
         ),
@@ -133,6 +134,7 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
 
   bool _isMoreTabRoute(String location) {
     final moreTabRoutes = [
+      '/more',
       AppRouter.settings,
       AppRouter.profile,
       AppRouter.history,

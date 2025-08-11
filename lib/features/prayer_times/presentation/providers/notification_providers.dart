@@ -37,6 +37,7 @@ final athanSettingsProvider = StateNotifierProvider<AthanSettingsNotifier, Async
   return AthanSettingsNotifier(
     ref.read(prayerTimesRepositoryProvider),
     ref.read(notificationServiceProvider),
+    ref.read(dailyNotificationSchedulerProvider),
   );
 });
 
@@ -67,21 +68,19 @@ final athanAudioProvider = StateNotifierProvider<AthanAudioNotifier, AthanAudioS
 // Notification statistics provider
 final notificationStatsProvider = FutureProvider<NotificationStatistics>((ref) async {
   final pending = await ref.read(pendingNotificationsProvider.future);
-  final settings = await ref.read(athanSettingsProvider.future);
+  // Use repository-backed current settings for stable snapshot
+  final repo = ref.read(prayerTimesRepositoryProvider);
+  final settingsEither = await repo.getAthanSettings();
+  final settingsData = settingsEither.fold<AthanSettings>(
+    (_) => const AthanSettings(isEnabled: false),
+    (s) => s,
+  );
   
   return NotificationStatistics(
     pendingCount: pending.length,
-    enabledPrayers: settings.when(
-      data: _countEnabledPrayers,
-      loading: () => 0,
-      error: (_, __) => 0,
-    ),
+    enabledPrayers: _countEnabledPrayers(settingsData),
     nextNotificationTime: _getNextNotificationTime(pending),
-    isEnabled: settings.when(
-      data: (data) => data.isEnabled,
-      loading: () => false,
-      error: (_, __) => false,
-    ),
+    isEnabled: settingsData.isEnabled,
   );
 });
 
@@ -90,7 +89,7 @@ final autoNotificationSchedulerProvider = Provider<AutoNotificationScheduler>((r
   return AutoNotificationScheduler(
     ref.read(dailyNotificationSchedulerProvider),
     ref.read(currentPrayerTimesProvider.future),
-    ref.read(athanSettingsProvider.future),
+    ref.read(athanSettingsFutureProvider.future),
   );
 });
 
@@ -98,7 +97,7 @@ final autoNotificationSchedulerProvider = Provider<AutoNotificationScheduler>((r
 final ramadanNotificationProvider = StateNotifierProvider<RamadanNotificationNotifier, RamadanNotificationState>((ref) {
   return RamadanNotificationNotifier(
     ref.read(notificationServiceProvider),
-    ref.read(athanSettingsProvider.future),
+    ref.read(athanSettingsFutureProvider.future),
   );
 });
 
@@ -106,12 +105,13 @@ final ramadanNotificationProvider = StateNotifierProvider<RamadanNotificationNot
 
 class AthanSettingsNotifier extends StateNotifier<AsyncValue<AthanSettings>> {
 
-  AthanSettingsNotifier(this._repository, this._notificationService) 
+  AthanSettingsNotifier(this._repository, this._notificationService, this._scheduler) 
       : super(const AsyncValue.loading()) {
     _loadSettings();
   }
   final PrayerTimesRepository _repository;
   final PrayerNotificationService _notificationService;
+  final DailyNotificationScheduler _scheduler;
 
   Future<void> _loadSettings() async {
     try {
@@ -195,8 +195,11 @@ class AthanSettingsNotifier extends StateNotifier<AsyncValue<AthanSettings>> {
   }
 
   Future<void> _rescheduleNotifications() async {
-    // This will be handled by the auto-scheduler
-    // when settings change
+    try {
+      await _scheduler.scheduleToday();
+    } catch (_) {
+      // Ignore scheduling failures here; stats UI will reflect pending state
+    }
   }
 }
 
@@ -476,8 +479,24 @@ DateTime? _getNextNotificationTime(List<PendingNotificationRequest> pending) {
   // Find the earliest notification time
   DateTime? earliest;
   for (final notification in pending) {
-    // This would need to be implemented based on the notification payload
-    // to extract the scheduled time
+    // Heuristic: parse payload for ISO datetime suffix "YYYY-MM-DDTHH:mm:ss"
+    // e.g., payload formats used: 'prayer_reminder:NAME:ISO', 'athan:NAME:ISO', 'qiyam:ISO'
+    final payload = notification.payload;
+    if (payload == null) continue;
+    final parts = payload.split(':');
+    if (parts.isEmpty) continue;
+    // The last part is expected to be ISO datetime in our scheduler
+    final last = parts.isNotEmpty ? parts.last : '';
+    DateTime? scheduled;
+    try {
+      scheduled = DateTime.tryParse(last);
+    } catch (_) {
+      scheduled = null;
+    }
+    if (scheduled == null) continue;
+    if (earliest == null || scheduled.isBefore(earliest)) {
+      earliest = scheduled;
+    }
   }
   
   return earliest;

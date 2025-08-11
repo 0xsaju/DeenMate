@@ -252,7 +252,7 @@ final prayerSettingsProvider = FutureProvider<PrayerCalculationSettings>((ref) a
 });
 
 // Athan Settings Provider
-final athanSettingsProvider = FutureProvider<AthanSettings>((ref) async {
+final athanSettingsFutureProvider = FutureProvider<AthanSettings>((ref) async {
   final repository = ref.read(prayerTimesRepositoryProvider);
   final result = await repository.getAthanSettings();
   
@@ -335,19 +335,31 @@ final prayerTimesSettingsProvider = StateNotifierProvider<PrayerTimesSettingsNot
 class PrayerCompletionNotifier extends StateNotifier<Map<String, bool>> {
   PrayerCompletionNotifier() : super({});
 
-  void markPrayerCompleted(String prayerName) {
-    state = {...state, prayerName: true};
+  void markPrayerCompleted(
+    String prayerName,
+    DateTime date,
+    bool isOnTime,
+  ) {
+    // For now we only keep daily completion state in-memory.
+    // Persisting and on-time tracking is handled by repository elsewhere.
+    state = {...state, prayerName.toLowerCase(): true};
   }
 
   void markPrayerIncomplete(String prayerName) {
-    state = {...state, prayerName: false};
+    state = {...state, prayerName.toLowerCase(): false};
   }
 
   bool isPrayerCompleted(String prayerName) {
-    return state[prayerName] ?? false;
+    return state[prayerName.toLowerCase()] ?? false;
   }
 
   Map<String, bool> get completedPrayers => state;
+
+  Future<void> loadTodaysPrayerStatus() async {
+    // TODO: Integrate with repository/local storage to load persisted status
+    // For now, no-op to satisfy refresh flow
+    return;
+  }
 }
 
 class LocationStateNotifier extends StateNotifier<LocationState> {

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../localization/bengali_strings.dart';
+
+import '../localization/strings.dart';
 import '../routing/app_router.dart';
 import '../theme/app_theme.dart';
 
@@ -15,13 +16,15 @@ class QuickActionsWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Quick Actions | ${'quick_actions'.bnOr('দ্রুত কার্যক্রম')}',
-          style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: AppTheme.lightTheme.colorScheme.primary,
-          ),
-        ),
+        Builder(builder: (context) {
+          return Text(
+            S.t(context, 'quick_actions_title', 'Quick Actions | দ্রুত কার্যক্রম'),
+            style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: AppTheme.lightTheme.colorScheme.primary,
+            ),
+          );
+        }),
         const SizedBox(height: 16),
         
         // Main actions row
@@ -30,10 +33,10 @@ class QuickActionsWidget extends StatelessWidget {
             Expanded(
               child: _buildActionCard(
                 context,
-                'Zakat Calculator',
-                'যাকাত ক্যালকুলেটর',
+                S.t(context, 'zakat_calculator', 'Zakat Calculator'),
+                S.t(context, 'zakat_calculator_bn', 'যাকাত ক্যালকুলেটর'),
                 Icons.calculate,
-                'Calculate your Zakat obligation',
+                S.t(context, 'zakat_calc_desc', 'Calculate your Zakat obligation'),
                 const Color(0xFF2E7D32),
                 AppRouter.zakatCalculator,
               ),
@@ -42,10 +45,10 @@ class QuickActionsWidget extends StatelessWidget {
             Expanded(
               child: _buildActionCard(
                 context,
-                'Prayer Times',
-                'নামাজের সময়',
+                S.t(context, 'prayer_times', 'Prayer Times'),
+                S.t(context, 'prayer_times_bn', 'নামাজের সময়'),
                 Icons.access_time,
-                "Today's prayer schedule",
+                S.t(context, 'todays_schedule', "Today's prayer schedule"),
                 const Color(0xFF1565C0),
                 AppRouter.prayerTimes,
               ),
@@ -61,10 +64,10 @@ class QuickActionsWidget extends StatelessWidget {
             Expanded(
               child: _buildActionCard(
                 context,
-                'Qibla Finder',
-                'কিবলার দিক',
+                S.t(context, 'qibla_finder', 'Qibla Finder'),
+                S.t(context, 'qibla_finder_bn', 'কিবলার দিক'),
                 Icons.explore,
-                'Find direction to Kaaba',
+                S.t(context, 'qibla_desc', 'Find direction to Kaaba'),
                 const Color(0xFFFF8F00),
                 AppRouter.qiblaFinder,
               ),
@@ -73,10 +76,10 @@ class QuickActionsWidget extends StatelessWidget {
             Expanded(
               child: _buildActionCard(
                 context,
-                'Islamic Content',
-                'ইসলামিক কন্টেন্ট',
+                S.t(context, 'islamic_content', 'Islamic Content'),
+                S.t(context, 'islamic_content_bn', 'ইসলামিক কন্টেন্ট'),
                 Icons.menu_book,
-                'Daily Quran & Hadith',
+                S.t(context, 'daily_quran_hadith', 'Daily Quran & Hadith'),
                 const Color(0xFF7B1FA2),
                 '/islamic-content', // Will create this route
               ),

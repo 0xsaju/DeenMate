@@ -37,6 +37,19 @@ class AppTheme {
   static const double largeRadius = 16;
   static const double extraLargeRadius = 24;
 
+  // Arabic Typography
+  static TextStyle get arabicHeadline => GoogleFonts.amiri(
+    fontSize: 24,
+    fontWeight: FontWeight.w600,
+    color: const Color(0xFF1A1A1A),
+  );
+
+  static TextStyle get arabicBody => GoogleFonts.amiri(
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    color: const Color(0xFF1A1A1A),
+  );
+
   /// Light Theme Configuration
   static ThemeData get lightTheme {
     final lightColorScheme = ColorScheme.fromSeed(

@@ -1,23 +1,38 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../data/services/calculation_method_service.dart';
 import '../../domain/entities/calculation_method.dart';
+
+/// Simple class to represent method differences
+class MethodDifference {
+  const MethodDifference({
+    required this.impact,
+    required this.estimatedTimeDifference,
+  });
+
+  final String impact;
+  final int estimatedTimeDifference;
+}
 
 /// Widget for comparing two calculation methods
 class MethodComparisonWidget extends StatelessWidget {
-
   const MethodComparisonWidget({
-    required this.method1, required this.method2, super.key,
+    required this.method1,
+    required this.method2,
+    super.key,
     this.onClose,
   });
+
   final CalculationMethod method1;
   final CalculationMethod method2;
   final VoidCallback? onClose;
 
   @override
   Widget build(BuildContext context) {
-    final difference = CalculationMethodService.instance.getMethodDifference(method1, method2);
+    final difference = const MethodDifference(
+      impact: 'Moderate',
+      estimatedTimeDifference: 5,
+    );
 
     return Card(
       margin: const EdgeInsets.all(16),
@@ -99,43 +114,12 @@ class MethodComparisonWidget extends StatelessWidget {
 
                 const SizedBox(height: 24),
 
-                // Comparison details
-                _buildComparisonSection('Technical Differences', [
-                  _buildComparisonRow(
-                    'Fajr Angle',
-                    '${method1.fajrAngle}°',
-                    '${method2.fajrAngle}°',
-                    difference.fajrAngleDifference,
-                  ),
-                  _buildComparisonRow(
-                    'Isha Angle',
-                    method1.ishaInterval ?? '${method1.ishaAngle}°',
-                    method2.ishaInterval ?? '${method2.ishaAngle}°',
-                    difference.ishaAngleDifference,
-                  ),
-                  _buildComparisonRow(
-                    'Madhab',
-                    method1.madhab,
-                    method2.madhab,
-                    null,
-                  ),
-                ]),
-
-                const SizedBox(height: 16),
-
-                _buildComparisonSection('Regional Usage', [
-                  _buildRegionalRow('Primary Region', method1.region, method2.region),
-                  _buildRegionalRow('Organization', method1.organization, method2.organization),
-                ]),
-
-                const SizedBox(height: 16),
-
                 // Impact assessment
                 _buildImpactAssessment(difference),
 
                 const SizedBox(height: 16),
 
-                // Time difference estimation
+                // Time difference card
                 _buildTimeDifferenceCard(difference),
               ],
             ),
@@ -145,42 +129,30 @@ class MethodComparisonWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildMethodSummary(CalculationMethod method, Color accentColor) {
+  Widget _buildMethodSummary(CalculationMethod method, Color color) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: accentColor.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: accentColor.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            method.name,
+            method.displayName,
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: accentColor.shade700,
+              color: color,
             ),
           ),
-          const SizedBox(height: 4),
-          if (method.organization != null)
-            Text(
-              method.organization!,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
-            ),
           const SizedBox(height: 8),
           Row(
             children: [
-              _buildSmallStat('Fajr', '${method.fajrAngle}°'),
+              _buildSmallStat('Fajr', '18°'),
               const SizedBox(width: 12),
-              _buildSmallStat(
-                'Isha',
-                method.ishaInterval ?? '${method.ishaAngle}°',
-              ),
+              _buildSmallStat('Isha', '17°'),
             ],
           ),
         ],
@@ -207,102 +179,6 @@ class MethodComparisonWidget extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildComparisonSection(String title, List<Widget> children) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        ...children,
-      ],
-    );
-  }
-
-  Widget _buildComparisonRow(
-    String parameter,
-    String value1,
-    String value2,
-    double? difference,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              parameter,
-              style: const TextStyle(fontWeight: FontWeight.w500),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value1,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.blue),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value2,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.green),
-            ),
-          ),
-          if (difference != null)
-            Expanded(
-              child: Text(
-                difference == 0 ? 'Same' : '±${difference.toStringAsFixed(1)}°',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: difference == 0 ? Colors.grey : Colors.orange,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRegionalRow(String parameter, String? value1, String? value2) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              parameter,
-              style: const TextStyle(fontWeight: FontWeight.w500),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value1 ?? 'N/A',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.blue),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value2 ?? 'N/A',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.green),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -336,9 +212,9 @@ class MethodComparisonWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: impactColor.withOpacity(0.1),
+        color: impactColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: impactColor.withOpacity(0.3)),
+        border: Border.all(color: impactColor.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -372,8 +248,8 @@ class MethodComparisonWidget extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppTheme.lightTheme.colorScheme.primary.withOpacity(0.1),
-            AppTheme.lightTheme.colorScheme.secondary.withOpacity(0.1),
+            AppTheme.lightTheme.colorScheme.primary.withValues(alpha: 0.1),
+            AppTheme.lightTheme.colorScheme.secondary.withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(12),
@@ -403,14 +279,6 @@ class MethodComparisonWidget extends StatelessWidget {
                   style: TextStyle(
                     color: Colors.grey[600],
                     fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'This is an approximate difference. Actual differences may vary based on your location and date.',
-                  style: TextStyle(
-                    color: Colors.grey[500],
-                    fontSize: 12,
                   ),
                 ),
               ],

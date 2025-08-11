@@ -10,7 +10,6 @@ class IslamicCalendarCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final gregorianDate = DateFormat('MMMM dd, yyyy').format(now);
     final gregorianDay = DateFormat('EEEE').format(now);
     
     // Use proper Hijri date calculation

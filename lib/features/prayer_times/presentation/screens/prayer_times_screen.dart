@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hijri/hijri.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/localization/strings.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/utils/islamic_utils.dart';
-import '../../domain/entities/prayer_times.dart';
+import '../../../../core/utils/islamic_utils.dart' as islamic_utils;
+import '../../domain/entities/location.dart';
+import '../../../../core/constants/app_constants.dart';
+import '../../domain/entities/prayer_times.dart' as prayer_entities;
+import '../../domain/entities/prayer_tracking.dart';
 import '../providers/prayer_times_providers.dart';
 import '../widgets/current_prayer_widget.dart';
 import '../widgets/hijri_date_widget.dart';
 import '../widgets/islamic_greeting_widget.dart';
-import '../widgets/location_widget.dart';
 import '../widgets/next_prayer_countdown.dart';
 import '../widgets/prayer_time_card.dart';
 import '../widgets/prayer_tracking_widget.dart';
@@ -84,13 +86,17 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
     switch (action) {
       case 'refresh':
         ref.invalidate(currentPrayerTimesProvider);
-        _showSnackBar('Prayer times refreshed');
+        _showSnackBar(S.t(context, 'prayer_times_refreshed', 'Prayer times refreshed'));
         break;
       case 'weekly':
         setState(() {
           _showWeeklyView = !_showWeeklyView;
         });
-        _showSnackBar(_showWeeklyView ? 'Weekly view enabled' : 'Daily view enabled');
+        _showSnackBar(
+          _showWeeklyView
+              ? S.t(context, 'weekly_view_enabled', 'Weekly view enabled')
+              : S.t(context, 'daily_view_enabled', 'Daily view enabled'),
+        );
         break;
       case 'calculations':
         context.push(AppRouter.calculationMethod);
@@ -106,11 +112,11 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Calculation Method'),
+        title: Builder(builder: (context) => Text(S.t(context, 'calculation_method', 'Calculation Method'))),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Choose your preferred prayer time calculation method:'),
+            Builder(builder: (context) => Text(S.t(context, 'choose_calculation_method', 'Choose your preferred prayer time calculation method:'))),
             const SizedBox(height: 16),
             ...AppConstants.calculationMethods.entries.map(
               (entry) => RadioListTile<String>(
@@ -119,7 +125,7 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
                 value: entry.key,
                 groupValue: 'MWL', // This would come from settings
                 onChanged: (value) {
-                  Navigator.pop(context);
+                 context.pop();
                   _showSnackBar('Calculation method updated to ${entry.value}');
                 },
               ),
@@ -128,8 +134,8 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            onPressed: () => context.pop(),
+            child: Builder(builder: (context) => Text(S.t(context, 'cancel', 'Cancel'))),
           ),
         ],
       ),
@@ -139,7 +145,7 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
   /// Export prayer times
   void _exportPrayerTimes() {
     // This would integrate with the export functionality
-    _showSnackBar('Prayer times exported successfully');
+    _showSnackBar(S.t(context, 'prayer_times_exported', 'Prayer times exported successfully'));
   }
 
   /// Show snack bar with message
@@ -180,6 +186,7 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
                       _buildDateSelector(),
                       _buildCurrentPrayerSection(currentAndNextPrayerAsync),
                       _buildPrayerTimesSection(currentPrayerTimesAsync, prayerCompletion),
+                      _buildQuickStats(),
                       _buildAdditionalInfoSection(),
                       const SizedBox(height: 100), // Space for FAB
                     ],
@@ -218,35 +225,35 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
           ),
           onSelected: _handleMenuAction,
           itemBuilder: (context) => [
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'refresh',
               child: ListTile(
                 leading: Icon(Icons.refresh),
-                title: Text('Refresh Prayer Times'),
+                title: Builder(builder: (context) => Text(S.t(context, 'refresh_prayer_times', 'Refresh Prayer Times'))),
                 contentPadding: EdgeInsets.zero,
               ),
             ),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'weekly',
               child: ListTile(
                 leading: Icon(Icons.calendar_view_week),
-                title: Text('Weekly View'),
+                title: Builder(builder: (context) => Text(S.t(context, 'weekly_view', 'Weekly View'))),
                 contentPadding: EdgeInsets.zero,
               ),
             ),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'calculations',
               child: ListTile(
                 leading: Icon(Icons.calculate),
-                title: Text('Calculation Method'),
+                title: Builder(builder: (context) => Text(S.t(context, 'calculation_method', 'Calculation Method'))),
                 contentPadding: EdgeInsets.zero,
               ),
             ),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'export',
               child: ListTile(
                 leading: Icon(Icons.file_download),
-                title: Text('Export Prayer Times'),
+                title: Builder(builder: (context) => Text(S.t(context, 'export_prayer_times', 'Export Prayer Times'))),
                 contentPadding: EdgeInsets.zero,
               ),
             ),
@@ -254,13 +261,15 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
         ),
       ],
       flexibleSpace: FlexibleSpaceBar(
-        title: const Text(
-          'Prayer Times',
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
+        title: Builder(builder: (context) {
+          return Text(
+            S.t(context, 'prayer_times', 'Prayer Times'),
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          );
+        }),
         background: DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -290,37 +299,61 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
                 bottom: 60,
                 left: 16,
                 right: 16,
-                child: locationAsync.when(
-                  data: (location) => LocationWidget(location: location),
-                  loading: () => const Center(
-                    child: CircularProgressIndicator(color: Colors.white),
-                  ),
-                  error: (error, stack) => Text(
-                    'Location unavailable',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.8),
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
+                child: _buildDateHeader(locationAsync),
               ),
             ],
           ),
         ),
       ),
-      actions: [
-        IconButton(
-          onPressed: _showSettingsBottomSheet,
-          icon: const Icon(Icons.settings, color: Colors.white),
-        ),
-        IconButton(
-          onPressed: () => setState(() => _showWeeklyView = !_showWeeklyView),
-          icon: Icon(
-            _showWeeklyView ? Icons.calendar_today : Icons.calendar_month,
-            color: Colors.white,
+    );
+  }
+
+  Widget _buildDateHeader(AsyncValue<Location> locationAsync) {
+    final today = DateTime.now();
+    final hijri = islamic_utils.IslamicUtils.gregorianToHijri(today);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          // Left labels
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Today | আজ',
+                style: TextStyle(
+                  color: AppTheme.lightTheme.colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              Text(
+                DateFormat('EEEE, d MMM y').format(today),
+                style: const TextStyle(color: Colors.grey, fontSize: 14),
+              ),
+              Text(
+                'জুমা, ${hijri.hDay} ${AppConstants.hijriMonthNamesEn[hijri.hMonth - 1]} ${hijri.hYear}',
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+            ],
           ),
-        ),
-      ],
+          const Spacer(),
+          // Icon bubble
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Center(child: Text('🌙')),
+          ),
+        ],
+      ),
     );
   }
 
@@ -329,16 +362,26 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
       width: double.infinity,
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(20),
-      decoration: AppTheme.islamicCardDecoration,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Column(
         children: [
           const IslamicGreetingWidget(),
           const SizedBox(height: 12),
           const HijriDateWidget(),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'اللَّهُمَّ أَعِنِّي عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ',
-            style: TextStyle(
+            style: const TextStyle(
               fontFamily: 'NotoSansArabic',
               fontSize: 16,
               fontWeight: FontWeight.w500,
@@ -346,7 +389,7 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
               height: 1.8,
             ),
             textAlign: TextAlign.center,
-            textDirection: TextDirection.rtl,
+            // textDirection: TextDirection.rtl,
           ),
           const SizedBox(height: 8),
           Text(
@@ -472,7 +515,7 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
   }
 
   Widget _buildPrayerTimesSection(
-    AsyncValue<PrayerTimes> prayerTimesAsync,
+    AsyncValue<prayer_entities.PrayerTimes> prayerTimesAsync,
     Map<String, bool> prayerCompletion,
   ) {
     if (_showWeeklyView) {
@@ -489,7 +532,7 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
     );
   }
 
-  Widget _buildDailyPrayerTimes(PrayerTimes prayerTimes, Map<String, bool> prayerCompletion) {
+  Widget _buildDailyPrayerTimes(prayer_entities.PrayerTimes prayerTimes, Map<String, bool> prayerCompletion) {
     final prayers = [
       PrayerInfo('Fajr', prayerTimes.fajr, Icons.wb_twilight, 'فجر'),
       PrayerInfo('Sunrise', prayerTimes.sunrise, Icons.wb_sunny, 'شروق'),
@@ -507,13 +550,15 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                "Today's Prayer Times",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Builder(builder: (context) {
+                return Text(
+                  S.t(context, 'todays_prayer_times', "Today's Prayer Times"),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                );
+              }),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
@@ -556,13 +601,15 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
         data: (prayerTimesList) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "This Week's Prayer Times",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            Builder(builder: (context) {
+              return Text(
+                S.t(context, 'this_week_prayer_times', "This Week's Prayer Times"),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              );
+            }),
             const SizedBox(height: 16),
             ...prayerTimesList.map((prayerTimes) => Container(
               margin: const EdgeInsets.only(bottom: 12),
@@ -606,7 +653,7 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
     );
   }
 
-  Widget _buildMiniPrayerTime(String name, Prayer prayer) {
+  Widget _buildMiniPrayerTime(String name, prayer_entities.PrayerTime prayer) {
     return Column(
       children: [
         Text(
@@ -641,6 +688,72 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
               Expanded(child: QiblaDirectionWidget()),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickStats() {
+    // Placeholder quick stats aligned to design; will be backed by repository stats
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.2)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _miniStatBox(
+            label: "Today's Progress",
+            value: '1/5',
+            bg: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.08),
+            color: AppTheme.lightTheme.colorScheme.primary,
+            width: 110,
+          ),
+          _miniStatBox(
+            label: 'Streak',
+            value: '7 days',
+            bg: const Color(0xFFFFF3E0),
+            color: const Color(0xFFFF8F00),
+            width: 110,
+          ),
+          _miniStatBox(
+            label: 'Month',
+            value: '85%',
+            bg: const Color(0xFFE3F2FD),
+            color: const Color(0xFF1565C0),
+            width: 85,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _miniStatBox({
+    required String label,
+    required String value,
+    required Color bg,
+    required Color color,
+    double width = 100,
+  }) {
+    return Container(
+      width: width,
+      height: 48,
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: color)),
+          const SizedBox(height: 2),
+          Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: color)),
         ],
       ),
     );
@@ -790,10 +903,9 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
 // Helper Classes and Widgets
 
 class PrayerInfo {
-
   const PrayerInfo(this.name, this.prayer, this.icon, this.arabicName);
   final String name;
-  final Prayer prayer;
+  final prayer_entities.PrayerTime prayer;
   final IconData icon;
   final String arabicName;
 }

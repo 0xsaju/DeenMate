@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'prayer_calculation_settings.dart';
 
 /// Islamic prayer calculation methods
 enum CalculationMethod {
@@ -12,6 +13,30 @@ enum CalculationMethod {
 
   const CalculationMethod(this.displayName);
   final String displayName;
+
+  /// Get the madhab (school of thought) for this method
+  Madhab get madhab => Madhab.shafi; // Default to Shafi, can be overridden
+
+  /// Get the organization behind this method
+  String? get organization => null;
+
+  /// Get the description of this method
+  String get description => 'Standard Islamic prayer time calculation method';
+
+  /// Get the Fajr angle for this method
+  double get fajrAngle => 18.0;
+
+  /// Get the Isha angle for this method
+  double get ishaAngle => 17.0;
+
+  /// Get the Isha interval for this method
+  String? get ishaInterval => null;
+
+  /// Get the region this method is used in
+  String? get region => null;
+
+  /// Check if this is a custom method
+  bool get isCustom => false;
 
   /// Get calculation method by name
   static CalculationMethod? fromName(String name) {

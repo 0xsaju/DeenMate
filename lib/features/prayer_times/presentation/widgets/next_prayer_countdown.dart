@@ -1,8 +1,5 @@
-import 'dart:async';
-
-import 'package:deen_mate/core/theme/islamic_theme.dart';
-import 'package:deen_mate/core/utils/islamic_utils.dart' as utils;
-import 'package:deen_mate/features/prayer_times/domain/entities/prayer_times.dart';
+import 'package:deen_mate/core/theme/app_theme.dart';
+import 'package:deen_mate/features/prayer_times/domain/entities/prayer_tracking.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -291,7 +288,7 @@ class _NextPrayerCountdownState extends ConsumerState<NextPrayerCountdown>
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              widget.prayerDetail.time.getFormattedTime(),
+              'Current Time',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
@@ -299,7 +296,7 @@ class _NextPrayerCountdownState extends ConsumerState<NextPrayerCountdown>
               ),
             ),
             Text(
-              'Next: ${widget.prayerDetail.nextPrayerTime.getFormattedTime()}',
+              'Next Prayer',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
@@ -327,54 +324,55 @@ class _NextPrayerCountdownState extends ConsumerState<NextPrayerCountdown>
   }
 
   String _getNextPrayerName() {
-    switch (widget.prayerDetail.name) {
-      case PrayerTime.fajr:
+    switch (widget.prayerDetail.nextPrayer?.toLowerCase()) {
+      case 'fajr':
         return 'Fajr';
-      case PrayerTime.sunrise:
+      case 'sunrise':
         return 'Sunrise';
-      case PrayerTime.dhuhr:
+      case 'dhuhr':
         return 'Dhuhr';
-      case PrayerTime.asr:
+      case 'asr':
         return 'Asr';
-      case PrayerTime.maghrib:
+      case 'maghrib':
         return 'Maghrib';
-      case PrayerTime.isha:
+      case 'isha':
         return 'Isha';
-      case PrayerTime.midnight:
+      case 'midnight':
         return 'Midnight';
+      default:
+        return 'Next Prayer';
     }
   }
 
   IconData _getNextPrayerIcon() {
-    switch (widget.prayerDetail.name) {
-      case PrayerTime.fajr:
+    switch (widget.prayerDetail.nextPrayer?.toLowerCase()) {
+      case 'fajr':
         return Icons.wb_twilight;
-      case PrayerTime.sunrise:
+      case 'sunrise':
         return Icons.wb_sunny;
-      case PrayerTime.dhuhr:
+      case 'dhuhr':
         return Icons.wb_sunny_outlined;
-      case PrayerTime.asr:
+      case 'asr':
         return Icons.wb_cloudy;
-      case PrayerTime.maghrib:
+      case 'maghrib':
         return Icons.wb_twilight;
-      case PrayerTime.isha:
+      case 'isha':
         return Icons.nightlight;
-      case PrayerTime.midnight:
+      case 'midnight':
         return Icons.bedtime;
+      default:
+        return Icons.mosque;
     }
   }
 
   double _calculateProgress() {
-    final now = DateTime.now();
-    final currentPrayerTime = widget.prayerDetail.time;
-    final nextPrayerTime = widget.prayerDetail.nextPrayerTime;
-    
-    final totalDuration = nextPrayerTime.difference(currentPrayerTime);
-    final elapsed = now.difference(currentPrayerTime);
+    // Use the timeUntilNextPrayer from PrayerDetail
+    final totalDuration = widget.prayerDetail.timeUntilNextPrayer;
     
     if (totalDuration.inSeconds == 0) return 0;
     
-    final progress = elapsed.inSeconds / totalDuration.inSeconds;
+    // Calculate progress based on remaining time
+    final progress = 1.0 - (totalDuration.inSeconds / (24 * 60 * 60)); // Assuming 24-hour cycle
     return progress.clamp(0.0, 1.0);
   }
 }

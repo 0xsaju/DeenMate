@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../data/services/calculation_method_service.dart';
 import '../../domain/entities/calculation_method.dart';
+import '../../domain/entities/location.dart';
 import '../../domain/entities/prayer_times.dart';
 import '../providers/prayer_times_providers.dart';
 import '../widgets/calculation_method_card.dart';
@@ -191,11 +192,11 @@ class _CalculationMethodScreenState extends ConsumerState<CalculationMethodScree
             child: CalculationMethodCard(
               method: method,
               location: location,
-              isSelected: method.id == _selectedMethodId,
-              onSelected: () => _selectMethod(method.id),
+              isSelected: method.name == _selectedMethodId,
+              onSelected: () => _selectMethod(method.name),
               onCompare: () => _showComparison
                   ? _hideComparison()
-                  : _startComparison(method.id),
+                  : _startComparison(method.name),
               showCompareButton: true,
               isRecommended: true,
             ),
@@ -206,7 +207,7 @@ class _CalculationMethodScreenState extends ConsumerState<CalculationMethodScree
   }
 
   Widget _buildAllMethodsTab(Location location) {
-    const allMethods = CalculationMethods.allMethods;
+    final allMethods = CalculationMethod.values;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -233,11 +234,11 @@ class _CalculationMethodScreenState extends ConsumerState<CalculationMethodScree
             child: CalculationMethodCard(
               method: method,
               location: location,
-              isSelected: method.id == _selectedMethodId,
-              onSelected: () => _selectMethod(method.id),
+              isSelected: method.name == _selectedMethodId,
+              onSelected: () => _selectMethod(method.name),
               onCompare: () => _showComparison
                   ? _hideComparison()
-                  : _startComparison(method.id),
+                  : _startComparison(method.name),
               showCompareButton: true,
             ),
           ),),
@@ -326,13 +327,13 @@ class _CalculationMethodScreenState extends ConsumerState<CalculationMethodScree
 
   Future<void> _applySelectedMethod() async {
     try {
-      final method = CalculationMethods.getMethodById(_selectedMethodId);
+      final method = CalculationMethod.fromName(_selectedMethodId);
       if (method == null) return;
 
       // Update prayer settings
       final currentSettings = await ref.read(prayerSettingsProvider.future);
       final updatedSettings = currentSettings.copyWith(
-        calculationMethod: method.id,
+        calculationMethod: method.name,
         madhab: method.madhab,
       );
 
@@ -399,7 +400,7 @@ class _CalculationMethodScreenState extends ConsumerState<CalculationMethodScree
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => context.pop(),
             child: const Text('Got it'),
           ),
         ],
@@ -419,7 +420,7 @@ class _CalculationMethodScreenState extends ConsumerState<CalculationMethodScree
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => context.pop(),
             child: const Text('OK'),
           ),
         ],

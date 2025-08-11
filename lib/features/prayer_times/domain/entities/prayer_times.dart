@@ -175,6 +175,14 @@ class PrayerTime extends Equatable {
       notes: json['notes'] as String?,
     );
   }
+
+  /// Get formatted time string
+  String getFormattedTime() {
+    return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+  }
+
+  /// Check if this prayer time has been adjusted
+  bool get isAdjusted => notes?.contains('adjusted') ?? false;
 }
 
 /// Enum for prayer status

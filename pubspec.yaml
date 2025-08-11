@@ -93,6 +93,9 @@ flutter:
     - assets/fonts/
     - assets/audio/
     - assets/images/
+    - assets/islamic_patterns/
+    # Uncomment if using JSON translations per README
+    # - assets/translations/
   
   fonts:
     # Arabic & Islamic Fonts

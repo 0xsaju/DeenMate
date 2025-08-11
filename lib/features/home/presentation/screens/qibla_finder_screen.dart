@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../core/theme/islamic_theme.dart';
+
 
 class QiblaFinderScreen extends StatefulWidget {
   const QiblaFinderScreen({super.key});
@@ -46,7 +46,7 @@ class _QiblaFinderScreenState extends State<QiblaFinderScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+                      onPressed: () => Navigator.pop(context),
         ),
       ),
       body: Container(

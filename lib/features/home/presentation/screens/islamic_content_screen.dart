@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../core/theme/islamic_theme.dart';
+
 
 class IslamicContentScreen extends StatefulWidget {
   const IslamicContentScreen({super.key});
@@ -72,7 +72,7 @@ class _IslamicContentScreenState extends State<IslamicContentScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+                      onPressed: () => Navigator.pop(context),
         ),
       ),
       body: Container(

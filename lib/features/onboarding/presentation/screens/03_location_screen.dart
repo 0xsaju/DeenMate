@@ -292,7 +292,7 @@ class _LocationScreenState extends State<LocationScreen> {
       }
 
       // Get current position
-      final position = await Geolocator.getCurrentPosition(
+      await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
 

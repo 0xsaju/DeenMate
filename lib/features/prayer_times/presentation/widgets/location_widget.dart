@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/prayer_times.dart';
+import '../../domain/entities/location.dart';
 
 /// Widget displaying current location information for prayer times
 class LocationWidget extends StatelessWidget {
@@ -59,7 +59,7 @@ class LocationWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
-            location.timezone,
+            location.timezone ?? 'UTC',
             style: const TextStyle(
               color: Colors.white,
               fontSize: 10,
@@ -74,8 +74,9 @@ class LocationWidget extends StatelessWidget {
   String _formatLocationDetails() {
     final parts = <String>[];
     
-    if (location.region != null && location.region!.isNotEmpty) {
-      parts.add(location.region!);
+    final region = location.region;
+    if (region != null && region.isNotEmpty) {
+      parts.add(region);
     }
     
     if (location.country.isNotEmpty && location.country != 'Unknown') {

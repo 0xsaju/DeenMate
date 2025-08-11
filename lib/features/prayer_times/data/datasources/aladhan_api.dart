@@ -81,7 +81,6 @@ class AladhanApi {
     PrayerCalculationSettings? settings,
   }) async {
     final prayerTimesList = <PrayerTimes>[];
-    final formatter = DateFormat('dd-MM-yyyy');
 
     try {
       // Use calendar endpoint for date ranges

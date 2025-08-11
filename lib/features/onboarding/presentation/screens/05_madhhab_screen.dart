@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/islamic_theme.dart';
-import '../../../prayer_times/domain/entities/prayer_calculation_settings.dart';
+import '../../../onboarding/domain/entities/user_preferences.dart';
 import '../widgets/islamic_decorative_elements.dart';
 import '../widgets/islamic_gradient_background.dart';
 
@@ -117,7 +117,7 @@ class _MadhhabScreenState extends State<MadhhabScreen> {
                           children: [
                             _buildMadhhabOption(Madhhab.hanafi),
                             const SizedBox(height: 16),
-                            _buildMadhhabOption(Madhhab.shafi),
+                            _buildMadhhabOption(Madhhab.shafii),
                             const SizedBox(height: 16),
                             _buildMadhhabOption(Madhhab.maliki),
                             const SizedBox(height: 16),

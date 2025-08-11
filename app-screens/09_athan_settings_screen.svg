@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 375 812" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="athanGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1976D2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#42A5F5;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Phone Frame -->
+  <rect width="375" height="812" rx="25" fill="#000000"/>
+  <rect x="3" y="3" width="369" height="806" rx="22" fill="url(#athanGradient)"/>
+  
+  <!-- Status Bar -->
+  <rect x="3" y="3" width="369" height="44" rx="22" fill="rgba(25,118,210,0.9)"/>
+  <text x="20" y="28" fill="white" font-size="14" font-weight="600">9:41</text>
+  
+  <!-- App Bar -->
+  <rect x="3" y="47" width="369" height="56" fill="rgba(25,118,210,0.9)"/>
+  <text x="20" y="80" fill="white" font-size="18">←</text>
+  <text x="187" y="80" text-anchor="middle" fill="white" font-size="18" font-weight="600">Athan Settings</text>
+  
+  <!-- Main Content Area -->
+  <rect x="3" y="103" width="369" height="703" rx="24 24 0 0" fill="white"/>
+  
+  <!-- Settings Header -->
+  <text x="24" y="135" fill="#1976D2" font-size="20" font-weight="bold">Athan Settings</text>
+  
+  <!-- Athan Sound Section -->
+  <rect x="16" y="175" width="343" height="120" rx="12" fill="#F8F9FA"/>
+  <text x="32" y="195" fill="#1976D2" font-size="16" font-weight="bold">Athan Sound</text>
+  
+  <!-- Current Athan -->
+  <rect x="32" y="205" width="311" height="50" rx="8" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="48" y="220" fill="#333" font-size="14" font-weight="500">🎵 Current Athan</text>
+  <text x="48" y="235" fill="#666" font-size="12">Traditional Makkah Athan</text>
+  <rect x="295" y="215" width="36" height="20" rx="10" fill="#1976D2"/>
+  <text x="313" y="228" text-anchor="middle" fill="white" font-size="12">▶</text>
+  
+  <!-- Volume -->
+  <rect x="32" y="265" width="311" height="50" rx="8" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="48" y="280" fill="#333" font-size="14" font-weight="500">🔊 Volume</text>
+  <text x="48" y="295" fill="#666" font-size="12">80%</text>
+  <rect x="200" y="285" width="120" height="6" rx="3" fill="#E0E0E0"/>
+  <rect x="200" y="285" width="96" height="6" rx="3" fill="#1976D2"/>
+  
+  <!-- Notification Settings -->
+  <rect x="16" y="310" width="343" height="120" rx="12" fill="#F8F9FA"/>
+  <text x="32" y="330" fill="#1976D2" font-size="16" font-weight="bold">Notification Settings</text>
+  
+  <!-- Enable Athan -->
+  <rect x="32" y="340" width="311" height="50" rx="8" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="48" y="355" fill="#333" font-size="14" font-weight="500">🔔 Enable Athan</text>
+  <rect x="295" y="350" width="36" height="20" rx="10" fill="#1976D2"/>
+  <circle cx="325" cy="360" r="8" fill="white"/>
+  
+  <!-- Vibrate -->
+  <rect x="32" y="400" width="311" height="50" rx="8" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="48" y="415" fill="#333" font-size="14" font-weight="500">📳 Vibrate</text>
+  <rect x="295" y="410" width="36" height="20" rx="10" fill="#1976D2"/>
+  <circle cx="325" cy="420" r="8" fill="white"/>
+  
+  <!-- Prayer Specific -->
+  <rect x="16" y="445" width="343" height="200" rx="12" fill="#F8F9FA"/>
+  <text x="32" y="465" fill="#1976D2" font-size="16" font-weight="bold">Prayer Specific</text>
+  
+  <!-- Fajr -->
+  <rect x="32" y="475" width="311" height="40" rx="8" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="48" y="490" fill="#333" font-size="14" font-weight="500">🌅 Fajr</text>
+  <rect x="295" y="485" width="36" height="20" rx="10" fill="#1976D2"/>
+  <circle cx="325" cy="495" r="8" fill="white"/>
+  
+  <!-- Dhuhr -->
+  <rect x="32" y="525" width="311" height="40" rx="8" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="48" y="540" fill="#333" font-size="14" font-weight="500">☀️ Dhuhr</text>
+  <rect x="295" y="535" width="36" height="20" rx="10" fill="#1976D2"/>
+  <circle cx="325" cy="545" r="8" fill="white"/>
+  
+  <!-- Asr -->
+  <rect x="32" y="575" width="311" height="40" rx="8" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="48" y="590" fill="#333" font-size="14" font-weight="500">🌤️ Asr</text>
+  <rect x="295" y="585" width="36" height="20" rx="10" fill="#1976D2"/>
+  <circle cx="325" cy="595" r="8" fill="white"/>
+  
+  <!-- Maghrib -->
+  <rect x="32" y="625" width="311" height="40" rx="8" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="48" y="640" fill="#333" font-size="14" font-weight="500">🌆 Maghrib</text>
+  <rect x="295" y="635" width="36" height="20" rx="10" fill="#1976D2"/>
+  <circle cx="325" cy="645" r="8" fill="white"/>
+  
+  <!-- Isha -->
+  <rect x="32" y="675" width="311" height="40" rx="8" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="48" y="690" fill="#333" font-size="14" font-weight="500">🌙 Isha</text>
+  <rect x="295" y="685" width="36" height="20" rx="10" fill="#1976D2"/>
+  <circle cx="325" cy="695" r="8" fill="white"/>
+  
+  <!-- Test Button -->
+  <rect x="16" y="660" width="343" height="60" rx="12" fill="#E3F2FD"/>
+  <rect x="32" y="680" width="311" height="40" rx="8" fill="#1976D2"/>
+  <text x="187" y="705" text-anchor="middle" fill="white" font-size="14" font-weight="600">Test Sound</text>
+  
+  <!-- Bottom Navigation -->
+  <rect x="3" y="750" width="369" height="62" rx="0 0 22 22" fill="white"/>
+  <line x1="3" y1="750" x2="372" y2="750" stroke="#E0E0E0" stroke-width="1"/>
+  
+  <!-- Nav Items -->
+  <text x="55" y="778" text-anchor="middle" fill="#666" font-size="16">🏠</text>
+  <text x="55" y="795" text-anchor="middle" fill="#666" font-size="10">Home</text>
+  
+  <text x="125" y="778" text-anchor="middle" fill="#666" font-size="16">🕌</text>
+  <text x="125" y="795" text-anchor="middle" fill="#666" font-size="10">Prayer</text>
+  
+  <text x="195" y="778" text-anchor="middle" fill="#666" font-size="16">🧮</text>
+  <text x="195" y="795" text-anchor="middle" fill="#666" font-size="10">Zakat</text>
+  
+  <text x="265" y="778" text-anchor="middle" fill="#666" font-size="16">🧭</text>
+  <text x="265" y="795" text-anchor="middle" fill="#666" font-size="10">Qibla</text>
+  
+  <rect x="310" y="765" width="50" height="35" rx="8" fill="#E3F2FD"/>
+  <text x="335" y="778" text-anchor="middle" fill="#1976D2" font-size="16">⋯</text>
+  <text x="335" y="795" text-anchor="middle" fill="#1976D2" font-size="10" font-weight="600">More</text>
+</svg>

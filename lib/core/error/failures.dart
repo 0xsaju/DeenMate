@@ -77,6 +77,11 @@ abstract class Failure with _$Failure {
     String message,
   }) = CompassUnavailable;
 
+  const factory Failure.sensorFailure({
+    @Default('Sensor operation failed. Please check device permissions.')
+    String message,
+  }) = CompassUnavailable;
+
   // Islamic Content Failures
   const factory Failure.quranApiFailure({
     @Default('Unable to fetch Quran content. Please try again later.')

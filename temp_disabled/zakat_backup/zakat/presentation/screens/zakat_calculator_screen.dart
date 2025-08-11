@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/error/failures.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../domain/entities/zakat_calculation.dart' as zakat_entities;
+import '../../domain/repositories/zakat_repository.dart' as zakat_repo;
 import '../providers/zakat_calculator_notifier.dart';
 import '../providers/zakat_providers.dart';
 import '../widgets/calculation_progress_indicator.dart';
@@ -38,7 +41,10 @@ class _ZakatCalculatorScreenState extends ConsumerState<ZakatCalculatorScreen>
     super.initState();
     _tabController = TabController(length: _totalSections, vsync: this);
     _pageController = PageController();
-    _formData = ZakatFormData(hawlStartDate: DateTime.now().subtract(const Duration(days: 354)));
+    _formData = ZakatFormData(
+      hawlStartDate: DateTime.now().subtract(const Duration(days: 354)),
+      currency: 'USD',
+    );
     
     // Fetch initial metal prices
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -122,11 +128,11 @@ class _ZakatCalculatorScreenState extends ConsumerState<ZakatCalculatorScreen>
 
   Widget _buildMainContent({
     bool showLoading = false,
-    ZakatResult? result,
+    zakat_entities.ZakatResult? result,
     bool showSaved = false,
     bool showGeneratingReport = false,
     String? reportPath,
-    List<ValidationError>? validationErrors,
+    List<zakat_repo.ValidationError>? validationErrors,
     Failure? error,
   }) {
     return Stack(
@@ -367,7 +373,7 @@ class _ZakatCalculatorScreenState extends ConsumerState<ZakatCalculatorScreen>
     );
   }
 
-  Widget _buildResultOverlay(ZakatResult result) {
+  Widget _buildResultOverlay(zakat_entities.ZakatResult result) {
     return ColoredBox(
       color: Colors.black54,
       child: Center(
@@ -442,7 +448,7 @@ class _ZakatCalculatorScreenState extends ConsumerState<ZakatCalculatorScreen>
     );
   }
 
-  Widget _buildValidationErrorsOverlay(List<ValidationError> errors) {
+  Widget _buildValidationErrorsOverlay(List<zakat_repo.ValidationError> errors) {
     return ColoredBox(
       color: Colors.black54,
       child: Center(
@@ -559,7 +565,7 @@ class _ZakatCalculatorScreenState extends ConsumerState<ZakatCalculatorScreen>
     _calculateZakat();
   }
 
-  void _saveCalculation(ZakatResult result) {
+  void _saveCalculation(zakat_entities.ZakatResult result) {
     ref.read(zakatCalculatorNotifierProvider.notifier).saveCalculation(
       formData: _formData,
       result: result,
@@ -568,9 +574,9 @@ class _ZakatCalculatorScreenState extends ConsumerState<ZakatCalculatorScreen>
     );
   }
 
-  void _generateReport(ZakatResult result) {
+  void _generateReport(zakat_entities.ZakatResult result) {
     // Create a temporary calculation for report generation
-    final calculation = ZakatCalculation(
+          final calculation = zakat_entities.ZakatCalculation(
       id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
       calculationDate: DateTime.now(),
       hawlStartDate: _formData.hawlStartDate,

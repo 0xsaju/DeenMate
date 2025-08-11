@@ -199,7 +199,7 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              'Next: $timeUntilPrayer',
+              'Next | পরবর্তী: $timeUntilPrayer',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,

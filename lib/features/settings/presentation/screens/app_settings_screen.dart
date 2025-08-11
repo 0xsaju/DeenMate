@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/services/notification_service.dart';
-import '../../../../core/services/prayer_times_api_service.dart';
+// Deprecated direct service import removed; use repository-backed providers instead
 import '../../../../core/theme/islamic_theme.dart';
 /// App settings screen for DeenMate
 class AppSettingsScreen extends StatefulWidget {
@@ -238,7 +238,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
       leading: const Icon(Icons.calculate, color: IslamicTheme.islamicGreen),
       title: const Text('Prayer Calculation Method'),
       subtitle: Text(
-        PrayerTimesApiService.calculationMethods[_selectedCalculationMethod] ?? 'Unknown',
+        AppConstants.calculationMethods[_selectedCalculationMethod] ?? 'Unknown',
         style: IslamicTheme.textTheme.bodySmall?.copyWith(
           color: IslamicTheme.textSecondary,
         ),
@@ -378,7 +378,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: PrayerTimesApiService.calculationMethods.entries.map((entry) {
+            children: AppConstants.calculationMethods.entries.map((entry) {
               return RadioListTile<int>(
                 title: Text(
                   entry.value,
@@ -387,7 +387,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                 value: entry.key,
                 groupValue: _selectedCalculationMethod,
                 onChanged: (value) {
-                  Navigator.pop(context);
+                  context.pop();
                   _setCalculationMethod(value!);
                 },
                 activeColor: IslamicTheme.islamicGreen,
@@ -414,7 +414,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
               value: language,
               groupValue: _selectedLanguage,
               onChanged: (value) {
-                Navigator.pop(context);
+                context.pop();
                 _setLanguage(value!);
               },
               activeColor: IslamicTheme.islamicGreen,
@@ -443,7 +443,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => context.pop(),
             child: const Text('Close', style: TextStyle(color: IslamicTheme.islamicGreen)),
           ),
         ],
@@ -467,7 +467,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => context.pop(),
             child: const Text('Close', style: TextStyle(color: IslamicTheme.islamicGreen)),
           ),
         ],
@@ -486,7 +486,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => context.pop(),
             child: const Text('OK', style: TextStyle(color: IslamicTheme.islamicGreen)),
           ),
         ],
@@ -528,11 +528,11 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
         content: const Text('This will clear cached prayer times and other temporary data. Continue?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => context.pop(false),
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => context.pop(true),
             child: const Text('Clear', style: TextStyle(color: Colors.red)),
           ),
         ],

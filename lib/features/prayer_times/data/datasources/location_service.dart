@@ -1,6 +1,6 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart' as geocoding;
-import 'package:dio/dio.dart';
+
 import 'dart:async';
 
 import '../../../../core/error/failures.dart';

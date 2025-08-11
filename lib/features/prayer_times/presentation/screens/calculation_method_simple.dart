@@ -18,7 +18,7 @@ class _CalculationMethodSimpleScreenState extends State<CalculationMethodSimpleS
   CalculationMethod? _selectedMethod2;
   String _selectedMethod = 'MWL';
   
-  final _service = CalculationMethodService();
+  final _service = CalculationMethodService.instance;
 
   @override
   void initState() {
@@ -67,7 +67,7 @@ class _CalculationMethodSimpleScreenState extends State<CalculationMethodSimpleS
 
   Widget _buildRecommendedMethodsTab(List<CalculationMethod> allMethods) {
     // Simulate location-based recommendations
-    final recommendedMethods = allMethods.where((m) => m.isRecommended).take(5).toList();
+    final recommendedMethods = allMethods.take(5).toList();
     
     return Column(
       children: [
@@ -243,7 +243,7 @@ class _CalculationMethodSimpleScreenState extends State<CalculationMethodSimpleS
   }
 
   Widget _buildMethodCard(CalculationMethod method, bool showRecommendedBadge) {
-    final isSelected = method.id == _selectedMethod;
+                  final isSelected = method.name == _selectedMethod;
     
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -258,7 +258,7 @@ class _CalculationMethodSimpleScreenState extends State<CalculationMethodSimpleS
       child: InkWell(
         onTap: () {
           setState(() {
-            _selectedMethod = method.id;
+                            _selectedMethod = method.name;
           });
           _showMethodSelected(method);
         },
@@ -279,7 +279,7 @@ class _CalculationMethodSimpleScreenState extends State<CalculationMethodSimpleS
                       ),
                     ),
                   ),
-                  if (showRecommendedBadge && method.isRecommended)
+                  if (showRecommendedBadge)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
@@ -328,7 +328,7 @@ class _CalculationMethodSimpleScreenState extends State<CalculationMethodSimpleS
                   const SizedBox(width: 8),
                   _buildAngleChip('Isha', method.ishaAngle),
                   const SizedBox(width: 8),
-                  _buildRegionChip(method.region),
+                  if (method.region != null) _buildRegionChip(method.region!),
                 ],
               ),
               
@@ -340,7 +340,7 @@ class _CalculationMethodSimpleScreenState extends State<CalculationMethodSimpleS
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
-                      method.organization,
+                      method.organization ?? 'Unknown Organization',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Colors.grey[500],
                       ),
@@ -428,7 +428,7 @@ class _CalculationMethodSimpleScreenState extends State<CalculationMethodSimpleS
   }
 
   Widget _buildComparisonResult(CalculationMethod method1, CalculationMethod method2) {
-    final comparison = _service.compareMethods(method1, method2);
+    final similarity = _service.compareMethods(method1, method2);
     
     return Card(
       child: Padding(
@@ -446,7 +446,7 @@ class _CalculationMethodSimpleScreenState extends State<CalculationMethodSimpleS
             const SizedBox(height: 16),
             
             Text(
-              'Differences:',
+              'Similarity Score:',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -454,22 +454,38 @@ class _CalculationMethodSimpleScreenState extends State<CalculationMethodSimpleS
             
             const SizedBox(height: 8),
             
-            if (comparison.differences.isEmpty)
-              Text(
-                'No significant differences found between these methods.',
-                style: TextStyle(color: Colors.green[600]),
-              )
-            else
-              ...comparison.differences.map((diff) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Row(
-                  children: [
-                    Icon(Icons.compare_arrows, size: 16, color: Colors.grey[600]),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text(diff)),
-                  ],
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue[50],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue[200]!),
+              ),
+              child: Text(
+                '${(similarity * 100).toStringAsFixed(1)}%',
+                style: TextStyle(
+                  color: Colors.blue[800],
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
-              ),),
+              ),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            Text(
+              'Key Differences:',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            
+            const SizedBox(height: 8),
+            
+            _buildDifferenceRow('Fajr Angle', '${method1.fajrAngle}°', '${method2.fajrAngle}°'),
+            _buildDifferenceRow('Isha Angle', '${method1.ishaAngle}°', '${method2.ishaAngle}°'),
+            _buildDifferenceRow('Organization', method1.organization ?? 'N/A', method2.organization ?? 'N/A'),
             
             const SizedBox(height: 16),
             
@@ -491,7 +507,7 @@ class _CalculationMethodSimpleScreenState extends State<CalculationMethodSimpleS
                 border: Border.all(color: Colors.amber[200]!),
               ),
               child: Text(
-                comparison.impactAssessment,
+                _getImpactAssessment(similarity),
                 style: TextStyle(color: Colors.amber[800]),
               ),
             ),
@@ -499,6 +515,47 @@ class _CalculationMethodSimpleScreenState extends State<CalculationMethodSimpleS
         ),
       ),
     );
+  }
+
+  Widget _buildDifferenceRow(String label, String value1, String value2) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Text(
+              value1,
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Text(
+              value2,
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getImpactAssessment(double similarity) {
+    if (similarity >= 0.8) {
+      return 'These methods are very similar. The difference in prayer times will be minimal (usually less than 2-3 minutes).';
+    } else if (similarity >= 0.6) {
+      return 'These methods have moderate differences. You may notice 3-5 minute variations in prayer times.';
+    } else {
+      return 'These methods have significant differences. Prayer times may vary by 5-15 minutes, especially for Fajr and Isha.';
+    }
   }
 
   void _showMethodSelected(CalculationMethod method) {

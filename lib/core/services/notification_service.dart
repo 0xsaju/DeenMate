@@ -182,7 +182,7 @@ class NotificationService {
       body,
       _convertToTZDateTime(scheduledDate),
       notificationDetails,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
   }

@@ -15,7 +15,6 @@ class _DailyIslamicContentScreenState extends State<DailyIslamicContentScreen> {
   int _currentPage = 0;
 
   List<Map<String, dynamic>> _getContent() {
-    final dayOfYear = DateTime.now().difference(DateTime(DateTime.now().year)).inDays;
     final todaysVerse = IslamicContentData.getTodaysVerse();
     final todaysHadith = IslamicContentData.getTodaysHadith();
     final currentDua = IslamicContentData.getCurrentDua();

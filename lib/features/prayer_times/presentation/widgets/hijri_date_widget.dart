@@ -32,7 +32,7 @@ class HijriDateWidget extends StatelessWidget {
               color: Color(0xFF2E7D32),
               height: 1.4,
             ),
-            textDirection: TextDirection.rtl,
+            // textDirection: TextDirection.rtl,
           ),
           const SizedBox(height: 4),
           Text(

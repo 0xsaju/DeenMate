@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../features/prayer_times/domain/entities/prayer_times.dart';
+import '../../features/prayer_times/domain/entities/prayer_times.dart' as prayer_entities;
+import '../../features/prayer_times/domain/entities/prayer_tracking.dart';
 import '../../features/prayer_times/presentation/providers/prayer_times_providers.dart';
+import '../../core/utils/islamic_utils.dart' as islamic_utils;
 import '../localization/bengali_strings.dart';
 import '../theme/app_theme.dart';
 
@@ -45,8 +47,8 @@ class _ConnectedPrayerCountdownWidgetState extends ConsumerState<ConnectedPrayer
 
   @override
   Widget build(BuildContext context) {
-    final prayerTimesAsync = ref.watch(prayerTimesProvider);
-    final currentPrayerAsync = ref.watch(currentPrayerProvider);
+    final prayerTimesAsync = ref.watch(currentPrayerTimesProvider);
+    final currentPrayerAsync = ref.watch(currentAndNextPrayerProvider);
     
     return prayerTimesAsync.when(
       data: (prayerTimes) => currentPrayerAsync.when(
@@ -59,7 +61,7 @@ class _ConnectedPrayerCountdownWidgetState extends ConsumerState<ConnectedPrayer
     );
   }
 
-  Widget _buildPrayerCountdown(PrayerTimes prayerTimes, PrayerDetail? currentPrayer) {
+  Widget _buildPrayerCountdown(prayer_entities.PrayerTimes prayerTimes, PrayerDetail? currentPrayer) {
     if (currentPrayer == null) {
       return _buildNoDataCard();
     }
@@ -183,7 +185,7 @@ class _ConnectedPrayerCountdownWidgetState extends ConsumerState<ConnectedPrayer
                   Expanded(
                     child: _buildTimeInfo(
                       '${'prayer_time'.bn} | Time',
-                      currentPrayer.time.getFormattedTime(),
+                      'Current Time',
                       Icons.access_time,
                     ),
                   ),
@@ -429,64 +431,64 @@ class _ConnectedPrayerCountdownWidgetState extends ConsumerState<ConnectedPrayer
     );
   }
 
-  ConnectedPrayerInfo _getNextPrayerInfo(PrayerTimes prayerTimes, PrayerDetail currentPrayer) {
+  ConnectedPrayerInfo _getNextPrayerInfo(prayer_entities.PrayerTimes prayerTimes, PrayerDetail currentPrayer) {
     // Map prayer names to colors and details
     final prayerColors = {
-      PrayerTime.fajr: const Color(0xFF1565C0),
-      PrayerTime.sunrise: const Color(0xFFFFD700),
-      PrayerTime.dhuhr: const Color(0xFFFF8F00),
-      PrayerTime.asr: const Color(0xFF7B1FA2),
-      PrayerTime.maghrib: const Color(0xFFD84315),
-      PrayerTime.isha: const Color(0xFF5D4037),
-      PrayerTime.midnight: const Color(0xFF2F4F4F),
+      islamic_utils.PrayerTime.fajr: const Color(0xFF1565C0),
+      islamic_utils.PrayerTime.sunrise: const Color(0xFFFFD700),
+      islamic_utils.PrayerTime.dhuhr: const Color(0xFFFF8F00),
+      islamic_utils.PrayerTime.asr: const Color(0xFF7B1FA2),
+      islamic_utils.PrayerTime.maghrib: const Color(0xFFD84315),
+      islamic_utils.PrayerTime.isha: const Color(0xFF5D4037),
+      islamic_utils.PrayerTime.midnight: const Color(0xFF2F4F4F),
     };
 
     final prayerIcons = {
-      PrayerTime.fajr: Icons.wb_twilight,
-      PrayerTime.sunrise: Icons.wb_sunny,
-      PrayerTime.dhuhr: Icons.wb_sunny_outlined,
-      PrayerTime.asr: Icons.wb_cloudy,
-      PrayerTime.maghrib: Icons.wb_twilight,
-      PrayerTime.isha: Icons.nightlight,
-      PrayerTime.midnight: Icons.bedtime,
+      islamic_utils.PrayerTime.fajr: Icons.wb_twilight,
+      islamic_utils.PrayerTime.sunrise: Icons.wb_sunny,
+      islamic_utils.PrayerTime.dhuhr: Icons.wb_sunny_outlined,
+      islamic_utils.PrayerTime.asr: Icons.wb_cloudy,
+      islamic_utils.PrayerTime.maghrib: Icons.wb_twilight,
+      islamic_utils.PrayerTime.isha: Icons.nightlight,
+      islamic_utils.PrayerTime.midnight: Icons.bedtime,
     };
 
     final bengaliNames = {
-      PrayerTime.fajr: 'ফজর',
-      PrayerTime.sunrise: 'সূর্যোদয়',
-      PrayerTime.dhuhr: 'যুহর',
-      PrayerTime.asr: 'আসর',
-      PrayerTime.maghrib: 'মাগরিব',
-      PrayerTime.isha: 'ইশা',
-      PrayerTime.midnight: 'মধ্যরাত',
+      islamic_utils.PrayerTime.fajr: 'ফজর',
+      islamic_utils.PrayerTime.sunrise: 'সূর্যোদয়',
+      islamic_utils.PrayerTime.dhuhr: 'যুহর',
+      islamic_utils.PrayerTime.asr: 'আসর',
+      islamic_utils.PrayerTime.maghrib: 'মাগরিব',
+      islamic_utils.PrayerTime.isha: 'ইশা',
+      islamic_utils.PrayerTime.midnight: 'মধ্যরাত',
     };
 
     final arabicNames = {
-      PrayerTime.fajr: 'فجر',
-      PrayerTime.sunrise: 'شروق',
-      PrayerTime.dhuhr: 'ظهر',
-      PrayerTime.asr: 'عصر',
-      PrayerTime.maghrib: 'مغرب',
-      PrayerTime.isha: 'عشاء',
-      PrayerTime.midnight: 'منتصف الليل',
+      islamic_utils.PrayerTime.fajr: 'فجر',
+      islamic_utils.PrayerTime.sunrise: 'شروق',
+      islamic_utils.PrayerTime.dhuhr: 'ظهر',
+      islamic_utils.PrayerTime.asr: 'عصر',
+      islamic_utils.PrayerTime.maghrib: 'مغرب',
+      islamic_utils.PrayerTime.isha: 'عشاء',
+      islamic_utils.PrayerTime.midnight: 'منتصف الليل',
     };
 
     final englishNames = {
-      PrayerTime.fajr: 'Fajr',
-      PrayerTime.sunrise: 'Sunrise',
-      PrayerTime.dhuhr: 'Dhuhr',
-      PrayerTime.asr: 'Asr',
-      PrayerTime.maghrib: 'Maghrib',
-      PrayerTime.isha: 'Isha',
-      PrayerTime.midnight: 'Midnight',
+      islamic_utils.PrayerTime.fajr: 'Fajr',
+      islamic_utils.PrayerTime.sunrise: 'Sunrise',
+      islamic_utils.PrayerTime.dhuhr: 'Dhuhr',
+      islamic_utils.PrayerTime.asr: 'Asr',
+      islamic_utils.PrayerTime.maghrib: 'Maghrib',
+      islamic_utils.PrayerTime.isha: 'Isha',
+      islamic_utils.PrayerTime.midnight: 'Midnight',
     };
 
     return ConnectedPrayerInfo(
-      englishName: englishNames[currentPrayer.name] ?? 'Prayer',
-      arabicName: arabicNames[currentPrayer.name] ?? '',
-      bengaliName: bengaliNames[currentPrayer.name] ?? '',
-      color: prayerColors[currentPrayer.name] ?? AppTheme.lightTheme.colorScheme.primary,
-      icon: prayerIcons[currentPrayer.name] ?? Icons.access_time,
+      englishName: englishNames[currentPrayer.currentPrayer] ?? 'Prayer',
+      arabicName: arabicNames[currentPrayer.currentPrayer] ?? '',
+      bengaliName: bengaliNames[currentPrayer.currentPrayer] ?? '',
+      color: prayerColors[currentPrayer.currentPrayer] ?? AppTheme.lightTheme.colorScheme.primary,
+      icon: prayerIcons[currentPrayer.currentPrayer] ?? Icons.access_time,
     );
   }
 

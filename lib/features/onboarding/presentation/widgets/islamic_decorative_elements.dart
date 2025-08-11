@@ -66,7 +66,6 @@ class IslamicDecorativeElements {
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(totalSteps, (index) {
         final isActive = index < currentStep;
-        final isCurrent = index == currentStep - 1;
         
         return Row(
           children: [

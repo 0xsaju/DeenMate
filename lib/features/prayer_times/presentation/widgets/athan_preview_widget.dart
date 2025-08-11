@@ -110,7 +110,7 @@ class AthanPreviewWidget extends ConsumerWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      athanAudioState.error!.userMessage,
+                      athanAudioState.error!.message,
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.red[600],

@@ -346,7 +346,7 @@ void main() {
             .thenAnswer((_) async => Right(mockSettings));
 
         // Act
-        final result = await container.read(athanSettingsProvider.future);
+          final result = await container.read(athanSettingsFutureProvider.future);
 
         // Assert
         expect(result.isEnabled, equals(true));
@@ -384,7 +384,7 @@ void main() {
 
         // Act & Assert
         expect(
-          () async => await container.read(athanSettingsProvider.future),
+          () async => await container.read(athanSettingsFutureProvider.future),
           throwsA(isA<Failure>()),
         );
         

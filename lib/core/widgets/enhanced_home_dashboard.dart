@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../theme/app_theme.dart';
-import '../theme/theme_controller.dart';
+
 import 'connected_prayer_countdown_widget.dart';
 import 'daily_islamic_content_widget.dart';
 import 'islamic_greeting_widget.dart';
@@ -16,15 +16,15 @@ class EnhancedHomeDashboard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    final themeController = ref.read(themeControllerProvider.notifier);
     
-    return const Scaffold(
+    return Scaffold(
       body: CustomScrollView(
         slivers: [
+          // Islamic gradient app bar per design
+          _buildIslamicAppBar(context, ref),
+
           // Islamic Greeting
-          SliverToBoxAdapter(
+          const SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.all(16),
               child: IslamicGreetingWidget(),
@@ -32,7 +32,7 @@ class EnhancedHomeDashboard extends ConsumerWidget {
           ),
           
           // Next Prayer Countdown (Connected to real data)
-          SliverToBoxAdapter(
+          const SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: ConnectedPrayerCountdownWidget(),
@@ -40,7 +40,7 @@ class EnhancedHomeDashboard extends ConsumerWidget {
           ),
           
           // Quick Actions Grid
-          SliverToBoxAdapter(
+          const SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.all(16),
               child: QuickActionsWidget(),
@@ -48,7 +48,7 @@ class EnhancedHomeDashboard extends ConsumerWidget {
           ),
           
           // Daily Islamic Content
-          SliverToBoxAdapter(
+          const SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: DailyIslamicContentWidget(),
@@ -56,7 +56,7 @@ class EnhancedHomeDashboard extends ConsumerWidget {
           ),
           
           // Bottom spacing for navigation
-          SliverToBoxAdapter(
+          const SliverToBoxAdapter(
             child: SizedBox(height: 100),
           ),
         ],

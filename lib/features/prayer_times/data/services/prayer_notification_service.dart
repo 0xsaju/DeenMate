@@ -9,7 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import '../../../../core/error/failures.dart';
-import '../../../../core/utils/islamic_utils.dart';
+
 import '../../domain/entities/athan_settings.dart';
 import '../../domain/entities/prayer_times.dart';
 
@@ -62,9 +62,7 @@ class PrayerNotificationService {
     const androidInitialization = AndroidInitializationSettings('@mipmap/ic_launcher');
     
     // iOS initialization
-    const iosInitialization = DarwinInitializationSettings(
-      onDidReceiveLocalNotification: _onDidReceiveLocalNotification,
-    );
+    const iosInitialization = DarwinInitializationSettings();
 
     const initializationSettings = InitializationSettings(
       android: androidInitialization,
@@ -196,9 +194,7 @@ class PrayerNotificationService {
     }
 
     // Schedule Qiyam reminder (optional)
-    if (prayerTimes.isQiyamTime()) {
-      await _scheduleQiyamReminder(prayerTimes);
-    }
+    await _scheduleQiyamReminder(prayerTimes);
   }
 
   /// Schedule a single prayer notification
@@ -229,7 +225,6 @@ class PrayerNotificationService {
             sound: 'prayer_reminder',
           ),
           androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-          uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
           payload: 'prayer_reminder:$prayerName:${date.toIso8601String()}',
         );
       }
@@ -261,7 +256,6 @@ class PrayerNotificationService {
           ],
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
         payload: 'athan:$prayerName:${date.toIso8601String()}',
       );
     }
@@ -287,7 +281,6 @@ class PrayerNotificationService {
           sound: 'qiyam_reminder',
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
         payload: 'qiyam:${prayerTimes.date.toIso8601String()}',
       );
     }
@@ -320,7 +313,6 @@ class PrayerNotificationService {
           sound: 'jumuah_reminder',
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
         payload: 'jumuah:${fridayDate.toIso8601String()}',
       );
     }
@@ -343,7 +335,6 @@ class PrayerNotificationService {
             sound: 'islamic_event',
           ),
           androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-          uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
           payload: 'islamic_event:${event.name}:${event.date.toIso8601String()}',
         );
       }
@@ -358,8 +349,6 @@ class PrayerNotificationService {
       _isAthanPlaying = true;
       
       // Load Athan audio based on muadhin voice
-      final athanPath = 'assets/audio/athan/${muadhinVoice}_athan.mp3';
-      
       await _audioPlayer.setSource(AssetSource('audio/athan/${muadhinVoice}_athan.mp3'));
       await _audioPlayer.setVolume(volume);
       await _audioPlayer.resume();
@@ -512,7 +501,6 @@ class PrayerNotificationService {
     if (parts.length < 2) return;
 
     final type = parts[0];
-    final data = parts[1];
 
     switch (type) {
       case 'prayer_reminder':
@@ -604,7 +592,6 @@ class PrayerNotificationService {
           sound: 'suhur_reminder',
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
         payload: 'suhur:${suhurTime.toIso8601String()}',
       );
     }
@@ -626,7 +613,6 @@ class PrayerNotificationService {
           sound: 'iftar_reminder',
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
         payload: 'iftar:${iftarTime.toIso8601String()}',
       );
     }

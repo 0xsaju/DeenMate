@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../data/services/calculation_method_service.dart';
 import '../../domain/entities/calculation_method.dart';
-import '../../domain/entities/prayer_times.dart';
+import '../../domain/entities/location.dart';
+
 
 /// Card widget displaying calculation method information
 class CalculationMethodCard extends StatelessWidget {
@@ -81,13 +82,13 @@ class CalculationMethodCard extends StatelessWidget {
                     spacing: 4,
                     runSpacing: 4,
                     children: [
-                      if (isRecommended || comparison.isRecommended)
+                      if (isRecommended || comparison['isRecommended'] == true)
                         _buildBadge(
                           'RECOMMENDED',
                           AppTheme.lightTheme.colorScheme.primary,
                           Colors.white,
                         ),
-                      if (comparison.regionalMatch)
+                      if (comparison['regionalMatch'] == true)
                         _buildBadge(
                           'REGIONAL',
                           Colors.green.shade100,
@@ -133,16 +134,11 @@ class CalculationMethodCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    if (method.region != null || method.madhab != 'Standard') ...[
+                    if (method.region != null) ...[
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          if (method.region != null) ...[
-                            _buildDetailInfo('Region', method.region!),
-                            if (method.madhab != 'Standard') const SizedBox(width: 24),
-                          ],
-                          if (method.madhab != 'Standard')
-                            _buildDetailInfo('Madhab', method.madhab),
+                          _buildDetailInfo('Region', method.region!),
                         ],
                       ),
                     ],
@@ -162,7 +158,7 @@ class CalculationMethodCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    'Suitability: ${comparison.suitability}%',
+                    'Suitability: ${comparison['suitability']}%',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Colors.grey[600],
                     ),
@@ -170,10 +166,10 @@ class CalculationMethodCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: LinearProgressIndicator(
-                      value: comparison.suitability / 100,
+                      value: (comparison['suitability'] as int) / 100,
                       backgroundColor: Colors.grey.shade300,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        _getSuitabilityColor(comparison.suitability),
+                        _getSuitabilityColor(comparison['suitability'] as int),
                       ),
                     ),
                   ),

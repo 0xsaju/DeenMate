@@ -30,9 +30,9 @@ class IslamicBottomNavigation extends StatelessWidget {
           children: [
             _buildNavItem(0, '🏠', 'Home', isActive: currentIndex == 0),
             _buildNavItem(1, '🕌', 'Prayer', isActive: currentIndex == 1),
-            _buildNavItem(2, '🧮', 'Zakat', isActive: currentIndex == 2),
-            _buildNavItem(3, '🧭', 'Qibla', isActive: currentIndex == 3),
-            _buildNavItem(4, '⋯', 'More', isActive: currentIndex == 4),
+            // _buildNavItem(2, '🧮', 'Zakat', isActive: currentIndex == 2),
+                          _buildNavItem(2, '🧭', 'Qibla', isActive: currentIndex == 2),
+              _buildNavItem(3, '⋯', 'More', isActive: currentIndex == 3),
           ],
         ),
       ),
@@ -78,7 +78,7 @@ class IslamicBottomNavigation extends StatelessWidget {
     switch (index) {
       case 0: return const Color(0xFFE8F5E8); // Home - Islamic green
       case 1: return const Color(0xFFE3F2FD); // Prayer - Blue
-      case 2: return const Color(0xFFE8F5E8); // Zakat - Islamic green
+              // case 2: return const Color(0xFFE8F5E8); // Zakat - Islamic green
       case 3: return const Color(0xFFFFF3E0); // Qibla - Orange
       case 4: return const Color(0xFFEFEBE9); // More - Brown
       default: return const Color(0xFFE8F5E8);
@@ -89,7 +89,7 @@ class IslamicBottomNavigation extends StatelessWidget {
     switch (index) {
       case 0: return IslamicTheme.islamicGreen; // Home
       case 1: return IslamicTheme.prayerBlue; // Prayer
-      case 2: return IslamicTheme.islamicGreen; // Zakat
+              // case 2: return IslamicTheme.islamicGreen; // Zakat
       case 3: return IslamicTheme.hadithOrange; // Qibla
       case 4: return IslamicTheme.duaBrown; // More
       default: return IslamicTheme.islamicGreen;

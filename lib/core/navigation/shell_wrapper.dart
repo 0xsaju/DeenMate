@@ -4,7 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../features/prayer_times/presentation/screens/athan_settings_screen.dart';
 import '../../features/prayer_times/presentation/screens/calculation_method_screen.dart';
 import '../../features/prayer_times/presentation/screens/prayer_times_screen.dart';
-import '../../features/zakat/presentation/screens/zakat_calculator_screen.dart';
+// import '../../features/zakat/presentation/screens/zakat_calculator_screen.dart';
+import '../../features/islamic_content/presentation/screens/islamic_content_screen.dart';
 import '../routing/app_router.dart';
 import '../widgets/enhanced_home_dashboard.dart';
 import '../widgets/themed_widgets.dart';
@@ -72,11 +73,11 @@ class EnhancedAppRouter {
           ),
 
           // Main feature routes
-          GoRoute(
-            path: zakatCalculator,
-            name: 'zakat-calculator',
-            builder: (context, state) => const ZakatCalculatorScreen(),
-          ),
+          // GoRoute(
+          //   path: zakatCalculator,
+          //   name: 'zakat-calculator',
+          //   builder: (context, state) => const ZakatCalculatorScreen(),
+          // ),
 
           GoRoute(
             path: prayerTimes,
@@ -98,6 +99,13 @@ class EnhancedAppRouter {
             path: more,
             name: 'more',
             builder: (context, state) => const SizedBox.shrink(), // Shell handles this
+          ),
+
+          // Islamic Content
+          GoRoute(
+            path: '/islamic-content',
+            name: 'islamic-content',
+            builder: (context, state) => const IslamicContentScreen(),
           ),
 
           // Secondary routes

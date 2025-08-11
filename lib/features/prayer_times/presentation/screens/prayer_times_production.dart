@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/utils/islamic_utils.dart';
 
 /// Production Prayer Times Screen matching app-screens/02_prayer_times_screen.svg
 /// Features: Live countdown, Islamic design, Bengali integration, prayer tracking
@@ -90,7 +91,7 @@ class _PrayerTimesProductionScreenState extends ConsumerState<PrayerTimesProduct
       ),
       leading: IconButton(
         icon: const Icon(Icons.arrow_back, color: Colors.white),
-        onPressed: () => context.pop(),
+                    onPressed: () => Navigator.pop(context),
       ),
       title: const Text(
         'Prayer Times | নামাজের সময়',
