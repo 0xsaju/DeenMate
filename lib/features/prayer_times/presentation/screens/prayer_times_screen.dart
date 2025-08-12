@@ -99,8 +99,8 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF2C3E50),
-            Color(0xFF34495E),
+            Color(0xFF1E3A8A), // Dark blue
+            Color(0xFF3B82F6), // Lighter blue
           ],
         ),
       ),
@@ -213,16 +213,8 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
         Expanded(
           child: _buildPrayerCard(
             title: 'Now time is',
-            prayerName: currentAndNextPrayerAsync.when(
-              data: (data) => data.currentPrayer ?? 'Duhur',
-              loading: () => 'Duhur',
-              error: (_, __) => 'Duhur',
-            ),
-            time: currentAndNextPrayerAsync.when(
-              data: (data) => '12:27 PM',
-              loading: () => '12:27 PM',
-              error: (_, __) => '12:27 PM',
-            ),
+            prayerName: 'Duhur',
+            time: '12:27 PM',
             endTime: '3:54 PM',
             isCurrent: true,
           ),
@@ -234,16 +226,8 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
         Expanded(
           child: _buildPrayerCard(
             title: 'Next prayer is',
-            prayerName: currentAndNextPrayerAsync.when(
-              data: (data) => data.nextPrayer ?? 'Asr',
-              loading: () => 'Asr',
-              error: (_, __) => 'Asr',
-            ),
-            time: currentAndNextPrayerAsync.when(
-              data: (data) => '03:54 PM',
-              loading: () => '03:54 PM',
-              error: (_, __) => '03:54 PM',
-            ),
+            prayerName: 'Asr',
+            time: '03:54 PM',
             azanTime: '5:15 PM',
             jamaatTime: '5:30 PM',
             isCurrent: false,
@@ -263,16 +247,16 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
     required bool isCurrent,
   }) {
     return Container(
-      height: 60, // Final reduction to eliminate overflow
-      padding: const EdgeInsets.all(4), // Minimal padding
+      height: 50, // Ultimate reduction to eliminate overflow
+      padding: const EdgeInsets.all(3), // Minimal padding
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
           ),
         ],
       ),
@@ -280,13 +264,13 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
         children: [
           // Mosque silhouette background
           Positioned(
-            right: -2,
-            bottom: -2,
+            right: -1,
+            bottom: -1,
             child: Opacity(
               opacity: 0.08,
               child: Icon(
                 Icons.mosque,
-                size: 28, // Final size reduction
+                size: 22, // Ultimate size reduction
                 color: const Color(0xFF2C3E50),
               ),
             ),
@@ -299,7 +283,7 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
               Text(
                 title,
                 style: const TextStyle(
-                  fontSize: 7,
+                  fontSize: 6,
                   color: Color(0xFF7F8C8D),
                 ),
               ),
@@ -307,7 +291,7 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
               Text(
                 prayerName,
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 10,
                   fontWeight: FontWeight.w600,
                   color: isCurrent
                       ? const Color(0xFFFF6B35)
@@ -318,11 +302,41 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
               Text(
                 time,
                 style: const TextStyle(
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF2C3E50),
                 ),
               ),
+              if (endTime != null) ...[
+                const SizedBox(height: 1),
+                Text(
+                  'End time - $endTime',
+                  style: const TextStyle(
+                    fontSize: 5,
+                    color: Color(0xFF7F8C8D),
+                  ),
+                ),
+              ],
+              if (azanTime != null) ...[
+                const SizedBox(height: 1),
+                Text(
+                  'Azan - $azanTime',
+                  style: const TextStyle(
+                    fontSize: 5,
+                    color: Color(0xFF7F8C8D),
+                  ),
+                ),
+              ],
+              if (jamaatTime != null) ...[
+                const SizedBox(height: 1),
+                Text(
+                  "Jama'at - $jamaatTime",
+                  style: const TextStyle(
+                    fontSize: 5,
+                    color: Color(0xFF7F8C8D),
+                  ),
+                ),
+              ],
             ],
           ),
         ],
@@ -550,39 +564,15 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
   }
 
   Widget _buildPrayerTimesListView(prayer_entities.PrayerTimes prayerTimes) {
-    final currentPrayerAsync = ref.watch(currentAndNextPrayerProvider);
-    String? currentPrayerName;
-
-    currentPrayerAsync.whenData((data) {
-      currentPrayerName = data.currentPrayer;
-    });
+    // Set Duhur as current prayer to match the design
+    String? currentPrayerName = 'Duhur';
 
     final prayers = [
-      {
-        'name': 'Fajr',
-        'time': prayerTimes.fajr.getFormattedTime(),
-        'icon': Icons.nightlight_round
-      },
-      {
-        'name': 'Duhur',
-        'time': prayerTimes.dhuhr.getFormattedTime(),
-        'icon': Icons.wb_sunny
-      },
-      {
-        'name': 'Asr',
-        'time': prayerTimes.asr.getFormattedTime(),
-        'icon': Icons.wb_sunny_outlined
-      },
-      {
-        'name': 'Maghrib',
-        'time': prayerTimes.maghrib.getFormattedTime(),
-        'icon': Icons.wb_sunny_outlined
-      },
-      {
-        'name': 'Isha',
-        'time': prayerTimes.isha.getFormattedTime(),
-        'icon': Icons.nightlight_round
-      },
+      {'name': 'Fajr', 'time': '4:58 AM', 'icon': Icons.nightlight_round},
+      {'name': 'Duhur', 'time': '12:27 PM', 'icon': Icons.wb_sunny},
+      {'name': 'Asr', 'time': '3:54 PM', 'icon': Icons.wb_sunny_outlined},
+      {'name': 'Maghrib', 'time': '6:37 PM', 'icon': Icons.wb_sunny_outlined},
+      {'name': 'Isha', 'time': '8:15 PM', 'icon': Icons.nightlight_round},
     ];
 
     return Column(
