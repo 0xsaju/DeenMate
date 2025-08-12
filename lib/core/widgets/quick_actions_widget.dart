@@ -33,24 +33,24 @@ class QuickActionsWidget extends StatelessWidget {
             Expanded(
               child: _buildActionCard(
                 context,
-                S.t(context, 'zakat_calculator', 'Zakat Calculator'),
-                S.t(context, 'zakat_calculator_bn', 'যাকাত ক্যালকুলেটর'),
-                Icons.calculate,
-                S.t(context, 'zakat_calc_desc', 'Calculate your Zakat obligation'),
-                const Color(0xFF2E7D32),
-                AppRouter.zakatCalculator,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildActionCard(
-                context,
                 S.t(context, 'prayer_times', 'Prayer Times'),
                 S.t(context, 'prayer_times_bn', 'নামাজের সময়'),
                 Icons.access_time,
                 S.t(context, 'todays_schedule', "Today's prayer schedule"),
                 const Color(0xFF1565C0),
                 AppRouter.prayerTimes,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildActionCard(
+                context,
+                S.t(context, 'qibla_finder', 'Qibla Finder'),
+                S.t(context, 'qibla_finder_bn', 'কিবলার দিক'),
+                Icons.explore,
+                S.t(context, 'qibla_desc', 'Find direction to Kaaba'),
+                const Color(0xFFFF8F00),
+                AppRouter.qiblaFinder,
               ),
             ),
           ],

@@ -83,14 +83,15 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
               ),
               label: S.t(context, 'prayer', 'Prayer'),
             ),
-            NavigationDestination(
-              icon: const Icon(Icons.calculate_outlined),
-              selectedIcon: Icon(
-                Icons.calculate,
-                color: AppTheme.lightTheme.colorScheme.primary,
-              ),
-              label: S.t(context, 'zakat', 'Zakat'),
-            ),
+            // Zakat temporarily disabled
+            // NavigationDestination(
+            //   icon: const Icon(Icons.calculate_outlined),
+            //   selectedIcon: Icon(
+            //     Icons.calculate,
+            //     color: AppTheme.lightTheme.colorScheme.primary,
+            //   ),
+            //   label: S.t(context, 'zakat', 'Zakat'),
+            // ),
             NavigationDestination(
               icon: const Icon(Icons.explore_outlined),
               selectedIcon: Icon(
@@ -119,14 +120,12 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
         return 0;
       case AppRouter.prayerTimes:
         return 1;
-      case AppRouter.zakatCalculator:
-        return 2;
       case AppRouter.qiblaFinder:
-        return 3;
+        return 2;
       default:
         // Settings, profile, etc. go to "More" tab
         if (_isMoreTabRoute(widget.currentLocation)) {
-          return 4;
+          return 3;
         }
         return 0; // Default to home
     }
@@ -154,12 +153,9 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
         context.go(AppRouter.prayerTimes);
         break;
       case 2:
-        context.go(AppRouter.zakatCalculator);
-        break;
-      case 3:
         context.go(AppRouter.qiblaFinder);
         break;
-      case 4:
+      case 3:
         // Navigate to the "More" screen
         context.go('/more');
         break;

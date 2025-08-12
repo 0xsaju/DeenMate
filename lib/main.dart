@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'core/theme/app_theme.dart';
+import 'core/state/prayer_settings_state.dart';
 import 'features/onboarding/presentation/screens/onboarding_navigation_screen.dart';
 import 'features/onboarding/presentation/providers/onboarding_providers.dart';
 import 'core/navigation/shell_wrapper.dart';
@@ -13,6 +14,9 @@ void main() async {
   
   // Initialize Hive
   await Hive.initFlutter();
+  
+  // Initialize prayer settings state
+  await PrayerSettingsState.instance.loadSettings();
   
   runApp(
     const ProviderScope(
@@ -26,64 +30,44 @@ class DeenMateApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Consumer(
-      builder: (context, ref, child) {
-        final hasCompletedOnboarding = ref.watch(onboardingStateProvider);
-        
-        return hasCompletedOnboarding.when(
-          data: (completed) => completed
-              ? MaterialApp.router(
-                  title: 'DeenMate',
-                  debugShowCheckedModeBanner: false,
-                  theme: AppTheme.lightTheme,
-                  darkTheme: AppTheme.darkTheme,
-                  themeMode: ThemeMode.system,
-                  localizationsDelegates: const [
-                    GlobalMaterialLocalizations.delegate,
-                    GlobalWidgetsLocalizations.delegate,
-                    GlobalCupertinoLocalizations.delegate,
-                  ],
-                  supportedLocales: const [
-                    Locale('en'),
-                    Locale('bn'),
-                    Locale('ar'),
-                  ],
-                  routerConfig: EnhancedAppRouter.router,
-                )
-              : MaterialApp(
-                  title: 'DeenMate - Onboarding',
-                  debugShowCheckedModeBanner: false,
-                  theme: AppTheme.lightTheme,
-                  darkTheme: AppTheme.darkTheme,
-                  themeMode: ThemeMode.system,
-                  localizationsDelegates: const [
-                    GlobalMaterialLocalizations.delegate,
-                    GlobalWidgetsLocalizations.delegate,
-                    GlobalCupertinoLocalizations.delegate,
-                  ],
-                  supportedLocales: const [
-                    Locale('en'),
-                    Locale('bn'),
-                    Locale('ar'),
-                  ],
-                  home: const OnboardingNavigationScreen(),
-                ),
-          loading: () => MaterialApp(
+    final hasCompletedOnboarding = ref.watch(onboardingProvider);
+    
+    return hasCompletedOnboarding
+        ? MaterialApp.router(
             title: 'DeenMate',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
-            home: const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            ),
-          ),
-          error: (error, stack) => MaterialApp(
-            title: 'DeenMate',
+            darkTheme: AppTheme.darkTheme,
+            themeMode: ThemeMode.system,
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('en'),
+              Locale('bn'),
+              Locale('ar'),
+            ],
+            routerConfig: EnhancedAppRouter.router,
+          )
+        : MaterialApp(
+            title: 'DeenMate - Onboarding',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: ThemeMode.system,
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('en'),
+              Locale('bn'),
+              Locale('ar'),
+            ],
             home: const OnboardingNavigationScreen(),
-          ),
-        );
-      },
-    );
+          );
   }
 }

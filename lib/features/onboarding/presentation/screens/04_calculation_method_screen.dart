@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/theme/islamic_theme.dart';
+import '../../../../core/state/prayer_settings_state.dart';
 import '../../../prayer_times/domain/entities/calculation_method.dart';
 import '../widgets/islamic_decorative_elements.dart';
 import '../widgets/islamic_gradient_background.dart';
@@ -369,11 +371,12 @@ class _CalculationMethodScreenState extends State<CalculationMethodScreen> {
     );
   }
 
-  void _navigateToNext(BuildContext context) {
-    // TODO: Save calculation method preference
-    // await _preferencesService.updatePreferences(
-    //   calculationMethodId: _selectedMethod?.id ?? 'MWL',
-    // );
+  void _navigateToNext(BuildContext context) async {
+    // Save calculation method preference
+    if (_selectedMethod != null) {
+      await PrayerSettingsState.instance.setCalculationMethod(_selectedMethod!.name.toUpperCase());
+      print('Saved calculation method: ${_selectedMethod!.name.toUpperCase()}');
+    }
     
     // Navigate to next onboarding screen
     widget.onNext?.call();

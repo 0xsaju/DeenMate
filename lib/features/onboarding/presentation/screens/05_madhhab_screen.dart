@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/islamic_theme.dart';
-import '../../../onboarding/domain/entities/user_preferences.dart';
+import '../../domain/entities/user_preferences.dart';
 import '../widgets/islamic_decorative_elements.dart';
 import '../widgets/islamic_gradient_background.dart';
 
@@ -17,7 +17,7 @@ class MadhhabScreen extends StatefulWidget {
 }
 
 class _MadhhabScreenState extends State<MadhhabScreen> {
-  Madhab _selectedMadhhab = Madhab.hanafi;
+  Madhhab _selectedMadhhab = Madhhab.hanafi;
 
   @override
   Widget build(BuildContext context) {
@@ -283,11 +283,11 @@ class _MadhhabScreenState extends State<MadhhabScreen> {
     switch (madhhab) {
       case Madhab.hanafi:
         return '🕌';
-      case Madhab.shafi:
+      case Madhhab.shafii:
         return '📖';
-      case Madhab.maliki:
+      case Madhhab.maliki:
         return '🌍';
-      case Madhab.hanbali:
+      case Madhhab.hanbali:
         return '📚';
     }
   }
@@ -296,11 +296,11 @@ class _MadhhabScreenState extends State<MadhhabScreen> {
     switch (madhhab) {
       case Madhab.hanafi:
         return 'Founded by Imam Abu Hanifa • Popular in Turkey, Central Asia, India';
-      case Madhab.shafi:
+      case Madhhab.shafii:
         return "Founded by Imam Shafi'i • Popular in Southeast Asia, East Africa";
-      case Madhab.maliki:
+      case Madhhab.maliki:
         return 'Founded by Imam Malik • Popular in North and West Africa';
-      case Madhab.hanbali:
+      case Madhhab.hanbali:
         return 'Founded by Imam Ahmad ibn Hanbal • Popular in Arabian Peninsula';
     }
   }

@@ -23,6 +23,11 @@ class AladhanApi {
     PrayerCalculationSettings? settings,
   }) async {
     try {
+      print('AlAdhan API: Fetching prayer times for ${date.toIso8601String()}');
+      print('AlAdhan API: Location: ${location.latitude}, ${location.longitude}');
+      print('AlAdhan API: Method: ${settings?.calculationMethod ?? 'MWL'}');
+      print('AlAdhan API: Madhab: ${settings?.madhab}');
+      
       final response = await _dio.get(
         '$_baseUrl/timings/${_formatDate(date)}',
         queryParameters: {
@@ -31,7 +36,8 @@ class AladhanApi {
           'method': _getCalculationMethodCode(settings?.calculationMethod ?? 'MWL'),
           'school': _getMadhabCode(settings?.madhab),
           'tune': _formatAdjustments(settings?.adjustments ?? {}),
-          'timezone': location.timezone,
+          // Only pass timezone if it looks like a valid IANA timezone. AlAdhan can auto-detect otherwise.
+          if (_isIanaTimezone(location.timezone)) 'timezone': location.timezone,
         },
         options: Options(
           headers: {
@@ -42,15 +48,30 @@ class AladhanApi {
         ),
       );
 
+      print('AlAdhan API: Response status: ${response.statusCode}');
+      print('AlAdhan API: Response data keys: ${response.data?.keys.toList()}');
+      
       if (response.statusCode == 200 && response.data != null) {
+        final data = response.data as Map<String, dynamic>;
+        print('AlAdhan API: Data structure: ${data.keys}');
+        if (data['data'] != null) {
+          final timingsData = data['data']['timings'] as Map<String, dynamic>?;
+          print('AlAdhan API: Timings keys: ${timingsData?.keys.toList()}');
+          print('AlAdhan API: Sample timing (Fajr): ${timingsData?['Fajr']}');
+        }
         return _parsePrayerTimesResponse(response.data, date, location, settings);
       } else {
+        print('AlAdhan API: Failed with status ${response.statusCode}');
         throw Failure.serverFailure(
           message: 'Failed to fetch prayer times',
           statusCode: response.statusCode ?? 500,
         );
       }
     } on DioException catch (e) {
+      print('AlAdhan API: DioException: ${e.type} - ${e.message}');
+      if (e.response != null) {
+        print('AlAdhan API: Error response: ${e.response?.data}');
+      }
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout) {
         throw const Failure.timeoutFailure();
@@ -65,6 +86,7 @@ class AladhanApi {
         );
       }
     } catch (e) {
+      print('AlAdhan API: Unexpected error: $e');
       if (e is Failure) rethrow;
       throw Failure.unknownFailure(
         message: 'Unexpected error fetching prayer times',
@@ -92,7 +114,7 @@ class AladhanApi {
           'method': _getCalculationMethodCode(settings?.calculationMethod ?? 'MWL'),
           'school': _getMadhabCode(settings?.madhab),
           'tune': _formatAdjustments(settings?.adjustments ?? {}),
-          'timezone': location.timezone,
+          if (_isIanaTimezone(location.timezone)) 'timezone': location.timezone,
         },
         options: Options(
 
@@ -210,9 +232,9 @@ class AladhanApi {
 
     // Parse Hijri date
     final hijriCalendar = HijriCalendar()
-      ..hDay = hijriData['day']
-      ..hMonth = hijriData['month']['number']
-      ..hYear = hijriData['year'];
+      ..hDay = int.parse(hijriData['day'].toString())
+      ..hMonth = int.parse(hijriData['month']['number'].toString())
+      ..hYear = int.parse(hijriData['year'].toString());
 
     return PrayerTimes(
       date: date,
@@ -262,9 +284,9 @@ class AladhanApi {
 
     // Parse Hijri date
     final hijriCalendar = HijriCalendar()
-      ..hDay = hijriData['day']
-      ..hMonth = hijriData['month']['number']
-      ..hYear = hijriData['year'];
+      ..hDay = int.parse(hijriData['day'].toString())
+      ..hMonth = int.parse(hijriData['month']['number'].toString())
+      ..hYear = int.parse(hijriData['year'].toString());
 
     return PrayerTimes(
       date: date,
@@ -288,23 +310,37 @@ class AladhanApi {
 
   /// Parse individual prayer time
   PrayerTime _parsePrayerTime(String timeString, String name, String arabicName) {
-    // Remove timezone suffix if present (e.g., "05:30 (+06)")
-    final cleanTimeString = timeString.split(' ')[0];
-    
-    // Parse time
-    final timeParts = cleanTimeString.split(':');
-    final hour = int.parse(timeParts[0]);
-    final minute = int.parse(timeParts[1]);
-    
-    final now = DateTime.now();
-    final prayerTime = DateTime(now.year, now.month, now.day, hour, minute);
+    try {
+      // Remove timezone suffix if present (e.g., "05:30 (+06)")
+      final cleanTimeString = timeString.split(' ')[0];
+      
+      // Parse time
+      final timeParts = cleanTimeString.split(':');
+      final hour = int.parse(timeParts[0]);
+      final minute = int.parse(timeParts[1]);
+      
+      final now = DateTime.now();
+      final prayerTime = DateTime(now.year, now.month, now.day, hour, minute);
 
-    return PrayerTime(
-      time: prayerTime,
-      name: name,
-      isCompleted: false,
-      status: _determinePrayerStatus(prayerTime),
-    );
+      return PrayerTime(
+        time: prayerTime,
+        name: name,
+        isCompleted: false,
+        status: _determinePrayerStatus(prayerTime),
+      );
+    } catch (e) {
+      print('AlAdhan API: Error parsing prayer time "$timeString" for $name: $e');
+      // Return a default time if parsing fails
+      final now = DateTime.now();
+      final defaultTime = DateTime(now.year, now.month, now.day, 12, 0);
+      
+      return PrayerTime(
+        time: defaultTime,
+        name: name,
+        isCompleted: false,
+        status: PrayerStatus.upcoming,
+      );
+    }
   }
 
   /// Determine prayer status based on time
@@ -316,7 +352,7 @@ class AladhanApi {
     } else if (now.difference(prayerTime).inMinutes < 30) {
       return PrayerStatus.current;
     } else {
-      return PrayerStatus.inProgress;
+      return PrayerStatus.completed; // Fixed: prayers that have passed should be completed, not in progress
     }
   }
 
@@ -366,6 +402,13 @@ class AladhanApi {
       default:
         return '0'; // Shafi, Maliki, Hanbali (standard)
     }
+  }
+
+  /// Whether a timezone string looks like an IANA timezone (e.g., Asia/Dhaka)
+  bool _isIanaTimezone(String? timezone) {
+    if (timezone == null) return false;
+    // Very loose check: contains a slash, not starting with 'UTC'
+    return timezone.contains('/') && !timezone.toUpperCase().startsWith('UTC');
   }
 
   /// Convert Madhab enum to API code

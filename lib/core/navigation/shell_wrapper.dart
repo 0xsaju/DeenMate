@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/prayer_times/presentation/screens/athan_settings_screen.dart';
 import '../../features/prayer_times/presentation/screens/calculation_method_screen.dart';
 import '../../features/prayer_times/presentation/screens/prayer_times_screen.dart';
+import '../../features/qibla/presentation/screens/qibla_compass_screen.dart';
 // import '../../features/zakat/presentation/screens/zakat_calculator_screen.dart';
 import '../../features/islamic_content/presentation/screens/islamic_content_screen.dart';
 import '../routing/app_router.dart';
@@ -88,11 +89,7 @@ class EnhancedAppRouter {
           GoRoute(
             path: qiblaFinder,
             name: 'qibla-finder',
-            builder: (context, state) => const PlaceholderScreen(
-              title: 'Qibla Finder',
-              icon: Icons.explore,
-              description: 'Find the direction to Kaaba',
-            ),
+            builder: (context, state) => const QiblaCompassScreen(),
           ),
 
           GoRoute(

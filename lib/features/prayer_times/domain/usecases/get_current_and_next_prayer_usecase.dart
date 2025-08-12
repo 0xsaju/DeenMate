@@ -16,8 +16,11 @@ class GetCurrentAndNextPrayerUsecase {
     PrayerCalculationSettings? settings,
   }) async {
     try {
+      print('=== USECASE getCurrentAndNextPrayer START ===');
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
+      print('UseCase: Current time: $now, Today: $today');
+      print('UseCase: Settings - Method: ${settings?.calculationMethod}');
       
       final prayerTimesResult = await _repository.getPrayerTimes(
         date: today,
@@ -28,8 +31,13 @@ class GetCurrentAndNextPrayerUsecase {
       return prayerTimesResult.fold(
         (failure) => Left(failure),
         (prayerTimes) {
+          print('UseCase: Prayer times received - Fajr: ${prayerTimes.fajr.time}, Dhuhr: ${prayerTimes.dhuhr.time}');
+          
           final currentPrayer = _getCurrentPrayer(prayerTimes, now);
           final nextPrayer = _getNextPrayer(prayerTimes, now);
+          
+          print('UseCase: Calculated - Current: $currentPrayer, Next: $nextPrayer');
+          print('=== USECASE getCurrentAndNextPrayer END ===');
           
           return Right({
             'currentPrayer': currentPrayer,
@@ -47,43 +55,41 @@ class GetCurrentAndNextPrayerUsecase {
   }
 
   String? _getCurrentPrayer(PrayerTimes prayerTimes, DateTime now) {
+    // Only include actual prayers, not Sunrise
     final prayers = [
       {'name': 'Fajr', 'time': prayerTimes.fajr.time},
-      {'name': 'Sunrise', 'time': prayerTimes.sunrise.time},
       {'name': 'Dhuhr', 'time': prayerTimes.dhuhr.time},
       {'name': 'Asr', 'time': prayerTimes.asr.time},
       {'name': 'Maghrib', 'time': prayerTimes.maghrib.time},
       {'name': 'Isha', 'time': prayerTimes.isha.time},
     ];
 
-    for (int i = 0; i < prayers.length - 1; i++) {
-      final currentPrayer = prayers[i];
-      final nextPrayer = prayers[i + 1];
+    // Find the current prayer (the one that just passed or is in progress)
+    for (int i = prayers.length - 1; i >= 0; i--) {
+      final prayer = prayers[i];
+      final prayerTime = prayer['time'] as DateTime;
       
-      if (now.isAfter(currentPrayer['time'] as DateTime) && 
-          now.isBefore(nextPrayer['time'] as DateTime)) {
-        return currentPrayer['name'] as String;
+      // If current time is after this prayer time, this is the current prayer
+      if (now.isAfter(prayerTime)) {
+        return prayer['name'] as String;
       }
     }
     
-    // Check if it's after Isha (last prayer of the day)
-    if (now.isAfter(prayerTimes.isha.time)) {
-      return 'Isha';
-    }
-    
+    // If we're before Fajr, return null (no current prayer yet)
     return null;
   }
 
   String? _getNextPrayer(PrayerTimes prayerTimes, DateTime now) {
+    // Only include actual prayers, not Sunrise
     final prayers = [
       {'name': 'Fajr', 'time': prayerTimes.fajr.time},
-      {'name': 'Sunrise', 'time': prayerTimes.sunrise.time},
       {'name': 'Dhuhr', 'time': prayerTimes.dhuhr.time},
       {'name': 'Asr', 'time': prayerTimes.asr.time},
       {'name': 'Maghrib', 'time': prayerTimes.maghrib.time},
       {'name': 'Isha', 'time': prayerTimes.isha.time},
     ];
 
+    // Find the next upcoming prayer
     for (final prayer in prayers) {
       if (now.isBefore(prayer['time'] as DateTime)) {
         return prayer['name'] as String;

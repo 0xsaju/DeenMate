@@ -1,18 +1,13 @@
-import 'dart:math' as math;
+import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_compass/flutter_compass.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../../../../core/theme/islamic_theme.dart';
-import '../../../../core/localization/strings.dart';
-import '../../domain/entities/qibla_direction.dart';
-import '../providers/qibla_providers.dart';
-import '../widgets/qibla_compass_widget.dart';
-import '../widgets/qibla_calibration_widget.dart';
-import '../widgets/qibla_error_widget.dart';
 
-/// Beautiful Islamic Qibla Compass Screen with Clean Architecture
 class QiblaCompassScreen extends ConsumerStatefulWidget {
   const QiblaCompassScreen({super.key});
 
@@ -20,72 +15,132 @@ class QiblaCompassScreen extends ConsumerStatefulWidget {
   ConsumerState<QiblaCompassScreen> createState() => _QiblaCompassScreenState();
 }
 
-class _QiblaCompassScreenState extends ConsumerState<QiblaCompassScreen>
-    with TickerProviderStateMixin {
-  
-  late AnimationController _pulseController;
-  late AnimationController _rotationController;
-  late Animation<double> _pulseAnimation;
+class _QiblaCompassScreenState extends ConsumerState<QiblaCompassScreen> {
+  double? _compassDirection;
+  double? _qiblaDirection;
+  bool _isCalibrating = false;
+  String _calibrationMessage = '';
+  StreamSubscription<CompassEvent>? _compassSubscription;
+  Position? _currentPosition;
 
   @override
   void initState() {
     super.initState();
-    _initializeAnimations();
-    _initializeQibla();
-  }
-
-  void _initializeAnimations() {
-    _pulseController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    );
-    
-    _rotationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    
-    _pulseAnimation = Tween<double>(
-      begin: 1,
-      end: 1.1,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ),);
-    
-    _pulseController.repeat(reverse: true);
-  }
-
-  Future<void> _initializeQibla() async {
-    final qiblaState = ref.read(qiblaStateProvider.notifier);
-    await qiblaState.initializeSensors();
+    _initializeCompass();
+    _getCurrentLocation();
   }
 
   @override
   void dispose() {
-    _pulseController.dispose();
-    _rotationController.dispose();
+    _compassSubscription?.cancel();
     super.dispose();
+  }
+
+  Future<void> _initializeCompass() async {
+    try {
+      // Check if compass is available
+      final compassAvailable = await FlutterCompass.events?.first;
+      if (compassAvailable == null) {
+        setState(() {
+          _calibrationMessage = 'Compass not available on this device';
+        });
+        return;
+      }
+
+      // Listen to compass events
+      _compassSubscription = FlutterCompass.events?.listen((event) {
+        setState(() {
+          _compassDirection = event.heading;
+          
+          // Check if compass needs calibration
+          if (event.heading == null) {
+            _isCalibrating = true;
+            _calibrationMessage = 'Please calibrate your compass by moving your device in a figure-8 pattern';
+          } else {
+            _isCalibrating = false;
+            _calibrationMessage = '';
+          }
+        });
+      });
+    } catch (e) {
+      setState(() {
+        _calibrationMessage = 'Error initializing compass: $e';
+      });
+    }
+  }
+
+  Future<void> _getCurrentLocation() async {
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      setState(() {
+        _currentPosition = position;
+      });
+      
+      // Calculate Qibla direction (simplified calculation)
+      _calculateQiblaDirection();
+    } catch (e) {
+      setState(() {
+        _calibrationMessage = 'Error getting location: $e';
+      });
+    }
+  }
+
+  void _calculateQiblaDirection() {
+    if (_currentPosition == null) return;
+    
+    // Kaaba coordinates
+    const kaabaLat = 21.4225;
+    const kaabaLng = 39.8262;
+    
+    // Current position
+    final currentLat = _currentPosition!.latitude;
+    final currentLng = _currentPosition!.longitude;
+    
+    // Calculate Qibla direction (simplified)
+    final latDiff = kaabaLat - currentLat;
+    final lngDiff = kaabaLng - currentLng;
+    
+    final qiblaAngle = (atan2(lngDiff, latDiff) * 180 / pi);
+    
+    setState(() {
+      _qiblaDirection = qiblaAngle;
+    });
+  }
+
+  double? get arrowAngle {
+    if (_compassDirection == null || _qiblaDirection == null) return null;
+    
+    // Calculate the angle between compass direction and Qibla direction
+    double angle = _qiblaDirection! - _compassDirection!;
+    
+    // Normalize to 0-360 degrees
+    while (angle < 0) angle += 360;
+    while (angle >= 360) angle -= 360;
+    
+    return angle;
   }
 
   @override
   Widget build(BuildContext context) {
-    final qiblaState = ref.watch(qiblaStateProvider);
-    final sensorsAvailableAsync = ref.watch(sensorsAvailableProvider);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Qibla Compass'),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
-      body: DecoratedBox(
+      body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Theme.of(context).primaryColor.withValues(alpha: 0.1),
+              Theme.of(context).primaryColor.withOpacity(0.1),
               Colors.white,
             ],
           ),
@@ -94,15 +149,33 @@ class _QiblaCompassScreenState extends ConsumerState<QiblaCompassScreen>
           child: Column(
             children: [
               // Status indicator
-              _buildStatusIndicator(qiblaState, sensorsAvailableAsync),
+              _buildStatusIndicator(),
               
-              // Main content
+              // Main compass content
               Expanded(
-                child: _buildMainContent(qiblaState, sensorsAvailableAsync),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Compass circle
+                      _buildCompassCircle(),
+                      
+                      const SizedBox(height: 30),
+                      
+                      // Direction text
+                      _buildDirectionText(),
+                      
+                      const SizedBox(height: 20),
+                      
+                      // Location info
+                      _buildLocationInfo(),
+                    ],
+                  ),
+                ),
               ),
               
               // Action buttons
-              _buildActionButtons(qiblaState),
+              _buildActionButtons(),
             ],
           ),
         ),
@@ -110,23 +183,85 @@ class _QiblaCompassScreenState extends ConsumerState<QiblaCompassScreen>
     );
   }
 
-  Widget _buildStatusIndicator(QiblaState qiblaState, AsyncValue<bool> sensorsAvailableAsync) {
+  Widget _buildStatusIndicator() {
+    Color statusColor;
+    String statusText;
+    IconData statusIcon;
+
+    if (_isCalibrating) {
+      statusColor = Colors.orange;
+      statusText = 'Calibrating Compass';
+      statusIcon = Icons.compass_calibration;
+    } else if (_compassDirection == null) {
+      statusColor = Colors.red;
+      statusText = 'Compass Unavailable';
+      statusIcon = Icons.error;
+    } else {
+      statusColor = Colors.green;
+      statusText = 'Compass Active';
+      statusIcon = Icons.check_circle;
+    }
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: statusColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: statusColor.withOpacity(0.3)),
+      ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            _getStatusIcon(qiblaState),
-            color: _getStatusColor(qiblaState),
-            size: 20,
-          ),
+          Icon(statusIcon, color: statusColor, size: 20),
           const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              _getStatusText(qiblaState, sensorsAvailableAsync),
-              style: TextStyle(
-                color: _getStatusColor(qiblaState),
-                fontWeight: FontWeight.w500,
+          Text(
+            statusText,
+            style: TextStyle(
+              color: statusColor,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompassCircle() {
+    return Container(
+      width: 280,
+      height: 280,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            spreadRadius: 5,
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          // Compass markings
+          _buildCompassMarkings(),
+          
+          // Qibla arrow
+          if (arrowAngle != null)
+            Transform.rotate(
+              angle: (arrowAngle! * pi / 180),
+              child: _buildQiblaArrow(),
+            ),
+          
+          // Center dot
+          Center(
+            child: Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor,
+                shape: BoxShape.circle,
               ),
             ),
           ),
@@ -135,71 +270,138 @@ class _QiblaCompassScreenState extends ConsumerState<QiblaCompassScreen>
     );
   }
 
-  Widget _buildMainContent(QiblaState qiblaState, AsyncValue<bool> sensorsAvailableAsync) {
-    return sensorsAvailableAsync.when(
-      data: (sensorsAvailable) {
-        if (!sensorsAvailable) {
-          return _buildSensorUnavailableState();
-        }
-
-        return _buildQiblaContent(qiblaState);
-      },
-      loading: () => _buildLoadingState(),
-      error: (error, stack) => _buildErrorState(error.toString()),
+  Widget _buildCompassMarkings() {
+    return CustomPaint(
+      size: const Size(280, 280),
+      painter: CompassMarkingsPainter(
+        primaryColor: Theme.of(context).primaryColor,
+        compassHeading: _compassDirection,
+      ),
     );
   }
 
-  Widget _buildQiblaContent(QiblaState qiblaState) {
-    switch (qiblaState.runtimeType) {
-      case QiblaInitial:
-        return _buildInitialState();
-      case QiblaLoading:
-        return _buildLoadingState();
-      case QiblaCalibrating:
-        return _buildCalibratingState();
-      case QiblaReady:
-        return _buildReadyState();
-      case QiblaLoaded:
-        final loadedState = qiblaState as QiblaLoaded;
-        return _buildLoadedState(loadedState.qiblaDirection);
-      case QiblaError:
-        final errorState = qiblaState as QiblaError;
-        return _buildErrorState(errorState.message);
-      default:
-        return _buildInitialState();
-    }
+  Widget _buildQiblaArrow() {
+    return Center(
+      child: Container(
+        width: 4,
+        height: 120,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Theme.of(context).primaryColor,
+              Theme.of(context).primaryColor.withOpacity(0.7),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(2),
+        ),
+      ),
+    );
   }
 
-  Widget _buildActionButtons(QiblaState qiblaState) {
+  Widget _buildDirectionText() {
+    if (arrowAngle == null) {
+      return Text(
+        'Calibrating...',
+        style: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).primaryColor,
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        Text(
+          'Qibla Direction',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).primaryColor,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '${arrowAngle!.toStringAsFixed(1)}° towards Kaaba',
+          style: TextStyle(
+            fontSize: 18,
+            color: Colors.grey[600],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLocationInfo() {
     return Container(
+      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(
+            'Current Location',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).primaryColor,
+            ),
+          ),
+          const SizedBox(height: 8),
+          if (_currentPosition != null)
+            Text(
+              '${_currentPosition!.latitude.toStringAsFixed(4)}, ${_currentPosition!.longitude.toStringAsFixed(4)}',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+            )
+          else
+            Text(
+              'Getting location...',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButtons() {
+    return Padding(
       padding: const EdgeInsets.all(16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           ElevatedButton.icon(
-            onPressed: _refreshQibla,
+            onPressed: _isCalibrating ? null : _recalibrateCompass,
             icon: const Icon(Icons.refresh),
-            label: const Text('Refresh'),
+            label: const Text('Recalibrate'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: Colors.white,
             ),
           ),
           ElevatedButton.icon(
-            onPressed: _calibrateCompass,
-            icon: const Icon(Icons.compass_calibration),
-            label: const Text('Calibrate'),
+            onPressed: _getCurrentLocation,
+            icon: const Icon(Icons.location_on),
+            label: const Text('Update Location'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
-              foregroundColor: Colors.white,
-            ),
-          ),
-          ElevatedButton.icon(
-            onPressed: _clearCache,
-            icon: const Icon(Icons.clear_all),
-            label: const Text('Clear Cache'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: Colors.white,
             ),
           ),
@@ -208,464 +410,98 @@ class _QiblaCompassScreenState extends ConsumerState<QiblaCompassScreen>
     );
   }
 
-  IconData _getStatusIcon(QiblaState state) {
-    switch (state.runtimeType) {
-      case QiblaInitial:
-        return Icons.compass_calibration;
-      case QiblaLoading:
-        return Icons.hourglass_empty;
-      case QiblaCalibrating:
-        return Icons.compass_calibration;
-      case QiblaReady:
-        return Icons.check_circle;
-      case QiblaLoaded:
-        return Icons.location_on;
-      case QiblaError:
-        return Icons.error;
-      default:
-        return Icons.help;
-    }
+  void _recalibrateCompass() {
+    setState(() {
+      _isCalibrating = true;
+      _calibrationMessage = 'Please move your device in a figure-8 pattern to calibrate the compass';
+    });
+    
+    // Reset calibration after 5 seconds
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted) {
+        setState(() {
+          _isCalibrating = false;
+          _calibrationMessage = '';
+        });
+      }
+    });
   }
+}
 
-  Color _getStatusColor(QiblaState state) {
-    switch (state.runtimeType) {
-      case QiblaInitial:
-        return Colors.blue;
-      case QiblaLoading:
-        return Colors.orange;
-      case QiblaCalibrating:
-        return Colors.purple;
-      case QiblaReady:
-        return Colors.green;
-      case QiblaLoaded:
-        return Colors.green;
-      case QiblaError:
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  String _getStatusText(QiblaState state, AsyncValue<bool> sensorsAvailableAsync) {
-    if (sensorsAvailableAsync.isLoading) {
-      return 'Checking sensors...';
+class CompassMarkingsPainter extends CustomPainter {
+  final Color primaryColor;
+  final double? compassHeading;
+  
+  CompassMarkingsPainter({
+    required this.primaryColor,
+    this.compassHeading,
+  });
+  
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 10;
+    
+    final paint = Paint()
+      ..color = Colors.grey[400]!
+      ..strokeWidth = 1
+      ..style = PaintingStyle.stroke;
+    
+    // Draw outer circle
+    canvas.drawCircle(center, radius, paint);
+    
+    // Draw cardinal directions - these should rotate with compass
+    final textPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    );
+    
+    final directions = ['N', 'E', 'S', 'W'];
+    final angles = [0, 90, 180, 270];
+    
+    for (int i = 0; i < directions.length; i++) {
+      // Apply compass rotation to the direction markers
+      final baseAngle = angles[i] * pi / 180;
+      final rotatedAngle = baseAngle - (compassHeading ?? 0) * pi / 180;
+      
+      final x = center.dx + (radius - 30) * sin(rotatedAngle);
+      final y = center.dy - (radius - 30) * cos(rotatedAngle);
+      
+      textPainter.text = TextSpan(
+        text: directions[i],
+        style: TextStyle(
+          color: primaryColor,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      );
+      
+      textPainter.layout();
+      textPainter.paint(
+        canvas,
+        Offset(x - textPainter.width / 2, y - textPainter.height / 2),
+      );
     }
     
-    if (sensorsAvailableAsync.hasError) {
-      return 'Sensor error: ${sensorsAvailableAsync.error}';
-    }
-
-    final sensorsAvailable = sensorsAvailableAsync.value ?? false;
-    if (!sensorsAvailable) {
-      return 'Sensors unavailable';
-    }
-
-    switch (state.runtimeType) {
-      case QiblaInitial:
-        return 'Initializing...';
-      case QiblaLoading:
-        return 'Loading...';
-      case QiblaCalibrating:
-        return 'Calibrating compass...';
-      case QiblaReady:
-        return 'Ready';
-      case QiblaLoaded:
-        return 'Qibla direction loaded';
-      case QiblaError:
-        final errorState = state as QiblaError;
-        return 'Error: ${errorState.message}';
-      default:
-        return 'Unknown state';
+    // Draw degree markings
+    for (int i = 0; i < 360; i += 30) {
+      final angle = i * pi / 180;
+      final startRadius = radius - (i % 90 == 0 ? 20 : 10);
+      final endRadius = radius;
+      
+      final startX = center.dx + startRadius * sin(angle);
+      final startY = center.dy - startRadius * cos(angle);
+      final endX = center.dx + endRadius * sin(angle);
+      final endY = center.dy - endRadius * cos(angle);
+      
+      canvas.drawLine(
+        Offset(startX, startY),
+        Offset(endX, endY),
+        paint,
+      );
     }
   }
-
-  Widget _buildAppBar() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => context.pop(),
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Builder(builder: (context) {
-                  return Text(
-                    S.t(context, 'qibla_compass', 'Qibla Compass'),
-                    style: IslamicTheme.textTheme.headlineMedium?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  );
-                }),
-                Builder(builder: (context) {
-                  return Text(
-                    S.t(context, 'qibla_direction', 'কিবলার দিক | اتجاه القبلة'),
-                    style: IslamicTheme.textTheme.bodySmall?.copyWith(
-                      color: Colors.white.withOpacity(0.9),
-                    ),
-                  );
-                }),
-              ],
-            ),
-          ),
-          IconButton(
-            onPressed: _refreshQibla,
-            icon: const Icon(Icons.refresh, color: Colors.white),
-          ),
-          IconButton(
-            onPressed: _showSettings,
-            icon: const Icon(Icons.settings, color: Colors.white),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInitialState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-          ),
-          const SizedBox(height: 24),
-          Builder(builder: (context) {
-            return Text(
-              S.t(context, 'initializing_qibla', 'Initializing Qibla Compass...'),
-              style: IslamicTheme.textTheme.bodyLarge?.copyWith(
-                color: Colors.white,
-              ),
-              textAlign: TextAlign.center,
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLoadingState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-          ),
-          const SizedBox(height: 24),
-          Builder(builder: (context) {
-            return Text(
-              S.t(context, 'getting_location', 'Getting your location...'),
-              style: IslamicTheme.textTheme.bodyLarge?.copyWith(
-                color: Colors.white,
-              ),
-              textAlign: TextAlign.center,
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCalibratingState() {
-    return const QiblaCalibrationWidget();
-  }
-
-  Widget _buildReadyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.compass_calibration,
-            size: 64,
-            color: Colors.white.withOpacity(0.8),
-          ),
-          const SizedBox(height: 24),
-          Builder(builder: (context) {
-            return Text(
-              S.t(context, 'compass_ready', 'Compass is ready'),
-              style: IslamicTheme.textTheme.headlineSmall?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            );
-          }),
-          const SizedBox(height: 16),
-          Builder(builder: (context) {
-            return Text(
-              S.t(context, 'tap_to_start', 'Tap to start Qibla direction'),
-              style: IslamicTheme.textTheme.bodyMedium?.copyWith(
-                color: Colors.white.withOpacity(0.8),
-              ),
-            );
-          }),
-          const SizedBox(height: 32),
-          ElevatedButton.icon(
-            onPressed: _getCurrentQiblaDirection,
-            icon: const Icon(Icons.compass_calibration),
-            label: Builder(builder: (context) {
-              return Text(S.t(context, 'start_qibla', 'Start Qibla'));
-            }),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: IslamicTheme.islamicGreen,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLoadedState(QiblaDirection qiblaDirection) {
-    return Column(
-      children: [
-        _buildLocationInfo(qiblaDirection),
-        const SizedBox(height: 24),
-        Expanded(
-          child: Center(
-            child: QiblaCompassWidget(
-              qiblaDirection: qiblaDirection,
-              pulseAnimation: _pulseAnimation,
-            ),
-          ),
-        ),
-        _buildDistanceInfo(qiblaDirection),
-        const SizedBox(height: 24),
-      ],
-    );
-  }
-
-  Widget _buildErrorState(String message) {
-    return QiblaErrorWidget(
-      message: message,
-      onRetry: _getCurrentQiblaDirection,
-      onCalibrate: _calibrateCompass,
-    );
-  }
-
-  Widget _buildSensorUnavailableState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.location_off,
-            size: 64,
-            color: Colors.white.withOpacity(0.8),
-          ),
-          const SizedBox(height: 24),
-          Builder(builder: (context) {
-            return Text(
-              S.t(context, 'sensors_unavailable', 'Sensors Unavailable'),
-              style: IslamicTheme.textTheme.headlineSmall?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            );
-          }),
-          const SizedBox(height: 16),
-          Builder(builder: (context) {
-            return Text(
-              S.t(context, 'enable_location_compass', 'Please enable location services and ensure your device has a compass sensor.'),
-              style: IslamicTheme.textTheme.bodyMedium?.copyWith(
-                color: Colors.white.withOpacity(0.8),
-              ),
-              textAlign: TextAlign.center,
-            );
-          }),
-          const SizedBox(height: 32),
-          ElevatedButton.icon(
-            onPressed: _openSettings,
-            icon: const Icon(Icons.settings),
-            label: Builder(builder: (context) {
-              return Text(S.t(context, 'open_settings', 'Open Settings'));
-            }),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: IslamicTheme.islamicGreen,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLocationInfo(QiblaDirection qiblaDirection) {
-    if (qiblaDirection.locationName == null) return const SizedBox();
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.location_on, color: Colors.white, size: 20),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Builder(builder: (context) {
-                  return Text(
-                    S.t(context, 'your_location', 'Your Location'),
-                    style: IslamicTheme.textTheme.bodySmall?.copyWith(
-                      color: Colors.white.withOpacity(0.7),
-                    ),
-                  );
-                }),
-                Text(
-                  qiblaDirection.locationName!,
-                  style: IslamicTheme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDistanceInfo(QiblaDirection qiblaDirection) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildInfoItem(
-            S.t(context, 'distance_to_mecca', 'Distance to Mecca'),
-            qiblaDirection.formattedDistance,
-          ),
-          _buildInfoItem(
-            S.t(context, 'qibla_direction', 'Qibla Direction'),
-            qiblaDirection.formattedBearing,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoItem(String label, String value) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: IslamicTheme.textTheme.headlineSmall?.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          label,
-          style: IslamicTheme.textTheme.bodySmall?.copyWith(
-            color: Colors.white.withOpacity(0.7),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // Action methods
-
-  void _refreshQibla() {
-    final qiblaState = ref.read(qiblaStateProvider.notifier);
-    qiblaState.getCurrentQiblaDirection();
-  }
-
-  void _getCurrentQiblaDirection() {
-    final qiblaState = ref.read(qiblaStateProvider.notifier);
-    qiblaState.getCurrentQiblaDirection();
-  }
-
-  void _calibrateCompass() {
-    final qiblaState = ref.read(qiblaStateProvider.notifier);
-    qiblaState.calibrateCompass();
-  }
-
-  void _showSettings() {
-    // Show Qibla settings dialog
-    showDialog(
-      context: context,
-      builder: (context) => _buildSettingsDialog(),
-    );
-  }
-
-  void _openSettings() {
-    // Open device settings
-    // This would typically use a package like app_settings
-  }
-
-  Widget _buildSettingsDialog() {
-    return AlertDialog(
-      title: Builder(builder: (context) {
-        return Text(S.t(context, 'qibla_settings', 'Qibla Settings'));
-      }),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            leading: const Icon(Icons.compass_calibration),
-            title: Builder(builder: (context) {
-              return Text(S.t(context, 'calibrate_compass', 'Calibrate Compass'));
-            }),
-            onTap: () {
-              Navigator.pop(context);
-              _calibrateCompass();
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.refresh),
-            title: Builder(builder: (context) {
-              return Text(S.t(context, 'refresh_location', 'Refresh Location'));
-            }),
-            onTap: () {
-              Navigator.pop(context);
-              _refreshQibla();
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.clear),
-            title: Builder(builder: (context) {
-              return Text(S.t(context, 'clear_cache', 'Clear Cache'));
-            }),
-            onTap: () {
-              Navigator.pop(context);
-              _clearCache();
-            },
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Builder(builder: (context) {
-            return Text(S.t(context, 'cancel', 'Cancel'));
-          }),
-        ),
-      ],
-    );
-  }
-
-  void _clearCache() {
-    final qiblaState = ref.read(qiblaStateProvider.notifier);
-    qiblaState.clearCache();
-  }
+  
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

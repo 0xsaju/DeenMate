@@ -1,37 +1,31 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Provider to check if user has completed onboarding
-final onboardingStateProvider = FutureProvider<bool>((ref) async {
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('onboarding_completed') ?? false;
-  } catch (e) {
-    // If there's an error, assume onboarding is not completed
-    return false;
+class OnboardingNotifier extends StateNotifier<bool> {
+  OnboardingNotifier() : super(false) {
+    _loadOnboardingStatus();
   }
-});
 
-/// Provider to mark onboarding as completed
-final markOnboardingCompletedProvider = FutureProvider.family<void, bool>((ref, completed) async {
-  try {
+  Future<void> _loadOnboardingStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    state = prefs.getBool('onboarding_completed') ?? false;
+  }
+
+  Future<void> setOnboardingCompleted(bool completed) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('onboarding_completed', completed);
-    // Invalidate the onboarding state provider to refresh the UI
-    ref.invalidate(onboardingStateProvider);
-  } catch (e) {
-    // Handle error silently
+    state = completed;
   }
-});
 
-/// Provider to reset onboarding (for testing purposes)
-final resetOnboardingProvider = FutureProvider<void>((ref) async {
-  try {
+  Future<void> resetOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('onboarding_completed', false);
-    // Invalidate the onboarding state provider to refresh the UI
-    ref.invalidate(onboardingStateProvider);
-  } catch (e) {
-    // Handle error silently
+    await prefs.remove('calculation_method'); // Also clear saved calculation method
+    state = false;
+    print('Onboarding reset - will show onboarding flow again');
   }
+}
+
+final onboardingProvider = StateNotifierProvider<OnboardingNotifier, bool>((ref) {
+  return OnboardingNotifier();
 });

@@ -162,6 +162,7 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Use live API with fallback to mock data
     final currentPrayerTimesAsync = ref.watch(currentPrayerTimesProvider);
     final currentAndNextPrayerAsync = ref.watch(currentAndNextPrayerProvider);
     final locationAsync = ref.watch(currentLocationProvider);
@@ -896,6 +897,75 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
     // TODO: Implement monthly calendar screen
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Monthly calendar feature coming soon!')),
+    );
+  }
+
+  // Mock data methods for testing
+  prayer_entities.PrayerTimes _getMockPrayerTimes() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    
+    return prayer_entities.PrayerTimes(
+      date: today,
+      hijriDate: '1445-01-01', // Mock Hijri date
+      fajr: prayer_entities.PrayerTime(
+        name: 'Fajr',
+        time: today.add(const Duration(hours: 5, minutes: 30)), // 5:30 AM
+        status: prayer_entities.PrayerStatus.completed,
+      ),
+      sunrise: prayer_entities.PrayerTime(
+        name: 'Sunrise',
+        time: today.add(const Duration(hours: 6, minutes: 45)), // 6:45 AM
+        status: prayer_entities.PrayerStatus.completed,
+      ),
+      dhuhr: prayer_entities.PrayerTime(
+        name: 'Dhuhr',
+        time: today.add(const Duration(hours: 12, minutes: 30)), // 12:30 PM
+        status: prayer_entities.PrayerStatus.current,
+      ),
+      asr: prayer_entities.PrayerTime(
+        name: 'Asr',
+        time: today.add(const Duration(hours: 15, minutes: 45)), // 3:45 PM
+        status: prayer_entities.PrayerStatus.upcoming,
+      ),
+      maghrib: prayer_entities.PrayerTime(
+        name: 'Maghrib',
+        time: today.add(const Duration(hours: 18, minutes: 15)), // 6:15 PM
+        status: prayer_entities.PrayerStatus.upcoming,
+      ),
+      isha: prayer_entities.PrayerTime(
+        name: 'Isha',
+        time: today.add(const Duration(hours: 19, minutes: 30)), // 7:30 PM
+        status: prayer_entities.PrayerStatus.upcoming,
+      ),
+      midnight: prayer_entities.PrayerTime(
+        name: 'Midnight',
+        time: today.add(const Duration(hours: 23, minutes: 45)), // 11:45 PM
+        status: prayer_entities.PrayerStatus.upcoming,
+      ),
+      location: _getMockLocation(),
+      calculationMethod: 'MWL',
+      metadata: {},
+    );
+  }
+
+  PrayerDetail _getMockCurrentPrayer() {
+    return PrayerDetail(
+      currentPrayer: 'Dhuhr',
+      nextPrayer: 'Asr',
+      prayerTimes: _getMockPrayerTimes(),
+      timeUntilNextPrayer: const Duration(hours: 3),
+    );
+  }
+
+  Location _getMockLocation() {
+    return const Location(
+      latitude: 23.8103,
+      longitude: 90.4125,
+      country: 'Bangladesh',
+      city: 'Dhaka',
+      region: 'Dhaka Division',
+      timezone: 'Asia/Dhaka',
     );
   }
 }

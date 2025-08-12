@@ -54,26 +54,28 @@ class GetCurrentPrayerUsecase {
     PrayerTime? nextPrayer;
     var currentStatus = PrayerStatus.upcoming;
 
+    // Find the next upcoming prayer
     for (var i = 0; i < prayers.length; i++) {
       final prayer = prayers[i];
-      final nextPrayerInList = i < prayers.length - 1 ? prayers[i + 1] : null;
-
+      
       if (now.isBefore(prayer.time)) {
         // This is the next prayer
         nextPrayer = prayer;
-        currentStatus = PrayerStatus.upcoming;
-        break;
-      } else if (nextPrayerInList == null || now.isBefore(nextPrayerInList.time)) {
-        // We're between this prayer and the next one
-        currentPrayer = prayer;
-        nextPrayer = nextPrayerInList;
-        currentStatus = _determinePrayerStatus(prayer, nextPrayerInList, now);
+        
+        // Find the current prayer (the one that just passed)
+        if (i > 0) {
+          currentPrayer = prayers[i - 1];
+          currentStatus = PrayerStatus.completed;
+        } else {
+          // Before Fajr, so no current prayer yet
+          currentStatus = PrayerStatus.upcoming;
+        }
         break;
       }
     }
 
-    // Handle edge case: after Isha, next prayer is Fajr of next day
-    if (nextPrayer == null && now.isAfter(prayerTimes.isha.time)) {
+    // If no next prayer found, we're after Isha
+    if (nextPrayer == null) {
       currentPrayer = prayerTimes.isha;
       currentStatus = PrayerStatus.completed;
       // Next prayer would be Fajr of tomorrow (handled separately)

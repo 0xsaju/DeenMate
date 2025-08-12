@@ -6,6 +6,7 @@ import 'dart:async';
 
 import '../../../../core/error/failures.dart';
 import '../../../../core/utils/islamic_utils.dart';
+import '../../../../core/state/prayer_settings_state.dart';
 import '../../domain/entities/prayer_times.dart';
 import '../../domain/entities/location.dart';
 import '../../domain/entities/prayer_tracking.dart';
@@ -148,40 +149,69 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
   @override
   Future<Either<Failure, PrayerTimes>> getCurrentPrayerTimes() async {
     try {
+      print('=== REPOSITORY getCurrentPrayerTimes START ===');
+      print('Repository: Getting current prayer times...');
+      
       // Get current location first
       final locationResult = await getCurrentLocation();
+      print('Repository: Location result: ${locationResult.isRight() ? 'Success' : 'Failed'}');
+      
       if (locationResult.isLeft()) {
+        print('Repository: Location failed, trying preferred location...');
         // Try to use preferred location if GPS fails
         final preferredLocationResult = await getPreferredLocation();
         if (preferredLocationResult.isLeft() || preferredLocationResult.getOrElse(() => null) == null) {
+          print('Repository: Preferred location also failed');
           return Left(locationResult.fold((failure) => failure, (_) => throw Exception()));
         }
       }
 
       final location = locationResult.fold(
         (failure) async {
+          print('Repository: Using preferred location due to GPS failure');
           final preferredLocation = await getPreferredLocation();
           return preferredLocation.getOrElse(() => null);
         },
-        (loc) async => loc,
+        (loc) async {
+          print('Repository: Using GPS location: ${loc.latitude}, ${loc.longitude}');
+          return loc;
+        },
       );
 
       final resolvedLocation = await location;
       if (resolvedLocation == null) {
+        print('Repository: No location available');
         return const Left(Failure.locationUnavailable(
           message: 'Unable to determine location for prayer times',
         ),);
       }
 
-      // Get prayer calculation settings
-      final settingsResult = await getPrayerSettings();
-      final settings = settingsResult.getOrElse(_getDefaultSettings);
+      // Get prayer calculation settings from global state (force reload)
+      await PrayerSettingsState.instance.loadSettings();
+      final method = PrayerSettingsState.instance.calculationMethod;
+      final settings = PrayerCalculationSettings(
+        calculationMethod: method,
+        madhab: Madhab.shafi,
+      );
+      print('Repository: Using calculation method: $method (forced reload)');
 
-      return await getPrayerTimes(
+      print('Repository: Calling API with location: ${resolvedLocation.latitude}, ${resolvedLocation.longitude}');
+      print('Repository: Settings - Method: ${settings.calculationMethod}, Madhab: ${settings.madhab}');
+      
+      final result = await getPrayerTimes(
         date: DateTime.now(),
         location: resolvedLocation,
         settings: settings,
       );
+      
+      print('Repository: API call result: ${result.isRight() ? 'Success' : 'Failed'}');
+      if (result.isRight()) {
+        final prayerTimes = result.getOrElse(() => throw Exception('No data'));
+        print('Repository: Prayer times - Fajr: ${prayerTimes.fajr.time}, Dhuhr: ${prayerTimes.dhuhr.time}');
+      }
+      print('=== REPOSITORY getCurrentPrayerTimes END ===');
+      
+      return result;
     } catch (e) {
       return Left(Failure.unknownFailure(
         message: 'Failed to get current prayer times',
