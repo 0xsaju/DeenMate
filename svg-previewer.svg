@@ -1,0 +1,179 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="414" height="866" viewBox="0 0 414 866">
+  <!-- Background -->
+  <rect x="0" y="0" width="414" height="866" fill="#F9F9F9" />
+
+  <!-- Top Status Bar -->
+  <rect x="0" y="0" width="414" height="30" fill="#FFFFFF" />
+  <g transform="translate(10, 5)">
+    <!-- Time -->
+    <text x="70" y="20" font-family="Arial" font-size="16" fill="#333">9:41</text>
+    <!-- Signal Icon -->
+    <path d="M30 15 L30 25 M35 15 L35 25 M40 15 L40 25" stroke="#333" stroke-width="2" />
+    <!-- Wi-Fi Icon -->
+    <path d="M50 15 A10 10 0 0 1 70 15 A10 10 0 0 1 50 35 Z" stroke="#333" stroke-width="2" fill="none" />
+    <!-- Battery Icon -->
+    <rect x="80" y="15" width="15" height="10" rx="2" fill="#333" />
+    <rect x="95" y="15" width="10" height="10" rx="2" fill="#333" />
+  </g>
+
+  <!-- Header -->
+  <rect x="0" y="30" width="414" height="60" fill="#FFFFFF" />
+  <g transform="translate(20, 40)">
+    <!-- Left Chevron -->
+    <polygon points="10,10 20,0 20,20" fill="#FFC19D" />
+    <!-- Date -->
+    <text x="50" y="20" font-family="Arial" font-size="20" font-weight="bold" fill="#333">7 Ramadan, 1444</text>
+    <!-- Subtitle -->
+    <text x="50" y="40" font-family="Arial" font-size="14" fill="#666">Wed, 29 March 2023</text>
+    <!-- Right Chevron -->
+    <polygon points="390,10 380,0 380,20" fill="#FFC19D" />
+  </g>
+
+  <!-- Main Cards -->
+  <g transform="translate(20, 100)">
+    <!-- Left Card (Peach Gradient) -->
+    <rect x="0" y="0" width="190" height="190" rx="10" fill="url(#peach-gradient)" />
+    <g transform="translate(20, 20)">
+      <!-- Text -->
+      <text x="0" y="20" font-family="Arial" font-size="14" fill="#333">Now time is</text>
+      <text x="0" y="40" font-family="Arial" font-size="24" fill="#FFC19D">Duhur</text>
+      <text x="0" y="60" font-family="Arial" font-size="36" fill="#333">12:27 pm</text>
+      <text x="0" y="80" font-family="Arial" font-size="14" fill="#666">End time - 3:54pm</text>
+      <!-- Mosque Silhouette -->
+      <path d="M150,150 L150,170 Q140,180 130,170 L130,150 Q120,140 110,150 L110,170 Q100,180 90,170 L90,150 Q80,140 70,150 L70,170 Q60,180 50,170 L50,150 Q40,140 30,150 Z" fill="#666" />
+    </g>
+
+    <!-- Right Card (Light Green Gradient) -->
+    <rect x="210" y="0" width="190" height="190" rx="10" fill="url(#green-gradient)" />
+    <g transform="translate(230, 20)">
+      <!-- Text -->
+      <text x="0" y="20" font-family="Arial" font-size="14" fill="#333">Next prayer is</text>
+      <text x="0" y="40" font-family="Arial" font-size="24" fill="#A5D6A7">Asr</text>
+      <text x="0" y="60" font-family="Arial" font-size="36" fill="#333">03:54 pm</text>
+      <text x="0" y="80" font-family="Arial" font-size="14" fill="#666">Azan - 5:15pm</text>
+      <text x="0" y="95" font-family="Arial" font-size="14" fill="#666">Jama'at - 5:30pm</text>
+      <!-- Mosque Silhouette -->
+      <path d="M150,150 L150,170 Q140,180 130,170 L130,150 Q120,140 110,150 L110,170 Q100,180 90,170 L90,150 Q80,140 70,150 L70,170 Q60,180 50,170 L50,150 Q40,140 30,150 Z" fill="#666" />
+    </g>
+  </g>
+
+  <!-- Middle Bar -->
+  <g transform="translate(20, 290)">
+    <!-- Suhoor -->
+    <circle cx="50" cy="30" r="20" fill="#FFC19D" />
+    <path d="M50,10 L50,30 M45,15 L55,15" stroke="#333" stroke-width="2" />
+    <text x="65" y="20" font-family="Arial" font-size="14" fill="#333">Suhoor</text>
+    <text x="65" y="40" font-family="Arial" font-size="20" fill="#333">04:57am</text>
+    <!-- Separator -->
+    <line x1="100" y1="30" x2="100" y2="50" stroke="#CCCCCC" stroke-width="2" />
+    <!-- Iftar -->
+    <circle cx="350" cy="30" r="20" fill="#FFC19D" />
+    <path d="M350,10 L350,30 M345,15 L355,15" stroke="#333" stroke-width="2" />
+    <text x="365" y="20" font-family="Arial" font-size="14" fill="#333">Iftar</text>
+    <text x="365" y="40" font-family="Arial" font-size="20" fill="#333">6:37pm</text>
+  </g>
+
+  <!-- Prayer Times List -->
+  <g transform="translate(20, 340)">
+    <!-- Mosque Location -->
+    <circle cx="10" cy="10" r="8" fill="#333" />
+    <text x="25" y="15" font-family="Arial" font-size="18" font-weight="bold" fill="#333">Al Masjid an Nabawi</text>
+    <text x="25" y="35" font-family="Arial" font-size="12" fill="#666">Medina, Saudi Arabia</text>
+    <!-- Fajr -->
+    <g transform="translate(0, 50)">
+      <path d="M10,10 L10,20 Q15,25 20,20 L20,10" stroke="#333" stroke-width="2" />
+      <text x="30" y="20" font-family="Arial" font-size="14" fill="#333">Fajr</text>
+      <text x="350" y="20" font-family="Arial" font-size="14" fill="#FFC19D">4:58 am</text>
+      <circle cx="380" cy="15" r="10" fill="#FFC19D" />
+      <path d="M380,15 L390,15 M385,10 L385,20" stroke="#333" stroke-width="2" />
+    </g>
+    <!-- Duhur -->
+    <g transform="translate(0, 70)">
+      <path d="M10,10 L10,20 Q15,25 20,20 L20,10" stroke="#333" stroke-width="2" />
+      <text x="30" y="20" font-family="Arial" font-size="14" fill="#333">Duhur</text>
+      <text x="350" y="20" font-family="Arial" font-size="14" fill="#FFC19D">12:27 pm</text>
+      <circle cx="380" cy="15" r="10" fill="#FFC19D" />
+      <path d="M380,15 L390,15 M385,10 L385,20" stroke="#333" stroke-width="2" />
+    </g>
+    <!-- Asr -->
+    <g transform="translate(0, 90)">
+      <path d="M10,10 L10,20 Q15,25 20,20 L20,10" stroke="#333" stroke-width="2" />
+      <text x="30" y="20" font-family="Arial" font-size="14" fill="#333">Asr</text>
+      <text x="350" y="20" font-family="Arial" font-size="14" fill="#FFC19D">3:54 pm</text>
+      <circle cx="380" cy="15" r="10" fill="#FFC19D" />
+      <path d="M380,15 L390,15 M385,10 L385,20" stroke="#333" stroke-width="2" />
+    </g>
+    <!-- Maghrib -->
+    <g transform="translate(0, 110)">
+      <path d="M10,10 L10,20 Q15,25 20,20 L20,10" stroke="#333" stroke-width="2" />
+      <text x="30" y="20" font-family="Arial" font-size="14" fill="#333">Maghrib</text>
+      <text x="350" y="20" font-family="Arial" font-size="14" fill="#FFC19D">6:36 pm</text>
+      <circle cx="380" cy="15" r="10" fill="#FFC19D" />
+      <path d="M380,15 L390,15 M385,10 L385,20" stroke="#333" stroke-width="2" />
+    </g>
+    <!-- Isha -->
+    <g transform="translate(0, 130)">
+      <path d="M10,10 L10,20 Q15,25 20,20 L20,10" stroke="#333" stroke-width="2" />
+      <text x="30" y="20" font-family="Arial" font-size="14" fill="#333">Isha</text>
+      <text x="350" y="20" font-family="Arial" font-size="14" fill="#FFC19D">8:36 pm</text>
+      <circle cx="380" cy="15" r="10" fill="#FFC19D" />
+      <path d="M380,15 L390,15 M385,10 L385,20" stroke="#333" stroke-width="2" />
+    </g>
+  </g>
+
+  <!-- Bottom Info Bar -->
+  <g transform="translate(20, 500)">
+    <!-- Sunrise -->
+    <text x="50" y="20" font-family="Arial" font-size="14" fill="#333">Sunrise</text>
+    <text x="50" y="40" font-family="Arial" font-size="14" fill="#333">6:17 am</text>
+    <!-- Mid Day -->
+    <line x1="180" y1="30" x2="180" y2="50" stroke="#CCCCCC" stroke-width="2" />
+    <text x="250" y="20" font-family="Arial" font-size="14" fill="#333">Mid Day</text>
+    <text x="250" y="40" font-family="Arial" font-size="14" fill="#333">12:43 pm</text>
+    <!-- Sunset -->
+    <line x1="320" y1="30" x2="320" y2="50" stroke="#CCCCCC" stroke-width="2" />
+    <text x="370" y="20" font-family="Arial" font-size="14" fill="#333">Sunset</text>
+    <text x="370" y="40" font-family="Arial" font-size="14" fill="#333">6:52 pm</text>
+  </g>
+
+  <!-- Bottom Navigation Bar -->
+  <g transform="translate(0, 750)">
+    <!-- Home -->
+    <rect x="20" y="10" width="40" height="40" rx="5" fill="#FFFFFF" />
+    <path d="M30,10 L30,30 Q25,35 20,30 L20,10 Q25,5 30,10 Z" stroke="#333" stroke-width="2" />
+    <text x="20" y="60" font-family="Arial" font-size="12" fill="#333">Home</text>
+    <!-- Quran -->
+    <rect x="100" y="10" width="40" height="40" rx="5" fill="#FFFFFF" />
+    <path d="M110,10 L110,30 M100,20 L120,20" stroke="#333" stroke-width="2" />
+    <text x="100" y="60" font-family="Arial" font-size="12" fill="#333">Quran</text>
+    <!-- Qibla -->
+    <rect x="180" y="10" width="40" height="40" rx="5" fill="#FFFFFF" />
+    <path d="M190,10 L190,30 Q185,35 180,30 L180,10 Q185,5 190,10 Z" stroke="#333" stroke-width="2" />
+    <text x="180" y="60" font-family="Arial" font-size="12" fill="#333">Qibla</text>
+    <!-- More -->
+    <rect x="260" y="10" width="40" height="40" rx="5" fill="#FFFFFF" />
+    <path d="M270,10 L270,30 M260,20 L280,20 M270,15 L270,25" stroke="#333" stroke-width="2" />
+    <text x="260" y="60" font-family="Arial" font-size="12" fill="#333">More</text>
+    <!-- Settings -->
+    <rect x="340" y="10" width="40" height="40" rx="5" fill="#FFFFFF" />
+    <path d="M350,10 L350,30 Q345,35 340,30 L340,10 Q345,5 350,10 Z" stroke="#333" stroke-width="2" />
+    <text x="340" y="60" font-family="Arial" font-size="12" fill="#333">Settings</text>
+  </g>
+
+  <!-- Mouse Cursor -->
+  <g transform="translate(350, 780)">
+    <path d="M0,0 L10,10 M-5,5 L5,-5" stroke="#333" stroke-width="2" />
+  </g>
+
+  <!-- Gradients -->
+  <defs>
+    <linearGradient id="peach-gradient" x1="0" y1="0" x2="0" y2="1" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFC19D" />
+      <stop offset="100%" stop-color="#FFF5E6" />
+    </linearGradient>
+    <linearGradient id="green-gradient" x1="0" y1="0" x2="0" y2="1" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#A5D6A7" />
+      <stop offset="100%" stop-color="#E8F5E9" />
+    </linearGradient>
+  </defs>
+</svg>

@@ -1,0 +1,157 @@
+<svg width="375" height="812" viewBox="0 0 375 812" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="375" height="812" fill="#FEFEFE"/>
+  
+  <!-- Status Bar -->
+  <rect x="0" y="0" width="375" height="44" fill="white"/>
+  <text x="20" y="28" fill="#333" font-size="14" font-weight="600">9:41</text>
+  
+  <!-- Signal icons -->
+  <rect x="300" y="20" width="15" height="8" rx="2" fill="#333"/>
+  <rect x="318" y="18" width="15" height="10" rx="2" fill="#333"/>
+  <rect x="336" y="16" width="15" height="12" rx="2" fill="#333"/>
+  
+  <!-- WiFi icon -->
+  <path d="M360,20 Q365,15 370,20 Q365,25 360,20" fill="none" stroke="#333" stroke-width="2"/>
+  <path d="M362,22 Q365,19 368,22" fill="none" stroke="#333" stroke-width="2"/>
+  
+  <!-- Battery icon -->
+  <rect x="345" y="20" width="20" height="10" rx="2" fill="none" stroke="#333" stroke-width="1"/>
+  <rect x="347" y="22" width="16" height="6" rx="1" fill="#4CAF50"/>
+  <rect x="365" y="22" width="2" height="6" rx="1" fill="#333"/>
+  
+  <!-- Header Section -->
+  <rect x="0" y="44" width="375" height="80" fill="white"/>
+  
+  <!-- Left arrow -->
+  <text x="30" y="85" fill="#FF6B35" font-size="20">‹</text>
+  
+  <!-- Date header -->
+  <text x="187" y="75" text-anchor="middle" fill="#333" font-size="18" font-weight="bold">7 Ramadan, 1444</text>
+  <text x="187" y="95" text-anchor="middle" fill="#666" font-size="14">Wed, 29 March 2023</text>
+  
+  <!-- Right arrow -->
+  <text x="345" y="85" fill="#FF6B35" font-size="20">›</text>
+  
+  <!-- Main Cards Section -->
+  <rect x="0" y="124" width="375" height="200" fill="white"/>
+  
+  <!-- Left Card - Current Prayer -->
+  <rect x="16" y="140" width="160" height="160" rx="12" fill="#FFF8E1"/>
+  
+  <!-- Mosque silhouette for left card -->
+  <g transform="translate(96, 220)" opacity="0.2">
+    <rect x="-25" y="20" width="50" height="30" rx="5" fill="#333"/>
+    <rect x="-20" y="10" width="40" height="20" rx="3" fill="#333"/>
+    <rect x="-30" y="25" width="10" height="25" rx="2" fill="#333"/>
+    <rect x="20" y="25" width="10" height="25" rx="2" fill="#333"/>
+    <rect x="-15" y="15" width="8" height="8" rx="2" fill="#333"/>
+    <rect x="-5" y="15" width="8" height="8" rx="2" fill="#333"/>
+    <rect x="5" y="15" width="8" height="8" rx="2" fill="#333"/>
+    <rect x="15" y="15" width="8" height="8" rx="2" fill="#333"/>
+  </g>
+  
+  <text x="96" y="165" text-anchor="middle" fill="#333" font-size="14" font-weight="500">Now time is</text>
+  <text x="96" y="185" text-anchor="middle" fill="#FF6B35" font-size="16" font-weight="bold">Duhur</text>
+  <text x="96" y="210" text-anchor="middle" fill="#333" font-size="24" font-weight="bold">12:27 Pm</text>
+  <text x="96" y="230" text-anchor="middle" fill="#666" font-size="12">End time - 3:54pm</text>
+  
+  <!-- Right Card - Next Prayer -->
+  <rect x="199" y="140" width="160" height="160" rx="12" fill="#FFF8E1"/>
+  
+  <!-- Mosque silhouette for right card -->
+  <g transform="translate(279, 220)" opacity="0.2">
+    <rect x="-25" y="20" width="50" height="30" rx="5" fill="#333"/>
+    <rect x="-20" y="10" width="40" height="20" rx="3" fill="#333"/>
+    <rect x="-30" y="25" width="10" height="25" rx="2" fill="#333"/>
+    <rect x="20" y="25" width="10" height="25" rx="2" fill="#333"/>
+    <rect x="-15" y="15" width="8" height="8" rx="2" fill="#333"/>
+    <rect x="-5" y="15" width="8" height="8" rx="2" fill="#333"/>
+    <rect x="5" y="15" width="8" height="8" rx="2" fill="#333"/>
+    <rect x="15" y="15" width="8" height="8" rx="2" fill="#333"/>
+  </g>
+  
+  <text x="279" y="165" text-anchor="middle" fill="#333" font-size="14" font-weight="500">Next prayer is</text>
+  <text x="279" y="185" text-anchor="middle" fill="#FF6B35" font-size="16" font-weight="bold">Asr</text>
+  <text x="279" y="210" text-anchor="middle" fill="#333" font-size="24" font-weight="bold">03:54 Pm</text>
+  <text x="279" y="230" text-anchor="middle" fill="#666" font-size="12">Azan - 5:15pm</text>
+  <text x="279" y="245" text-anchor="middle" fill="#666" font-size="12">Jama'at - 5:30pm</text>
+  
+  <!-- Suhoor and Iftaar Section -->
+  <rect x="16" y="320" width="343" height="60" rx="12" fill="#FFF8E1"/>
+  <line x1="187" y1="330" x2="187" y2="370" stroke="#E0E0E0" stroke-width="1"/>
+  
+  <!-- Suhoor -->
+  <text x="93" y="345" text-anchor="middle" fill="#FF6B35" font-size="16" font-weight="bold">🔔 Suhoor</text>
+  <text x="93" y="365" text-anchor="middle" fill="#333" font-size="14">04:57am</text>
+  
+  <!-- Iftaar -->
+  <text x="281" y="345" text-anchor="middle" fill="#FF6B35" font-size="16" font-weight="bold">🍽️ Iftaar</text>
+  <text x="281" y="365" text-anchor="middle" fill="#333" font-size="14">6:37pm</text>
+  
+  <!-- Prayer Times List Section -->
+  <rect x="16" y="400" width="343" height="280" rx="12" fill="#FFF8E1"/>
+  
+  <!-- Location header -->
+  <text x="40" y="425" fill="#333" font-size="16" font-weight="bold">📍 Al Masjid an Nabawi</text>
+  <text x="40" y="445" fill="#666" font-size="14">Medina, Saudi Arabia</text>
+  
+  <!-- Prayer times list -->
+  <rect x="24" y="455" width="327" height="45" rx="8" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="48" y="470" fill="#333" font-size="16">🌙 Fajr</text>
+  <text x="280" y="470" text-anchor="end" fill="#333" font-size="16" font-weight="500">4:58 am</text>
+  <text x="320" y="470" text-anchor="middle" fill="#999" font-size="16">🔕</text>
+  
+  <rect x="24" y="510" width="327" height="45" rx="8" fill="white" stroke="#FF6B35" stroke-width="2"/>
+  <text x="48" y="525" fill="#FF6B35" font-size="16" font-weight="bold">☀️ Duhur</text>
+  <text x="280" y="525" text-anchor="end" fill="#333" font-size="16" font-weight="500">12:27 pm</text>
+  <text x="320" y="525" text-anchor="middle" fill="#FF6B35" font-size="16">🔔</text>
+  
+  <rect x="24" y="565" width="327" height="45" rx="8" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="48" y="580" fill="#333" font-size="16">☀️ Asr</text>
+  <text x="280" y="580" text-anchor="end" fill="#333" font-size="16" font-weight="500">3:54 pm</text>
+  <text x="320" y="580" text-anchor="middle" fill="#4CAF50" font-size="16">🔔</text>
+  
+  <rect x="24" y="620" width="327" height="45" rx="8" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="48" y="635" fill="#333" font-size="16">🕌 Maghrib</text>
+  <text x="280" y="635" text-anchor="end" fill="#333" font-size="16" font-weight="500">6:36 pm</text>
+  <text x="320" y="635" text-anchor="middle" fill="#4CAF50" font-size="16">🔔</text>
+  
+  <rect x="24" y="675" width="327" height="45" rx="8" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="48" y="690" fill="#333" font-size="16">🌙 Isha</text>
+  <text x="280" y="690" text-anchor="end" fill="#333" font-size="16" font-weight="500">8:36 pm</text>
+  <text x="320" y="690" text-anchor="middle" fill="#4CAF50" font-size="16">🔔</text>
+  
+  <!-- Sunrise, Mid Day, Sunset Section -->
+  <rect x="16" y="700" width="343" height="60" rx="12" fill="#FFF8E1"/>
+  <line x1="130" y1="710" x2="130" y2="750" stroke="#E0E0E0" stroke-width="1"/>
+  <line x1="243" y1="710" x2="243" y2="750" stroke="#E0E0E0" stroke-width="1"/>
+  
+  <text x="73" y="725" text-anchor="middle" fill="#333" font-size="14" font-weight="500">🌅 Sunrise</text>
+  <text x="73" y="740" text-anchor="middle" fill="#666" font-size="12">6:17 am</text>
+  
+  <text x="186" y="725" text-anchor="middle" fill="#333" font-size="14" font-weight="500">☀️ Mid Day</text>
+  <text x="186" y="740" text-anchor="middle" fill="#666" font-size="12">12:43 pm</text>
+  
+  <text x="299" y="725" text-anchor="middle" fill="#333" font-size="14" font-weight="500">🌆 Sunset</text>
+  <text x="299" y="740" text-anchor="middle" fill="#666" font-size="12">6:52 pm</text>
+  
+  <!-- Bottom Navigation Bar -->
+  <rect x="0" y="780" width="375" height="32" fill="#FFF8E1"/>
+  
+  <!-- Home (selected) -->
+  <text x="37" y="795" text-anchor="middle" fill="#8B4513" font-size="20">🏠</text>
+  <text x="37" y="810" text-anchor="middle" fill="#8B4513" font-size="10" font-weight="600">Home</text>
+  
+  <!-- Quran -->
+  <text x="112" y="795" text-anchor="middle" fill="#666" font-size="20">📖</text>
+  <text x="112" y="810" text-anchor="middle" fill="#666" font-size="10">Quran</text>
+  
+  <!-- Qibla -->
+  <text x="187" y="795" text-anchor="middle" fill="#666" font-size="20">🕌</text>
+  <text x="187" y="810" text-anchor="middle" fill="#666" font-size="10">Qibla</text>
+  
+  <!-- Tasbih -->
+  <text x="262" y="795" text-anchor="middle" fill="#666" font-size="20">📿</text>
+  <text x="262" y="810" text-anchor="middle" fill="#666" font-size="10">Tasbih</text>
+</svg>
