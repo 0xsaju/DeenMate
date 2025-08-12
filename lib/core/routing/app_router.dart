@@ -5,7 +5,7 @@ import '../../features/prayer_times/presentation/screens/athan_settings_screen.d
 import '../../features/prayer_times/presentation/screens/calculation_method_screen.dart';
 import '../../features/prayer_times/presentation/screens/prayer_times_screen.dart';
 import '../../features/qibla/presentation/screens/qibla_compass_screen.dart';
-// import '../../features/zakat/presentation/screens/zakat_calculator_screen.dart';
+import '../../features/home/presentation/screens/zakat_calculator_screen.dart';
 
 /// Application routing configuration using GoRouter
 /// Provides type-safe navigation with Islamic app structure
@@ -34,12 +34,12 @@ class AppRouter {
         builder: (context, state) => const HomeScreen(),
       ),
 
-      // Zakat Calculator (temporarily disabled)
-      // GoRoute(
-      //   path: zakatCalculator,
-      //   name: 'zakat-calculator',
-      //   builder: (context, state) => const ZakatCalculatorScreen(),
-      // ),
+      // Zakat Calculator
+      GoRoute(
+        path: zakatCalculator,
+        name: 'zakat-calculator',
+        builder: (context, state) => const ZakatCalculatorScreen(),
+      ),
 
       // Prayer Times
       GoRoute(
@@ -209,14 +209,14 @@ class HomeScreen extends StatelessWidget {
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
                 children: [
-                  // _buildFeatureCard(
-                  //   context,
-                  //   'Zakat Calculator',
-                  //   Icons.calculate,
-                  //   'Calculate your Zakat obligation',
-                  //   const Color(0xFF2E7D32),
-                  //   AppRouter.zakatCalculator,
-                  // ),
+                  _buildFeatureCard(
+                    context,
+                    'Zakat Calculator',
+                    Icons.calculate,
+                    'Calculate your Zakat obligation',
+                    const Color(0xFF2E7D32),
+                    AppRouter.zakatCalculator,
+                  ),
                   _buildFeatureCard(
                     context,
                     'Prayer Times',

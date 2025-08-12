@@ -255,7 +255,10 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
 
   Widget _buildCompletionCheckbox() {
     return GestureDetector(
-      onTap: () => widget.onCompletionToggle(!widget.isCompleted),
+      onTap: () {
+        // Allow toggling both ways - completed to uncompleted and vice versa
+        widget.onCompletionToggle(!widget.isCompleted);
+      },
       child: Container(
         width: 32,
         height: 32,

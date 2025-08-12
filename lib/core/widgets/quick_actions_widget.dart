@@ -45,12 +45,12 @@ class QuickActionsWidget extends StatelessWidget {
             Expanded(
               child: _buildActionCard(
                 context,
-                S.t(context, 'qibla_finder', 'Qibla Finder'),
-                S.t(context, 'qibla_finder_bn', 'কিবলার দিক'),
-                Icons.explore,
-                S.t(context, 'qibla_desc', 'Find direction to Kaaba'),
-                const Color(0xFFFF8F00),
-                AppRouter.qiblaFinder,
+                'Zakat Calculator',
+                'যাকাত ক্যালকুলেটর',
+                Icons.calculate,
+                'Calculate obligation',
+                const Color(0xFF2E7D32),
+                '/zakat-calculator',
               ),
             ),
           ],
@@ -108,7 +108,7 @@ class QuickActionsWidget extends StatelessWidget {
         onTap: () => context.go(route),
         borderRadius: BorderRadius.circular(16),
         child: Container(
-          height: 120,
+          height: 140, // Increased height to prevent overflow
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
@@ -126,25 +126,25 @@ class QuickActionsWidget extends StatelessWidget {
             children: [
               // Icon
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
                   icon,
                   color: color,
-                  size: 24,
+                  size: 20,
                 ),
               ),
               
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               
               // Title
               Text(
                 title,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: FontWeight.bold,
                   color: color,
                 ),
@@ -152,11 +152,13 @@ class QuickActionsWidget extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
               
+              const SizedBox(height: 2),
+              
               // Bengali title
               Text(
                 bengaliTitle,
                 style: const TextStyle(
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: FontWeight.w500,
                   fontFamily: 'NotoSansBengali',
                   color: Colors.grey,
@@ -168,14 +170,16 @@ class QuickActionsWidget extends StatelessWidget {
               const Spacer(),
               
               // Description
-              Text(
-                description,
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Colors.grey[600],
+              Flexible(
+                child: Text(
+                  description,
+                  style: TextStyle(
+                    fontSize: 9,
+                    color: Colors.grey[600],
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

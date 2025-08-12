@@ -21,6 +21,7 @@ class _QiblaCompassScreenState extends ConsumerState<QiblaCompassScreen> {
   bool _isCalibrating = false;
   String _calibrationMessage = '';
   StreamSubscription<CompassEvent>? _compassSubscription;
+  StreamSubscription<Position>? _locationSubscription;
   Position? _currentPosition;
 
   @override
@@ -33,6 +34,7 @@ class _QiblaCompassScreenState extends ConsumerState<QiblaCompassScreen> {
   @override
   void dispose() {
     _compassSubscription?.cancel();
+    _locationSubscription?.cancel();
     super.dispose();
   }
 
@@ -49,18 +51,20 @@ class _QiblaCompassScreenState extends ConsumerState<QiblaCompassScreen> {
 
       // Listen to compass events
       _compassSubscription = FlutterCompass.events?.listen((event) {
-        setState(() {
-          _compassDirection = event.heading;
-          
-          // Check if compass needs calibration
-          if (event.heading == null) {
-            _isCalibrating = true;
-            _calibrationMessage = 'Please calibrate your compass by moving your device in a figure-8 pattern';
-          } else {
-            _isCalibrating = false;
-            _calibrationMessage = '';
-          }
-        });
+        if (mounted) {
+          setState(() {
+            _compassDirection = event.heading;
+            
+            // Check if compass needs calibration
+            if (event.heading == null) {
+              _isCalibrating = true;
+              _calibrationMessage = 'Please calibrate your compass by moving your device in a figure-8 pattern';
+            } else {
+              _isCalibrating = false;
+              _calibrationMessage = '';
+            }
+          });
+        }
       });
     } catch (e) {
       setState(() {
@@ -74,16 +78,20 @@ class _QiblaCompassScreenState extends ConsumerState<QiblaCompassScreen> {
       final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
-      setState(() {
-        _currentPosition = position;
-      });
-      
-      // Calculate Qibla direction (simplified calculation)
-      _calculateQiblaDirection();
+      if (mounted) {
+        setState(() {
+          _currentPosition = position;
+        });
+        
+        // Calculate Qibla direction (simplified calculation)
+        _calculateQiblaDirection();
+      }
     } catch (e) {
-      setState(() {
-        _calibrationMessage = 'Error getting location: $e';
-      });
+      if (mounted) {
+        setState(() {
+          _calibrationMessage = 'Error getting location: $e';
+        });
+      }
     }
   }
 
@@ -104,9 +112,11 @@ class _QiblaCompassScreenState extends ConsumerState<QiblaCompassScreen> {
     
     final qiblaAngle = (atan2(lngDiff, latDiff) * 180 / pi);
     
-    setState(() {
-      _qiblaDirection = qiblaAngle;
-    });
+    if (mounted) {
+      setState(() {
+        _qiblaDirection = qiblaAngle;
+      });
+    }
   }
 
   double? get arrowAngle {

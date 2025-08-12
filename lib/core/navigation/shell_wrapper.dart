@@ -5,7 +5,7 @@ import '../../features/prayer_times/presentation/screens/athan_settings_screen.d
 import '../../features/prayer_times/presentation/screens/calculation_method_screen.dart';
 import '../../features/prayer_times/presentation/screens/prayer_times_screen.dart';
 import '../../features/qibla/presentation/screens/qibla_compass_screen.dart';
-// import '../../features/zakat/presentation/screens/zakat_calculator_screen.dart';
+import '../../features/home/presentation/screens/zakat_calculator_screen.dart';
 import '../../features/islamic_content/presentation/screens/islamic_content_screen.dart';
 import '../routing/app_router.dart';
 import '../widgets/enhanced_home_dashboard.dart';
@@ -74,11 +74,11 @@ class EnhancedAppRouter {
           ),
 
           // Main feature routes
-          // GoRoute(
-          //   path: zakatCalculator,
-          //   name: 'zakat-calculator',
-          //   builder: (context, state) => const ZakatCalculatorScreen(),
-          // ),
+          GoRoute(
+            path: zakatCalculator,
+            name: 'zakat-calculator',
+            builder: (context, state) => const ZakatCalculatorScreen(),
+          ),
 
           GoRoute(
             path: prayerTimes,

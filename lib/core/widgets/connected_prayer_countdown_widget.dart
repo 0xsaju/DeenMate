@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -21,6 +22,7 @@ class _ConnectedPrayerCountdownWidgetState extends ConsumerState<ConnectedPrayer
     with TickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
+  Timer? _timer;
 
   @override
   void initState() {
@@ -37,10 +39,18 @@ class _ConnectedPrayerCountdownWidgetState extends ConsumerState<ConnectedPrayer
       parent: _pulseController,
       curve: Curves.easeInOut,
     ),);
+    
+    // Start timer for live updates
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
   void dispose() {
+    _timer?.cancel();
     _pulseController.dispose();
     super.dispose();
   }

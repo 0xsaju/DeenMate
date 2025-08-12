@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/routing/app_router.dart';
 import '../widgets/islamic_bottom_navigation.dart';
@@ -10,7 +11,6 @@ import '../../../onboarding/presentation/providers/onboarding_providers.dart';
 import '../../../prayer_times/presentation/providers/prayer_times_providers.dart';
 import '../../../../core/state/prayer_settings_state.dart';
 import '../../../prayer_times/presentation/widgets/direct_prayer_widget.dart';
-import '../../../prayer_times/presentation/widgets/debug_provider_widget.dart';
 
 
 /// Final enhanced home screen with optimized layout
@@ -52,11 +52,7 @@ class _FinalEnhancedHomeScreenState extends ConsumerState<FinalEnhancedHomeScree
               // Islamic Greeting Card
                               _buildIslamicGreetingCard(),
                 
-                // Debug Widget
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: DebugProviderWidget(),
-                ),
+
                 
                 // Next Prayer Countdown Card
               _buildWorkingPrayerCard(),
@@ -89,8 +85,8 @@ class _FinalEnhancedHomeScreenState extends ConsumerState<FinalEnhancedHomeScree
       case 1: // Prayer
         _navigateToPrayerTimes();
         break;
-              // case 2: // Zakat
-        //   _navigateToZakat();
+      case 2: // Zakat
+        _navigateToZakat();
         break;
       case 2: // Qibla
         _navigateToQibla();
@@ -688,20 +684,20 @@ class _FinalEnhancedHomeScreenState extends ConsumerState<FinalEnhancedHomeScree
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              // Zakat Calculator (temporarily disabled)
-              // Expanded(
-              //   child: _buildActionCard(
-              //     icon: '🧮',
-              //     title: 'Zakat Calculator',
-              //     subtitle: 'যাকাত ক্যালকুলেটর',
-              //     description: 'Calculate obligation',
-              //     color: const Color(0xFF2E7D32),
-              //     onTap: _navigateToZakat,
-              //   ),
-              // ),
-              
+              // Zakat Calculator
+              Expanded(
+                child: _buildActionCard(
+                  icon: '🧮',
+                  title: 'Zakat Calculator',
+                  subtitle: 'যাকাত ক্যালকুলেটর',
+                  description: 'Calculate obligation',
+                  color: const Color(0xFF2E7D32),
+                  onTap: _navigateToZakat,
+                ),
+              ),
+
               const SizedBox(width: 16),
-              
+
               // Prayer Times
               Expanded(
                 child: _buildActionCard(
@@ -853,9 +849,9 @@ class _FinalEnhancedHomeScreenState extends ConsumerState<FinalEnhancedHomeScree
     context.go(AppRouter.prayerTimes);
   }
 
-  // void _navigateToZakat() {
-  //   context.go(AppRouter.zakatCalculator);
-  // }
+  void _navigateToZakat() {
+    context.go(AppRouter.zakatCalculator);
+  }
 
   void _navigateToQibla() {
     context.go(AppRouter.qiblaFinder);

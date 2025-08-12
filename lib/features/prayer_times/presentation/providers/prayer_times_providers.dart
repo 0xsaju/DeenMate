@@ -154,9 +154,9 @@ final currentPrayerTimesProvider = FutureProvider<PrayerTimes>((ref) async {
     
     return result.fold(
       (failure) {
-        // If API fails, return mock data
-        print('PrayerTimesProvider: API failed: ${failure.message}, using mock data');
-        return _getMockPrayerTimes();
+        // If API fails, throw the failure instead of using mock data
+        print('PrayerTimesProvider: API failed: ${failure.message}');
+        throw failure;
       },
       (prayerTimes) {
         print('PrayerTimesProvider: Successfully got prayer times from API');
@@ -164,67 +164,13 @@ final currentPrayerTimesProvider = FutureProvider<PrayerTimes>((ref) async {
       },
     );
   } catch (e) {
-    // If any error occurs, return mock data
-    print('PrayerTimesProvider: Error getting prayer times: $e, using mock data');
-    return _getMockPrayerTimes();
+    // If any error occurs, throw the error instead of using mock data
+    print('PrayerTimesProvider: Error getting prayer times: $e');
+    throw e;
   }
 });
 
-// Mock data fallback
-PrayerTimes _getMockPrayerTimes() {
-  final now = DateTime.now();
-  final today = DateTime(now.year, now.month, now.day);
-  
-  return PrayerTimes(
-    date: today,
-    hijriDate: '1445-01-01',
-    fajr: PrayerTime(
-      name: 'Fajr',
-      time: today.add(const Duration(hours: 5, minutes: 30)),
-      status: PrayerStatus.completed,
-    ),
-    sunrise: PrayerTime(
-      name: 'Sunrise',
-      time: today.add(const Duration(hours: 6, minutes: 45)),
-      status: PrayerStatus.completed,
-    ),
-    dhuhr: PrayerTime(
-      name: 'Dhuhr',
-      time: today.add(const Duration(hours: 12, minutes: 30)),
-      status: PrayerStatus.current,
-    ),
-    asr: PrayerTime(
-      name: 'Asr',
-      time: today.add(const Duration(hours: 15, minutes: 45)),
-      status: PrayerStatus.upcoming,
-    ),
-    maghrib: PrayerTime(
-      name: 'Maghrib',
-      time: today.add(const Duration(hours: 18, minutes: 15)),
-      status: PrayerStatus.upcoming,
-    ),
-    isha: PrayerTime(
-      name: 'Isha',
-      time: today.add(const Duration(hours: 19, minutes: 30)),
-      status: PrayerStatus.upcoming,
-    ),
-    midnight: PrayerTime(
-      name: 'Midnight',
-      time: today.add(const Duration(hours: 23, minutes: 45)),
-      status: PrayerStatus.upcoming,
-    ),
-    location: const Location(
-      latitude: 23.8103,
-      longitude: 90.4125,
-      country: 'Bangladesh',
-      city: 'Dhaka',
-      region: 'Dhaka Division',
-      timezone: 'Asia/Dhaka',
-    ),
-    calculationMethod: 'MWL',
-    metadata: {'source': 'Mock Data (API Unavailable)'},
-  );
-}
+
 
 // Current and Next Prayer Provider
 final currentAndNextPrayerProvider = FutureProvider<PrayerDetail>((ref) async {
@@ -247,11 +193,9 @@ final currentAndNextPrayerProvider = FutureProvider<PrayerDetail>((ref) async {
     
     return result.fold(
       (failure) {
-        // If API fails, return mock data
-        print('API failed for current prayer: ${failure.message}, using mock data');
-        final mockData = _getMockCurrentPrayer();
-        print('CurrentAndNextPrayer: Mock data - Current: ${mockData.currentPrayer}, Next: ${mockData.nextPrayer}');
-        return mockData;
+        // If API fails, throw the failure instead of using mock data
+        print('API failed for current prayer: ${failure.message}');
+        throw failure;
       },
       (data) {
         final prayerTimes = data['prayerTimes'] as PrayerTimes;
@@ -287,9 +231,9 @@ final currentAndNextPrayerProvider = FutureProvider<PrayerDetail>((ref) async {
       },
     );
   } catch (e) {
-    // If any error occurs, return mock data
-    print('Error getting current prayer: $e, using mock data');
-    return _getMockCurrentPrayer();
+    // If any error occurs, throw the error instead of using mock data
+    print('Error getting current prayer: $e');
+    throw e;
   }
 });
 
@@ -315,46 +259,7 @@ DateTime? _getPrayerTimeByName(PrayerTimes prayerTimes, String prayerName) {
   }
 }
 
-// Mock current prayer fallback
-PrayerDetail _getMockCurrentPrayer() {
-  final now = DateTime.now();
-  final today = DateTime(now.year, now.month, now.day);
-  
-  // Create realistic mock prayer times
-  final fajrTime = today.add(const Duration(hours: 4, minutes: 45));
-  final dhuhrTime = today.add(const Duration(hours: 13, minutes: 13));
-  final asrTime = today.add(const Duration(hours: 17, minutes: 1));
-  
-  // Determine current and next prayer based on actual time
-  String? currentPrayer;
-  String? nextPrayer;
-  Duration timeUntilNext;
-  
-  if (now.isBefore(fajrTime)) {
-    currentPrayer = null; // Before Fajr, no current prayer
-    nextPrayer = 'Fajr';
-    timeUntilNext = fajrTime.difference(now);
-  } else if (now.isBefore(dhuhrTime)) {
-    currentPrayer = 'Fajr'; // Fajr just passed
-    nextPrayer = 'Dhuhr';
-    timeUntilNext = dhuhrTime.difference(now);
-  } else if (now.isBefore(asrTime)) {
-    currentPrayer = 'Dhuhr'; // Dhuhr just passed
-    nextPrayer = 'Asr';
-    timeUntilNext = asrTime.difference(now);
-  } else {
-    currentPrayer = 'Asr'; // Asr just passed
-    nextPrayer = 'Maghrib';
-    timeUntilNext = Duration(hours: 2); // Default
-  }
-  
-  return PrayerDetail(
-    currentPrayer: currentPrayer,
-    nextPrayer: nextPrayer,
-    prayerTimes: _getMockPrayerTimes(),
-    timeUntilNextPrayer: timeUntilNext,
-  );
-}
+
 
 // Daily Prayer Times Provider
 final dailyPrayerTimesProvider = FutureProvider.family<PrayerTimes, DateTime>((ref, date) async {
@@ -370,16 +275,16 @@ final dailyPrayerTimesProvider = FutureProvider.family<PrayerTimes, DateTime>((r
     
     return result.fold(
       (failure) {
-        // If API fails, return mock data
-        print('API failed for daily prayer times: ${failure.message}, using mock data');
-        return _getMockPrayerTimes();
+        // If API fails, throw the failure instead of using mock data
+        print('API failed for daily prayer times: ${failure.message}');
+        throw failure;
       },
       (prayerTimes) => prayerTimes,
     );
   } catch (e) {
-    // If any error occurs, return mock data
-    print('Error getting daily prayer times: $e, using mock data');
-    return _getMockPrayerTimes();
+    // If any error occurs, throw the error instead of using mock data
+    print('Error getting daily prayer times: $e');
+    throw e;
   }
 });
 

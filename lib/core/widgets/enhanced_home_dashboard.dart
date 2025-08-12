@@ -8,6 +8,7 @@ import 'daily_islamic_content_widget.dart';
 import 'islamic_greeting_widget.dart';
 import 'quick_actions_widget.dart';
 import 'theme_switcher.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Enhanced Home Dashboard for DeenMate
 /// Provides a rich, information-dense experience inspired by Bengali Islamic apps
@@ -35,7 +36,7 @@ class EnhancedHomeDashboard extends ConsumerWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: _buildWorkingPrayerCard(),
+              child: ConnectedPrayerCountdownWidget(),
             ),
           ),
           
