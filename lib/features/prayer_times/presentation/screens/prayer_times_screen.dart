@@ -219,14 +219,16 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
         builder: (context, constraints) {
           final double h = constraints.maxHeight.isFinite ? constraints.maxHeight : 120;
           final double scale = (h / 120).clamp(0.78, 1.0);
-          final double nameSize = 18 * scale;
-          final double timeSize = 24 * scale;
-          final double meridiemSize = 11 * scale;
-          final double subtitleSize = 11 * scale;
-          final double gapSmall = 3 * scale;
+          final bool hasSecondaryLines = (endTime != null) || (azanTime != null) || (jamaatTime != null);
+          final double adjust = hasSecondaryLines ? 0.88 : 1.0;
+          final double nameSize = 18 * scale * adjust;
+          final double timeSize = 24 * scale * adjust;
+          final double meridiemSize = 11 * scale * adjust;
+          final double subtitleSize = 10.5 * scale; // keep small for multi-line
+          final double gapSmall = (hasSecondaryLines ? 2.0 : 3.0) * scale;
           final double gapTiny = 1 * scale;
-          final double gapTop = 6 * scale;
-          final double silhouetteSize = 82 * scale;
+          final double gapTop = (hasSecondaryLines ? 5.0 : 6.0) * scale;
+          final double silhouetteSize = 80 * scale;
 
           return Container(
             padding: EdgeInsets.all(14 * scale),
