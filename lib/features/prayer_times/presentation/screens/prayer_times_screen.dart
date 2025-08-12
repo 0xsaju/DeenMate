@@ -21,6 +21,8 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
     with TickerProviderStateMixin {
   DateTime _selectedDate = DateTime.now();
   // Unused in this design implementation; keep minimal state only
+  // Soft warm card fill to match mock (slightly off-white)
+  static const Color _cardFill = Color(0xFFFBF7F3);
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +90,7 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF8D63D3), Color(0xFF3F6CD8)],
+              colors: [Color.fromARGB(255, 253, 245, 251), Color.fromARGB(255, 231, 202, 253)],
             ),
           ),
           child: Stack(
@@ -111,12 +113,12 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
                           children: [
                             Text(
                               _getHijriDate(),
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 43, 43, 43)),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               DateFormat('EEEE, MMMM d yyyy').format(_selectedDate),
-                              style: const TextStyle(fontSize: 12, color: Colors.white70),
+                              style: const TextStyle(fontSize: 12, color: Color.fromARGB(179, 27, 26, 26)),
                             ),
                           ],
                         ),
@@ -125,9 +127,9 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
                         crossAxisAlignment: CrossAxisAlignment.end,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: const [
-                          Text('Dhuhr', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                          Text('Dhuhr', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 54, 53, 53))),
                           SizedBox(height: 4),
-                          Text('11:40', style: TextStyle(fontSize: 14, color: Colors.white70)),
+                          Text('11:40', style: TextStyle(fontSize: 14, color: Color.fromARGB(179, 47, 47, 48))),
                         ],
                       ),
                     ],
@@ -141,7 +143,7 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
                 bottom: 0,
                 height: 40,
                 child: Container(
-                  color: const Color(0xFF1F2B38),
+                  color: const Color.fromARGB(255, 46, 36, 59),
                   padding: const EdgeInsets.symmetric(horizontal: 14),
                   child: Row(
                     children: const [
@@ -168,11 +170,14 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
   // Removed separate alert bar; now attached under the header.
 
   Widget _buildPrayerCards(AsyncValue<PrayerDetail> currentAndNextPrayerAsync) {
+    const double cardHeight = 132;
     return Row(
       children: [
         // Current Prayer Card
         Expanded(
-          child: _buildPrayerCard(
+          child: SizedBox(
+            height: cardHeight,
+            child: _buildPrayerCard(
             title: 'Now time is',
             prayerName: 'Dhuhr',
             time: '12:27 pm',
@@ -181,13 +186,16 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
             backgroundColor: const Color(0xFFFFE7D6),
             silhouetteColor: const Color(0xFFCC6E3C),
           ),
+          ),
         ),
 
         const SizedBox(width: 12),
 
         // Next Prayer Card
         Expanded(
-          child: _buildPrayerCard(
+          child: SizedBox(
+            height: cardHeight,
+            child: _buildPrayerCard(
             title: 'Next prayer is',
             prayerName: 'Asr',
             time: '03:54 pm',
@@ -196,6 +204,7 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
             isCurrent: false,
             backgroundColor: const Color(0xFFEAF4E6),
             silhouetteColor: const Color(0xFF7BAA7F),
+          ),
           ),
         ),
       ],
@@ -233,7 +242,7 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
           return Container(
             padding: EdgeInsets.all(14 * scale),
             decoration: BoxDecoration(
-              color: backgroundColor,
+              color: isCurrent ? const Color(0xFFFFEADC) : const Color(0xFFEAF5EA),
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -364,9 +373,9 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
 
   Widget _buildSuhoorIftaarSection(AsyncValue<prayer_entities.PrayerTimes> prayerTimesAsync) {
     return Container(
-      padding: const EdgeInsets.all(12), // Further reduced padding
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _cardFill,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -496,7 +505,7 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
       AsyncValue<prayer_entities.PrayerTimes> prayerTimesAsync) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _cardFill,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -666,7 +675,7 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _cardFill,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
