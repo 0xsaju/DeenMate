@@ -3,18 +3,29 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../network/network_info.dart';
+import '../network/retry_interceptor.dart';
 
 /// Dio HTTP client provider
 final dioProvider = Provider<Dio>((ref) {
   final dio = Dio();
-  
-  // Add interceptors for logging and error handling
-  dio.interceptors.add(LogInterceptor(
-    requestBody: true,
-    responseBody: true,
-    logPrint: (obj) => print('HTTP: $obj'),
-  ),);
-  
+
+  dio.options.connectTimeout = const Duration(seconds: 30);
+  dio.options.receiveTimeout = const Duration(seconds: 30);
+  dio.options.headers = {
+    'Accept': 'application/json',
+    'User-Agent': 'DeenMate/1.0.0',
+  };
+
+  // Interceptors: logging then retry
+  dio.interceptors.add(
+    LogInterceptor(
+      requestBody: true,
+      responseBody: true,
+      logPrint: (obj) => print('HTTP: $obj'),
+    ),
+  );
+  dio.interceptors.add(RetryInterceptor(dio: dio));
+
   return dio;
 });
 

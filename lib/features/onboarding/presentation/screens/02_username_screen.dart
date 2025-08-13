@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../widgets/islamic_decorative_elements.dart';
 import '../widgets/islamic_gradient_background.dart';
@@ -23,6 +24,7 @@ class _UsernameScreenState extends State<UsernameScreen> {
   void initState() {
     super.initState();
     _usernameController.addListener(_validateUsername);
+    _loadSavedName();
   }
 
   @override
@@ -37,6 +39,18 @@ class _UsernameScreenState extends State<UsernameScreen> {
     });
   }
 
+  Future<void> _loadSavedName() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString('user_name');
+      if (saved != null && saved.trim().isNotEmpty) {
+        _usernameController.text = saved;
+        _isValid = saved.trim().length >= 2;
+        if (mounted) setState(() {});
+      }
+    } catch (_) {}
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,23 +60,24 @@ class _UsernameScreenState extends State<UsernameScreen> {
             padding: const EdgeInsets.all(24),
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height - 
-                          MediaQuery.of(context).padding.top - 
-                          MediaQuery.of(context).padding.bottom - 48,
+                minHeight: MediaQuery.of(context).size.height -
+                    MediaQuery.of(context).padding.top -
+                    MediaQuery.of(context).padding.bottom -
+                    48,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const SizedBox(height: 40),
-                  
+
                   // Decorative elements
                   IslamicDecorativeElements.buildGeometricPattern(
                     size: 60,
                     color: const Color(0xFF4CAF50),
                   ),
-                  
+
                   const SizedBox(height: 30),
-                  
+
                   // Title
                   Text(
                     'What should we call you?',
@@ -73,9 +88,9 @@ class _UsernameScreenState extends State<UsernameScreen> {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  
+
                   const SizedBox(height: 12),
-                  
+
                   // Subtitle
                   Text(
                     'Enter your name to personalize your experience',
@@ -85,9 +100,9 @@ class _UsernameScreenState extends State<UsernameScreen> {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  
+
                   const SizedBox(height: 40),
-                  
+
                   // Username input field
                   Container(
                     decoration: BoxDecoration(
@@ -130,9 +145,9 @@ class _UsernameScreenState extends State<UsernameScreen> {
                       textCapitalization: TextCapitalization.words,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // Validation message
                   if (_usernameController.text.isNotEmpty && !_isValid)
                     Text(
@@ -142,9 +157,9 @@ class _UsernameScreenState extends State<UsernameScreen> {
                         color: Colors.red[600],
                       ),
                     ),
-                  
+
                   const SizedBox(height: 40),
-                  
+
                   // Continue button
                   if (widget.onNext != null)
                     Column(
@@ -160,9 +175,9 @@ class _UsernameScreenState extends State<UsernameScreen> {
                         ),
                       ],
                     ),
-                  
+
                   const SizedBox(height: 20),
-                  
+
                   // Bottom decoration
                   _buildBottomDecoration(),
                 ],
@@ -176,13 +191,22 @@ class _UsernameScreenState extends State<UsernameScreen> {
 
   Widget _buildContinueButton() {
     return GestureDetector(
-      onTap: _isValid ? widget.onNext : null,
+      onTap: _isValid
+          ? () async {
+              final name = _usernameController.text.trim();
+              try {
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setString('user_name', name);
+              } catch (_) {}
+              widget.onNext?.call();
+            }
+          : null,
       child: Container(
         width: 60,
         height: 60,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: _isValid 
+            colors: _isValid
                 ? const [Color(0xFF2E7D32), Color(0xFF4CAF50)]
                 : [Colors.grey[400]!, Colors.grey[500]!],
             begin: Alignment.topLeft,

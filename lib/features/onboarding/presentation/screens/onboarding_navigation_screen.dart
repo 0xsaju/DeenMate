@@ -7,7 +7,7 @@ import '02_username_screen.dart';
 import '02_language_screen.dart';
 import '03_location_screen.dart';
 import '04_calculation_method_screen.dart';
-// import '05_madhhab_screen.dart'; // Temporarily disabled
+import '05_madhhab_screen.dart';
 import '06_notifications_screen.dart';
 import '07_theme_screen.dart';
 import '08_complete_screen.dart';
@@ -18,52 +18,55 @@ class OnboardingNavigationScreen extends ConsumerStatefulWidget {
   const OnboardingNavigationScreen({super.key});
 
   @override
-  ConsumerState<OnboardingNavigationScreen> createState() => _OnboardingNavigationScreenState();
+  ConsumerState<OnboardingNavigationScreen> createState() =>
+      _OnboardingNavigationScreenState();
 }
 
-class _OnboardingNavigationScreenState extends ConsumerState<OnboardingNavigationScreen> {
+class _OnboardingNavigationScreenState
+    extends ConsumerState<OnboardingNavigationScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
   List<OnboardingPage> get _pages => [
-    OnboardingPage(
-      screen: WelcomeScreen(onNext: _nextPage),
-      title: 'Welcome',
-    ),
-    OnboardingPage(
-      screen: UsernameScreen(onNext: _nextPage, onPrevious: _previousPage),
-      title: 'Username',
-    ),
-    OnboardingPage(
-      screen: LanguageScreen(onNext: _nextPage, onPrevious: _previousPage),
-      title: 'Language',
-    ),
-    OnboardingPage(
-      screen: LocationScreen(onNext: _nextPage, onPrevious: _previousPage),
-      title: 'Location',
-    ),
-    OnboardingPage(
-      screen: CalculationMethodScreen(onNext: _nextPage, onPrevious: _previousPage),
-      title: 'Calculation Method',
-    ),
-    // Temporarily disabled due to Madhhab enum issues
-    // OnboardingPage(
-    //   screen: const MadhhabScreen(),
-    //   title: 'Madhhab',
-    // ),
-    OnboardingPage(
-      screen: NotificationsScreen(onNext: _nextPage, onPrevious: _previousPage),
-      title: 'Notifications',
-    ),
-    OnboardingPage(
-      screen: ThemeScreen(onNext: _nextPage, onPrevious: _previousPage),
-      title: 'Theme',
-    ),
-    OnboardingPage(
-      screen: CompleteScreen(onComplete: _nextPage),
-      title: 'Complete',
-    ),
-  ];
+        OnboardingPage(
+          screen: WelcomeScreen(onNext: _nextPage),
+          title: 'Welcome',
+        ),
+        OnboardingPage(
+          screen: UsernameScreen(onNext: _nextPage, onPrevious: _previousPage),
+          title: 'Username',
+        ),
+        OnboardingPage(
+          screen: LanguageScreen(onNext: _nextPage, onPrevious: _previousPage),
+          title: 'Language',
+        ),
+        OnboardingPage(
+          screen: LocationScreen(onNext: _nextPage, onPrevious: _previousPage),
+          title: 'Location',
+        ),
+        OnboardingPage(
+          screen: CalculationMethodScreen(
+              onNext: _nextPage, onPrevious: _previousPage),
+          title: 'Calculation Method',
+        ),
+        OnboardingPage(
+          screen: MadhhabScreen(onNext: _nextPage, onPrevious: _previousPage),
+          title: 'Madhhab',
+        ),
+        OnboardingPage(
+          screen:
+              NotificationsScreen(onNext: _nextPage, onPrevious: _previousPage),
+          title: 'Notifications',
+        ),
+        OnboardingPage(
+          screen: ThemeScreen(onNext: _nextPage, onPrevious: _previousPage),
+          title: 'Theme',
+        ),
+        OnboardingPage(
+          screen: CompleteScreen(onComplete: _nextPage),
+          title: 'Complete',
+        ),
+      ];
 
   @override
   void initState() {
@@ -152,7 +155,7 @@ class _OnboardingNavigationScreenState extends ConsumerState<OnboardingNavigatio
               ],
             ),
           ),
-          
+
           // Page content
           Expanded(
             child: PageView.builder(
@@ -168,7 +171,7 @@ class _OnboardingNavigationScreenState extends ConsumerState<OnboardingNavigatio
               },
             ),
           ),
-          
+
           // Navigation buttons - removed, using screen's own navigation
         ],
       ),

@@ -21,6 +21,7 @@ class PrayerTimesLocalStorage {
   static const String _athanSettingsKey = 'athan_settings';
   static const String _preferredLocationKey = 'preferred_location';
   static const String _lastUpdateKey = 'last_prayer_times_update';
+  static const String _jamaatOffsetsKey = 'jamaat_offsets_minutes';
 
   late Box<String> _prayerTimesBox;
   late Box<String> _prayerTrackingBox;
@@ -53,16 +54,71 @@ class PrayerTimesLocalStorage {
     }
   }
 
+  /// Get Jama'at offsets in minutes per prayer (defaults to 15 if not set)
+  Future<Map<String, int>> getJamaatOffsets() async {
+    await _ensureInitialized();
+    try {
+      final jsonString = _prefs.getString(_jamaatOffsetsKey);
+      Map<String, int> defaults = {
+        'fajr': 15,
+        'dhuhr': 15,
+        'asr': 15,
+        'maghrib': 15,
+        'isha': 15,
+      };
+      if (jsonString == null) {
+        return defaults;
+      }
+      final Map<String, dynamic> data =
+          json.decode(jsonString) as Map<String, dynamic>;
+      final result = <String, int>{};
+      for (final entry in data.entries) {
+        final v = entry.value;
+        result[entry.key.toLowerCase()] = v is int ? v : (v as num).toInt();
+      }
+      // Ensure all keys exist
+      defaults.forEach((k, v) => result.putIfAbsent(k, () => v));
+      return result;
+    } catch (e) {
+      return {
+        'fajr': 15,
+        'dhuhr': 15,
+        'asr': 15,
+        'maghrib': 15,
+        'isha': 15,
+      };
+    }
+  }
+
+  /// Save Jama'at offsets in minutes per prayer
+  Future<void> saveJamaatOffsets(Map<String, int> offsets) async {
+    await _ensureInitialized();
+    try {
+      // Normalize keys and values
+      final normalized = <String, int>{};
+      offsets.forEach((k, v) {
+        normalized[k.toLowerCase()] = v;
+      });
+      await _prefs.setString(_jamaatOffsetsKey, json.encode(normalized));
+    } catch (e) {
+      throw Failure.databaseFailure(
+        operation: 'save_jamaat_offsets',
+        message: 'Failed to save Jama\'at offsets: $e',
+      );
+    }
+  }
+
   /// Save prayer times to local storage
   Future<void> savePrayerTimes(PrayerTimes prayerTimes) async {
     await _ensureInitialized();
 
     try {
-      final key = _generatePrayerTimesKey(prayerTimes.date, prayerTimes.location);
+      final key =
+          _generatePrayerTimesKey(prayerTimes.date, prayerTimes.location);
       final jsonString = json.encode(prayerTimes.toJson());
-      
+
       await _prayerTimesBox.put(key, jsonString);
-      
+
       // Update last update timestamp
       await _prefs.setString(_lastUpdateKey, DateTime.now().toIso8601String());
     } catch (e) {
@@ -79,13 +135,14 @@ class PrayerTimesLocalStorage {
 
     try {
       final dataToSave = <String, String>{};
-      
+
       for (final prayerTimes in prayerTimesList) {
-        final key = _generatePrayerTimesKey(prayerTimes.date, prayerTimes.location);
+        final key =
+            _generatePrayerTimesKey(prayerTimes.date, prayerTimes.location);
         final jsonString = json.encode(prayerTimes.toJson());
         dataToSave[key] = jsonString;
       }
-      
+
       await _prayerTimesBox.putAll(dataToSave);
       await _prefs.setString(_lastUpdateKey, DateTime.now().toIso8601String());
     } catch (e) {
@@ -103,12 +160,12 @@ class PrayerTimesLocalStorage {
     try {
       final key = _generatePrayerTimesKey(date, location);
       final jsonString = _prayerTimesBox.get(key);
-      
+
       if (jsonString != null) {
         final jsonData = json.decode(jsonString) as Map<String, dynamic>;
         return PrayerTimes.fromJson(jsonData);
       }
-      
+
       return null;
     } catch (e) {
       throw Failure.databaseFailure(
@@ -128,17 +185,16 @@ class PrayerTimesLocalStorage {
 
     try {
       final prayerTimesList = <PrayerTimes>[];
-      
-      for (var date = startDate; 
-           date.isBefore(endDate.add(const Duration(days: 1))); 
-           date = date.add(const Duration(days: 1))) {
-        
+
+      for (var date = startDate;
+          date.isBefore(endDate.add(const Duration(days: 1)));
+          date = date.add(const Duration(days: 1))) {
         final prayerTimes = await getPrayerTimes(date, location);
         if (prayerTimes != null) {
           prayerTimesList.add(prayerTimes);
         }
       }
-      
+
       return prayerTimesList;
     } catch (e) {
       throw Failure.databaseFailure(
@@ -167,7 +223,7 @@ class PrayerTimesLocalStorage {
     try {
       final key = _generateTrackingKey(tracking.date, tracking.prayerName);
       final jsonString = json.encode(tracking.toJson());
-      
+
       await _prayerTrackingBox.put(key, jsonString);
     } catch (e) {
       throw Failure.databaseFailure(
@@ -186,23 +242,24 @@ class PrayerTimesLocalStorage {
 
     try {
       final trackingList = <PrayerTracking>[];
-      
+
       for (final key in _prayerTrackingBox.keys) {
         final jsonString = _prayerTrackingBox.get(key);
         if (jsonString != null) {
           final jsonData = json.decode(jsonString) as Map<String, dynamic>;
           final tracking = PrayerTracking.fromJson(jsonData);
-          
-          if (tracking.date.isAfter(fromDate.subtract(const Duration(days: 1))) &&
+
+          if (tracking.date
+                  .isAfter(fromDate.subtract(const Duration(days: 1))) &&
               tracking.date.isBefore(toDate.add(const Duration(days: 1)))) {
             trackingList.add(tracking);
           }
         }
       }
-      
+
       // Sort by date (newest first)
       trackingList.sort((a, b) => b.date.compareTo(a.date));
-      
+
       return trackingList;
     } catch (e) {
       throw Failure.databaseFailure(
@@ -374,7 +431,8 @@ class PrayerTimesLocalStorage {
 
       // Clear old prayer tracking (keep longer for statistics)
       final trackingKeysToDelete = <String>[];
-      final trackingCutoffDate = DateTime.now().subtract(Duration(days: daysToKeep * 3));
+      final trackingCutoffDate =
+          DateTime.now().subtract(Duration(days: daysToKeep * 3));
 
       for (final key in _prayerTrackingBox.keys) {
         try {
@@ -412,7 +470,8 @@ class PrayerTimesLocalStorage {
       final locationCount = _locationBox.length;
 
       final lastUpdate = _prefs.getString(_lastUpdateKey);
-      final lastUpdateDate = lastUpdate != null ? DateTime.parse(lastUpdate) : null;
+      final lastUpdateDate =
+          lastUpdate != null ? DateTime.parse(lastUpdate) : null;
 
       return {
         'prayerTimesCount': prayerTimesCount,
@@ -420,7 +479,8 @@ class PrayerTimesLocalStorage {
         'settingsCount': settingsCount,
         'locationCount': locationCount,
         'lastUpdate': lastUpdateDate?.toIso8601String(),
-        'totalSize': prayerTimesCount + trackingCount + settingsCount + locationCount,
+        'totalSize':
+            prayerTimesCount + trackingCount + settingsCount + locationCount,
       };
     } catch (e) {
       return {
@@ -478,30 +538,35 @@ class PrayerTimesLocalStorage {
 
     try {
       // Import prayer times
-      final prayerTimesData = backupData['prayerTimes'] as Map<String, dynamic>? ?? {};
+      final prayerTimesData =
+          backupData['prayerTimes'] as Map<String, dynamic>? ?? {};
       for (final entry in prayerTimesData.entries) {
         await _prayerTimesBox.put(entry.key, entry.value);
       }
 
       // Import prayer tracking
-      final trackingData = backupData['prayerTracking'] as Map<String, dynamic>? ?? {};
+      final trackingData =
+          backupData['prayerTracking'] as Map<String, dynamic>? ?? {};
       for (final entry in trackingData.entries) {
         await _prayerTrackingBox.put(entry.key, entry.value);
       }
 
       // Import settings
-      final settingsData = backupData['settings'] as Map<String, dynamic>? ?? {};
-      
+      final settingsData =
+          backupData['settings'] as Map<String, dynamic>? ?? {};
+
       if (settingsData['prayerSettings'] != null) {
         await _prefs.setString(_settingsKey, settingsData['prayerSettings']);
       }
-      
+
       if (settingsData['athanSettings'] != null) {
-        await _prefs.setString(_athanSettingsKey, settingsData['athanSettings']);
+        await _prefs.setString(
+            _athanSettingsKey, settingsData['athanSettings']);
       }
-      
+
       if (settingsData['preferredLocation'] != null) {
-        await _prefs.setString(_preferredLocationKey, settingsData['preferredLocation']);
+        await _prefs.setString(
+            _preferredLocationKey, settingsData['preferredLocation']);
       }
     } catch (e) {
       throw Failure.databaseFailure(
@@ -513,14 +578,17 @@ class PrayerTimesLocalStorage {
 
   /// Generate unique key for prayer times
   String _generatePrayerTimesKey(DateTime date, Location location) {
-    final dateStr = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-    final locationStr = '${location.latitude.toStringAsFixed(4)}_${location.longitude.toStringAsFixed(4)}';
+    final dateStr =
+        '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    final locationStr =
+        '${location.latitude.toStringAsFixed(4)}_${location.longitude.toStringAsFixed(4)}';
     return '${dateStr}_$locationStr';
   }
 
   /// Generate unique key for prayer tracking
   String _generateTrackingKey(DateTime date, String prayerName) {
-    final dateStr = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    final dateStr =
+        '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
     return '${dateStr}_$prayerName';
   }
 

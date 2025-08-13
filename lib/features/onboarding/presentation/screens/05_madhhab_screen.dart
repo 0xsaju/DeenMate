@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/islamic_theme.dart';
-import '../../domain/entities/user_preferences.dart';
+import '../../../prayer_times/domain/entities/prayer_calculation_settings.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/islamic_decorative_elements.dart';
 import '../widgets/islamic_gradient_background.dart';
 
@@ -17,7 +18,7 @@ class MadhhabScreen extends StatefulWidget {
 }
 
 class _MadhhabScreenState extends State<MadhhabScreen> {
-  Madhhab _selectedMadhhab = Madhhab.hanafi;
+  Madhab _selectedMadhhab = Madhab.hanafi;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +36,7 @@ class _MadhhabScreenState extends State<MadhhabScreen> {
                   color: const Color(0xFF7B1FA2).withOpacity(0.05),
                 ),
               ),
-              
+
               // Progress indicator
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 20),
@@ -44,7 +45,7 @@ class _MadhhabScreenState extends State<MadhhabScreen> {
                   totalSteps: 8,
                 ),
               ),
-              
+
               // Main content
               Expanded(
                 child: Padding(
@@ -52,7 +53,7 @@ class _MadhhabScreenState extends State<MadhhabScreen> {
                   child: Column(
                     children: [
                       const SizedBox(height: 40),
-                      
+
                       // Header icon
                       Container(
                         width: 70,
@@ -72,9 +73,9 @@ class _MadhhabScreenState extends State<MadhhabScreen> {
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 40),
-                      
+
                       // Title
                       Text(
                         'Select Your Mazhab',
@@ -85,9 +86,9 @@ class _MadhhabScreenState extends State<MadhhabScreen> {
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       // Description
                       Text(
                         'Choose your school of Islamic',
@@ -98,7 +99,7 @@ class _MadhhabScreenState extends State<MadhhabScreen> {
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      
+
                       Text(
                         'jurisprudence for prayer calculations',
                         style: IslamicTheme.textTheme.bodyLarge?.copyWith(
@@ -108,29 +109,27 @@ class _MadhhabScreenState extends State<MadhhabScreen> {
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      
+
                       const SizedBox(height: 40),
-                      
-                      // Madhhab options
+
+                      // Madhhab options (two choices)
                       Expanded(
                         child: ListView(
                           children: [
-                            _buildMadhhabOption(Madhhab.hanafi),
+                            // First: Shafi, Maliki, Hanbali group
+                            _buildMadhhabOption(Madhab.shafi),
                             const SizedBox(height: 16),
-                            _buildMadhhabOption(Madhhab.shafii),
-                            const SizedBox(height: 16),
-                            _buildMadhhabOption(Madhhab.maliki),
-                            const SizedBox(height: 16),
-                            _buildMadhhabOption(Madhhab.hanbali),
+                            // Second: Hanafi
+                            _buildMadhhabOption(Madhab.hanafi),
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 40),
-                      
+
                       // Continue button
                       _buildContinueButton(context),
-                      
+
                       const SizedBox(height: 20),
                     ],
                   ),
@@ -145,7 +144,7 @@ class _MadhhabScreenState extends State<MadhhabScreen> {
 
   Widget _buildMadhhabOption(Madhab madhhab) {
     final isSelected = _selectedMadhhab == madhhab;
-    
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -155,14 +154,13 @@ class _MadhhabScreenState extends State<MadhhabScreen> {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: isSelected 
+          color: isSelected
               ? const Color(0xFFE1BEE7).withOpacity(0.8)
               : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected 
-                ? const Color(0xFF7B1FA2)
-                : const Color(0xFFE0E0E0),
+            color:
+                isSelected ? const Color(0xFF7B1FA2) : const Color(0xFFE0E0E0),
             width: isSelected ? 2 : 1,
           ),
           boxShadow: [
@@ -183,7 +181,7 @@ class _MadhhabScreenState extends State<MadhhabScreen> {
                   width: 50,
                   height: 50,
                   decoration: BoxDecoration(
-                    color: isSelected 
+                    color: isSelected
                         ? const Color(0xFF7B1FA2).withOpacity(0.1)
                         : const Color(0xFFF8F9FA),
                     borderRadius: BorderRadius.circular(12),
@@ -195,20 +193,20 @@ class _MadhhabScreenState extends State<MadhhabScreen> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(width: 16),
-                
+
                 // Madhhab info
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        madhhab.name.toUpperCase(),
+                        _getMadhhabTitle(madhhab),
                         style: IslamicTheme.textTheme.titleMedium?.copyWith(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: isSelected 
+                          color: isSelected
                               ? const Color(0xFF1565C0)
                               : const Color(0xFF2E2E2E),
                         ),
@@ -224,18 +222,18 @@ class _MadhhabScreenState extends State<MadhhabScreen> {
                     ],
                   ),
                 ),
-                
+
                 // Selection indicator
                 Container(
                   width: 24,
                   height: 24,
                   decoration: BoxDecoration(
-                    color: isSelected 
+                    color: isSelected
                         ? const Color(0xFF7B1FA2)
                         : Colors.transparent,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: isSelected 
+                      color: isSelected
                           ? const Color(0xFF7B1FA2)
                           : const Color(0xFFE0E0E0),
                       width: 2,
@@ -251,20 +249,20 @@ class _MadhhabScreenState extends State<MadhhabScreen> {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             // Description
             Text(
-              madhhab.name.toUpperCase(),
+              _getMadhhabTitle(madhhab),
               style: IslamicTheme.textTheme.bodyMedium?.copyWith(
                 fontSize: 14,
                 color: const Color(0xFF666666),
               ),
             ),
-            
+
             const SizedBox(height: 8),
-            
+
             // Additional info based on madhhab
             Text(
               _getMadhhabDetails(madhhab),
@@ -280,29 +278,17 @@ class _MadhhabScreenState extends State<MadhhabScreen> {
   }
 
   String _getMadhhabIcon(Madhab madhhab) {
-    switch (madhhab) {
-      case Madhab.hanafi:
-        return '🕌';
-      case Madhhab.shafii:
-        return '📖';
-      case Madhhab.maliki:
-        return '🌍';
-      case Madhhab.hanbali:
-        return '📚';
-    }
+    return madhhab == Madhab.hanafi ? '🕌' : '📖';
   }
 
   String _getMadhhabDetails(Madhab madhhab) {
-    switch (madhhab) {
-      case Madhab.hanafi:
-        return 'Founded by Imam Abu Hanifa • Popular in Turkey, Central Asia, India';
-      case Madhhab.shafii:
-        return "Founded by Imam Shafi'i • Popular in Southeast Asia, East Africa";
-      case Madhhab.maliki:
-        return 'Founded by Imam Malik • Popular in North and West Africa';
-      case Madhhab.hanbali:
-        return 'Founded by Imam Ahmad ibn Hanbal • Popular in Arabian Peninsula';
-    }
+    return madhhab == Madhab.hanafi
+        ? 'Most widely followed mazhab'
+        : 'Other major schools of thought';
+  }
+
+  String _getMadhhabTitle(Madhab madhhab) {
+    return madhhab == Madhab.hanafi ? 'Hanafi' : "Shafi'i, Maliki, Hanbali";
   }
 
   Widget _buildContinueButton(BuildContext context) {
@@ -346,12 +332,13 @@ class _MadhhabScreenState extends State<MadhhabScreen> {
   }
 
   void _navigateToNext(BuildContext context) {
-    // TODO: Save madhhab preference
-    // await _preferencesService.updatePreferences(
-    //   madhhab: _selectedMadhhab.name,
-    // );
-    
-    // Navigate to next onboarding screen
-    widget.onNext?.call();
+    _saveMadhhab().then((_) => widget.onNext?.call());
+  }
+
+  Future<void> _saveMadhhab() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('madhhab', _selectedMadhhab.name);
+    } catch (_) {}
   }
 }

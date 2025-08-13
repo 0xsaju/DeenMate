@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/prayer_times/presentation/screens/athan_settings_screen.dart';
 import '../../features/prayer_times/presentation/screens/calculation_method_screen.dart';
-import '../../features/prayer_times/presentation/screens/prayer_times_screen.dart';
+import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/qibla/presentation/screens/qibla_compass_screen.dart';
 import '../../features/home/presentation/screens/zakat_calculator_screen.dart';
 
@@ -27,11 +27,11 @@ class AppRouter {
     initialLocation: home,
     debugLogDiagnostics: true,
     routes: [
-      // Home route now points to PrayerTimesScreen
+      // Home route now points to HomeScreen (prayer experience)
       GoRoute(
         path: home,
         name: 'home',
-        builder: (context, state) => const PrayerTimesScreen(),
+        builder: (context, state) => const HomeScreen(),
       ),
 
       // Zakat Calculator
@@ -41,11 +41,11 @@ class AppRouter {
         builder: (context, state) => const ZakatCalculatorScreen(),
       ),
 
-      // Prayer Times
+      // Prayer Times (alias to home for now)
       GoRoute(
         path: prayerTimes,
         name: 'prayer-times',
-        builder: (context, state) => const PrayerTimesScreen(),
+        builder: (context, state) => const HomeScreen(),
       ),
 
       // Qibla Finder
@@ -141,7 +141,7 @@ class AppRouter {
   static GoRouter get router => _router;
 }
 
-// Removed old HomeScreen dashboard; PrayerTimesScreen is now the home.
+// Home is now provided by HomeScreen (prayer experience)
 
 /// Placeholder screen for features under development
 class PlaceholderScreen extends StatelessWidget {

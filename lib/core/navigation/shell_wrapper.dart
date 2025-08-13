@@ -3,12 +3,11 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/prayer_times/presentation/screens/athan_settings_screen.dart';
 import '../../features/prayer_times/presentation/screens/calculation_method_screen.dart';
-import '../../features/prayer_times/presentation/screens/prayer_times_screen.dart';
+import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/qibla/presentation/screens/qibla_compass_screen.dart';
 import '../../features/home/presentation/screens/zakat_calculator_screen.dart';
 import '../../features/islamic_content/presentation/screens/islamic_content_screen.dart';
 import '../routing/app_router.dart';
-import '../widgets/enhanced_home_dashboard.dart';
 import '../widgets/themed_widgets.dart';
 import 'bottom_navigation_wrapper.dart';
 import 'more_screen.dart';
@@ -16,21 +15,22 @@ import 'more_screen.dart';
 /// Shell wrapper that adds bottom navigation to existing routing
 /// This doesn't break the existing routing system, just adds navigation UI
 class ShellWrapper extends StatelessWidget {
-
   const ShellWrapper({
-    required this.child, required this.state, super.key,
+    required this.child,
+    required this.state,
+    super.key,
   });
   final Widget child;
   final GoRouterState state;
 
   @override
   Widget build(BuildContext context) {
-    // Use enhanced dashboard for home route, otherwise use existing child
-    final bodyWidget = state.matchedLocation == AppRouter.home 
-        ? const EnhancedHomeDashboard()
+    // Use HomeScreen as the home dashboard
+    final bodyWidget = state.matchedLocation == AppRouter.home
+        ? const HomeScreen()
         : state.matchedLocation == '/more'
-        ? const MoreScreen()
-        : child;
+            ? const MoreScreen()
+            : child;
 
     return BottomNavigationWrapper(
       currentLocation: state.matchedLocation,
@@ -70,7 +70,8 @@ class EnhancedAppRouter {
           GoRoute(
             path: home,
             name: 'home',
-            builder: (context, state) => const SizedBox.shrink(), // Shell handles this
+            builder: (context, state) =>
+                const SizedBox.shrink(), // Shell handles this
           ),
 
           // Main feature routes
@@ -83,7 +84,7 @@ class EnhancedAppRouter {
           GoRoute(
             path: prayerTimes,
             name: 'prayer-times',
-            builder: (context, state) => const PrayerTimesScreen(),
+            builder: (context, state) => const HomeScreen(),
           ),
 
           GoRoute(
@@ -95,7 +96,8 @@ class EnhancedAppRouter {
           GoRoute(
             path: more,
             name: 'more',
-            builder: (context, state) => const SizedBox.shrink(), // Shell handles this
+            builder: (context, state) =>
+                const SizedBox.shrink(), // Shell handles this
           ),
 
           // Islamic Content
@@ -188,9 +190,11 @@ class EnhancedAppRouter {
 // Real screens are now imported from the actual feature modules
 
 class PlaceholderScreen extends StatelessWidget {
-
   const PlaceholderScreen({
-    required this.title, required this.icon, required this.description, super.key,
+    required this.title,
+    required this.icon,
+    required this.description,
+    super.key,
   });
   final String title;
   final IconData icon;
@@ -200,7 +204,7 @@ class PlaceholderScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    
+
     return Scaffold(
       appBar: ThemedAppBar(
         titleText: title,
@@ -281,7 +285,6 @@ class PlaceholderScreen extends StatelessWidget {
 }
 
 class ErrorScreen extends StatelessWidget {
-
   const ErrorScreen({super.key, this.error});
   final Exception? error;
 
@@ -289,7 +292,7 @@ class ErrorScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    
+
     return Scaffold(
       appBar: ThemedAppBar(
         titleText: 'Error',

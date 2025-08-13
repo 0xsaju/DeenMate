@@ -1,9 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dartz/dartz.dart';
+// import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 
-import '../../../onboarding/presentation/providers/onboarding_providers.dart';
+// import '../../../onboarding/presentation/providers/onboarding_providers.dart';
 import '../../../../core/state/prayer_settings_state.dart';
 
 import '../../../../core/error/failures.dart';
@@ -20,29 +21,22 @@ import '../../data/datasources/aladhan_api.dart';
 import '../../data/datasources/prayer_times_local_storage.dart';
 import '../../data/repositories/prayer_times_repository_impl.dart';
 import '../../data/services/calculation_method_service.dart';
-import '../../domain/usecases/get_prayer_times_usecase.dart';
+// import '../../domain/usecases/get_prayer_times_usecase.dart';
 import '../../domain/usecases/get_daily_prayer_times_usecase.dart';
 import '../../domain/usecases/get_monthly_prayer_times_usecase.dart';
-import '../../domain/usecases/get_current_prayer_usecase.dart';
+// import '../../domain/usecases/get_current_prayer_usecase.dart';
 import '../../domain/usecases/get_current_and_next_prayer_usecase.dart';
 import '../../domain/usecases/get_prayer_tracking_history_usecase.dart';
 import '../../domain/usecases/mark_prayer_completed_usecase.dart';
-import '../../domain/usecases/track_prayer_usecase.dart';
-
+import '../../../../core/providers/network_providers.dart' as core_net;
+// import '../../domain/usecases/track_prayer_usecase.dart';
 
 /// Prayer Times Dependency Injection Providers
 /// Following Clean Architecture with Riverpod 2.x
 
-// Core Dependencies
+// Core Dependencies: reuse central Dio with interceptors
 final dioProvider = Provider<Dio>((ref) {
-  final dio = Dio();
-  dio.options.connectTimeout = const Duration(seconds: 30);
-  dio.options.receiveTimeout = const Duration(seconds: 30);
-  dio.options.headers = {
-    'Accept': 'application/json',
-    'User-Agent': 'DeenMate/1.0.0',
-  };
-  return dio;
+  return ref.read(core_net.dioProvider);
 });
 
 // Data Sources
@@ -51,11 +45,13 @@ final aladhanApiProvider = Provider<AladhanApi>((ref) {
   return AladhanApi(dio);
 });
 
-final prayerTimesLocalStorageProvider = Provider<PrayerTimesLocalStorage>((ref) {
+final prayerTimesLocalStorageProvider =
+    Provider<PrayerTimesLocalStorage>((ref) {
   return PrayerTimesLocalStorage();
 });
 
-final locationServiceProvider = Provider<location_service.LocationService>((ref) {
+final locationServiceProvider =
+    Provider<location_service.LocationService>((ref) {
   return location_service.LocationService();
 });
 
@@ -68,24 +64,31 @@ final prayerTimesRepositoryProvider = Provider<PrayerTimesRepository>((ref) {
 });
 
 // Use Cases
-final getDailyPrayerTimesUsecaseProvider = Provider<GetDailyPrayerTimesUsecase>((ref) {
+final getDailyPrayerTimesUsecaseProvider =
+    Provider<GetDailyPrayerTimesUsecase>((ref) {
   return GetDailyPrayerTimesUsecase(ref.read(prayerTimesRepositoryProvider));
 });
 
-final getMonthlyPrayerTimesUsecaseProvider = Provider<GetMonthlyPrayerTimesUsecase>((ref) {
+final getMonthlyPrayerTimesUsecaseProvider =
+    Provider<GetMonthlyPrayerTimesUsecase>((ref) {
   return GetMonthlyPrayerTimesUsecase(ref.read(prayerTimesRepositoryProvider));
 });
 
-final getCurrentAndNextPrayerUsecaseProvider = Provider<GetCurrentAndNextPrayerUsecase>((ref) {
-  return GetCurrentAndNextPrayerUsecase(ref.read(prayerTimesRepositoryProvider));
+final getCurrentAndNextPrayerUsecaseProvider =
+    Provider<GetCurrentAndNextPrayerUsecase>((ref) {
+  return GetCurrentAndNextPrayerUsecase(
+      ref.read(prayerTimesRepositoryProvider));
 });
 
-final markPrayerCompletedUsecaseProvider = Provider<MarkPrayerCompletedUsecase>((ref) {
+final markPrayerCompletedUsecaseProvider =
+    Provider<MarkPrayerCompletedUsecase>((ref) {
   return MarkPrayerCompletedUsecase(ref.read(prayerTimesRepositoryProvider));
 });
 
-final getPrayerTrackingHistoryUsecaseProvider = Provider<GetPrayerTrackingHistoryUsecase>((ref) {
-  return GetPrayerTrackingHistoryUsecase(ref.read(prayerTimesRepositoryProvider));
+final getPrayerTrackingHistoryUsecaseProvider =
+    Provider<GetPrayerTrackingHistoryUsecase>((ref) {
+  return GetPrayerTrackingHistoryUsecase(
+      ref.read(prayerTimesRepositoryProvider));
 });
 
 // Current Location Provider
@@ -94,42 +97,55 @@ final currentLocationProvider = FutureProvider<Location>((ref) async {
   return locationService.getCurrentLocation();
 });
 
+/// Time format preference provider (true = 24h, false = 12h)
+final timeFormat24hProvider = FutureProvider<bool>((ref) async {
+  final prefs = await SharedPreferences.getInstance();
+  final fmt = prefs.getString('time_format');
+  return fmt == '24h';
+});
+
 // Calculation Method Service Provider
-final calculationMethodServiceProvider = Provider<CalculationMethodService>((ref) {
+final calculationMethodServiceProvider =
+    Provider<CalculationMethodService>((ref) {
   return CalculationMethodService.instance;
 });
 
 // Available Calculation Methods Provider
-final availableCalculationMethodsProvider = Provider<List<CalculationMethod>>((ref) {
+final availableCalculationMethodsProvider =
+    Provider<List<CalculationMethod>>((ref) {
   final service = ref.read(calculationMethodServiceProvider);
   return service.getAllMethods();
 });
 
 // Recommended Methods Provider (depends on location)
-final recommendedCalculationMethodsProvider = Provider.family<List<CalculationMethod>, Location>((ref, location) {
+final recommendedCalculationMethodsProvider =
+    Provider.family<List<CalculationMethod>, Location>((ref, location) {
   final service = ref.read(calculationMethodServiceProvider);
   return service.getRecommendedMethods(location);
 });
 
 // Prayer Settings Provider using global state
-final prayerSettingsProvider = FutureProvider<PrayerCalculationSettings>((ref) async {
+final prayerSettingsProvider =
+    FutureProvider<PrayerCalculationSettings>((ref) async {
   print('=== PRAYER SETTINGS PROVIDER START ===');
-  
+
   // Load settings from global state
   await PrayerSettingsState.instance.loadSettings();
   final method = PrayerSettingsState.instance.calculationMethod;
-  
+  final madhhabString = PrayerSettingsState.instance.madhhab;
+
   print('PrayerSettingsProvider: Using calculation method: $method');
   print('=== PRAYER SETTINGS PROVIDER END ===');
-  
+
   return PrayerCalculationSettings(
     calculationMethod: method,
-    madhab: Madhab.shafi,
+    madhab: PrayerTimesSettingsNotifier._madhabFromStringStatic(madhhabString),
   );
 });
 
 // Current Calculation Method Provider
-final currentCalculationMethodProvider = FutureProvider<CalculationMethod>((ref) async {
+final currentCalculationMethodProvider =
+    FutureProvider<CalculationMethod>((ref) async {
   final settings = await ref.read(prayerSettingsProvider.future);
   final service = ref.read(calculationMethodServiceProvider);
   final result = service.getMethodById(settings.calculationMethod);
@@ -146,12 +162,14 @@ final currentPrayerTimesProvider = FutureProvider<PrayerTimes>((ref) async {
   try {
     // Force reload settings first
     await PrayerSettingsState.instance.loadSettings();
-    print('PrayerTimesProvider: Settings reloaded: ${PrayerSettingsState.instance.calculationMethod}');
-    
+    print(
+        'PrayerTimesProvider: Settings reloaded: ${PrayerSettingsState.instance.calculationMethod}');
+
     final repository = ref.read(prayerTimesRepositoryProvider);
-    print('PrayerTimesProvider: Repository obtained, calling getCurrentPrayerTimes...');
+    print(
+        'PrayerTimesProvider: Repository obtained, calling getCurrentPrayerTimes...');
     final result = await repository.getCurrentPrayerTimes();
-    
+
     return result.fold(
       (failure) {
         // If API fails, throw the failure instead of using mock data
@@ -170,27 +188,27 @@ final currentPrayerTimesProvider = FutureProvider<PrayerTimes>((ref) async {
   }
 });
 
-
-
 // Current and Next Prayer Provider
 final currentAndNextPrayerProvider = FutureProvider<PrayerDetail>((ref) async {
   try {
     print('=== CURRENT AND NEXT PRAYER PROVIDER START ===');
-    
+
     // Force refresh by watching the settings provider
     final settings = await ref.read(prayerSettingsProvider.future);
-    print('CurrentAndNextPrayer: Using calculation method: ${settings.calculationMethod}');
+    print(
+        'CurrentAndNextPrayer: Using calculation method: ${settings.calculationMethod}');
     print('CurrentAndNextPrayer: Current time: ${DateTime.now()}');
-    
+
     final usecase = ref.read(getCurrentAndNextPrayerUsecaseProvider);
     final location = await ref.read(currentLocationProvider.future);
-    print('CurrentAndNextPrayer: Location: ${location.latitude}, ${location.longitude}');
-    
+    print(
+        'CurrentAndNextPrayer: Location: ${location.latitude}, ${location.longitude}');
+
     final result = await usecase(
       location: location,
       settings: settings,
     );
-    
+
     return result.fold(
       (failure) {
         // If API fails, throw the failure instead of using mock data
@@ -201,32 +219,38 @@ final currentAndNextPrayerProvider = FutureProvider<PrayerDetail>((ref) async {
         final prayerTimes = data['prayerTimes'] as PrayerTimes;
         final nextPrayerName = data['nextPrayer'] as String?;
         final currentPrayerName = data['currentPrayer'] as String?;
-        
-        print('CurrentAndNextPrayer: API data - Current: $currentPrayerName, Next: $nextPrayerName');
-        print('CurrentAndNextPrayer: Prayer times - Fajr: ${prayerTimes.fajr.time}, Dhuhr: ${prayerTimes.dhuhr.time}');
-        
+
+        print(
+            'CurrentAndNextPrayer: API data - Current: $currentPrayerName, Next: $nextPrayerName');
+        print(
+            'CurrentAndNextPrayer: Prayer times - Fajr: ${prayerTimes.fajr.time}, Dhuhr: ${prayerTimes.dhuhr.time}');
+
         // Calculate actual time until next prayer
-        Duration timeUntilNextPrayer = const Duration(minutes: 30); // Default fallback
-        
+        Duration timeUntilNextPrayer =
+            const Duration(minutes: 30); // Default fallback
+
         if (nextPrayerName != null) {
-          final nextPrayerTime = _getPrayerTimeByName(prayerTimes, nextPrayerName);
+          final nextPrayerTime =
+              _getPrayerTimeByName(prayerTimes, nextPrayerName);
           if (nextPrayerTime != null) {
             final now = DateTime.now();
             timeUntilNextPrayer = nextPrayerTime.difference(now);
-            print('CurrentAndNextPrayer: Time until next prayer: $timeUntilNextPrayer');
+            print(
+                'CurrentAndNextPrayer: Time until next prayer: $timeUntilNextPrayer');
           }
         }
-        
+
         final result = PrayerDetail(
           currentPrayer: currentPrayerName,
           nextPrayer: nextPrayerName,
           prayerTimes: prayerTimes,
           timeUntilNextPrayer: timeUntilNextPrayer,
         );
-        
-        print('CurrentAndNextPrayer: Final result - Current: ${result.currentPrayer}, Next: ${result.nextPrayer}');
+
+        print(
+            'CurrentAndNextPrayer: Final result - Current: ${result.currentPrayer}, Next: ${result.nextPrayer}');
         print('=== CURRENT AND NEXT PRAYER PROVIDER END ===');
-        
+
         return result;
       },
     );
@@ -259,20 +283,19 @@ DateTime? _getPrayerTimeByName(PrayerTimes prayerTimes, String prayerName) {
   }
 }
 
-
-
 // Daily Prayer Times Provider
-final dailyPrayerTimesProvider = FutureProvider.family<PrayerTimes, DateTime>((ref, date) async {
+final dailyPrayerTimesProvider =
+    FutureProvider.family<PrayerTimes, DateTime>((ref, date) async {
   try {
     final usecase = ref.read(getDailyPrayerTimesUsecaseProvider);
     final location = await ref.read(currentLocationProvider.future);
-    
+
     final result = await usecase(
       date: date,
       location: location,
       settings: await ref.read(prayerSettingsProvider.future),
     );
-    
+
     return result.fold(
       (failure) {
         // If API fails, throw the failure instead of using mock data
@@ -289,10 +312,11 @@ final dailyPrayerTimesProvider = FutureProvider.family<PrayerTimes, DateTime>((r
 });
 
 // Weekly Prayer Times Provider
-final weeklyPrayerTimesProvider = FutureProvider<List<PrayerTimes>>((ref) async {
+final weeklyPrayerTimesProvider =
+    FutureProvider<List<PrayerTimes>>((ref) async {
   final repository = ref.read(prayerTimesRepositoryProvider);
   final result = await repository.getWeeklyPrayerTimes();
-  
+
   return result.fold(
     (failure) => throw failure,
     (prayerTimesList) => prayerTimesList,
@@ -300,20 +324,21 @@ final weeklyPrayerTimesProvider = FutureProvider<List<PrayerTimes>>((ref) async 
 });
 
 // Monthly Prayer Times Provider
-final monthlyPrayerTimesProvider = FutureProvider.family<List<PrayerTimes>, DateTime>((ref, date) async {
+final monthlyPrayerTimesProvider =
+    FutureProvider.family<List<PrayerTimes>, DateTime>((ref, date) async {
   final usecase = ref.read(getMonthlyPrayerTimesUsecaseProvider);
   final location = await ref.read(currentLocationProvider.future);
-  
+
   final startDate = DateTime(date.year, date.month, 1);
   final endDate = DateTime(date.year, date.month + 1, 0);
-  
+
   final result = await usecase(
     startDate: startDate,
     endDate: endDate,
     location: location,
     settings: await ref.read(prayerSettingsProvider.future),
   );
-  
+
   return result.fold(
     (failure) => throw failure,
     (prayerTimesList) => prayerTimesList,
@@ -321,19 +346,20 @@ final monthlyPrayerTimesProvider = FutureProvider.family<List<PrayerTimes>, Date
 });
 
 // Prayer Tracking History Provider
-final prayerTrackingHistoryProvider = FutureProvider.family<List<PrayerTracking>, DateTime>((ref, date) async {
+final prayerTrackingHistoryProvider =
+    FutureProvider.family<List<PrayerTracking>, DateTime>((ref, date) async {
   final usecase = ref.read(getPrayerTrackingHistoryUsecaseProvider);
-  
+
   final startDate = DateTime(date.year, date.month, 1);
   final endDate = DateTime(date.year, date.month + 1, 0);
   final location = await ref.read(currentLocationProvider.future);
-  
+
   final result = await usecase(
     startDate: startDate,
     endDate: endDate,
     location: location,
   );
-  
+
   return result.fold(
     (failure) => throw failure,
     (trackingList) => trackingList,
@@ -341,20 +367,21 @@ final prayerTrackingHistoryProvider = FutureProvider.family<List<PrayerTracking>
 });
 
 // Prayer Statistics Provider
-final prayerStatisticsProvider = FutureProvider.family<PrayerStatistics, DateTime>((ref, date) async {
+final prayerStatisticsProvider =
+    FutureProvider.family<PrayerStatistics, DateTime>((ref, date) async {
   final repository = ref.read(prayerTimesRepositoryProvider);
-  
+
   final startDate = DateTime(date.year, date.month, 1);
   final endDate = DateTime(date.year, date.month + 1, 0);
-  
+
   final result = await repository.getPrayerStatistics(
     fromDate: startDate,
     toDate: endDate,
   );
-  
+
   return result.fold(
     (failure) => throw failure,
-    (statistics) => statistics as PrayerStatistics,
+    (statistics) => statistics,
   );
 });
 
@@ -364,18 +391,57 @@ final prayerStatisticsProvider = FutureProvider.family<PrayerStatistics, DateTim
 final athanSettingsFutureProvider = FutureProvider<AthanSettings>((ref) async {
   final repository = ref.read(prayerTimesRepositoryProvider);
   final result = await repository.getAthanSettings();
-  
+
   return result.fold(
     (failure) => throw failure,
     (settings) => settings,
   );
 });
 
+// Athan Settings Notifier for toggling per-prayer notifications
+final athanSettingsNotifierProvider =
+    StateNotifierProvider<AthanSettingsNotifier, AthanSettings?>((ref) {
+  return AthanSettingsNotifier(ref.read(prayerTimesRepositoryProvider))..load();
+});
+
+class AthanSettingsNotifier extends StateNotifier<AthanSettings?> {
+  AthanSettingsNotifier(this._repository) : super(null);
+  final PrayerTimesRepository _repository;
+
+  Future<void> load() async {
+    final result = await _repository.getAthanSettings();
+    result.fold((_) => null, (settings) => state = settings);
+  }
+
+  bool isPrayerEnabled(String prayerName) {
+    final map = state?.prayerSpecificSettings ?? const {};
+    return map[prayerName.toLowerCase()] ?? true;
+  }
+
+  Future<void> togglePrayer(String prayerName) async {
+    final current = state ?? const AthanSettings();
+    final map = {...(current.prayerSpecificSettings ?? const {})};
+    final key = prayerName.toLowerCase();
+    map[key] = !(map[key] ?? true);
+    final updated = current.copyWith(
+        prayerSpecificSettings: map, lastUpdated: DateTime.now());
+    final saved = await _repository.saveAthanSettings(updated);
+    saved.fold((_) => null, (_) => state = updated);
+  }
+}
+
+// Jama'at offsets provider (minutes per prayer)
+final jamaatOffsetsProvider = FutureProvider<Map<String, int>>((ref) async {
+  final storage = ref.read(prayerTimesLocalStorageProvider);
+  return storage.getJamaatOffsets();
+});
+
 // Islamic Events Provider
-final islamicEventsProvider = FutureProvider.family<List<IslamicEvent>, DateTime>((ref, date) async {
+final islamicEventsProvider =
+    FutureProvider.family<List<IslamicEvent>, DateTime>((ref, date) async {
   final repository = ref.read(prayerTimesRepositoryProvider);
   final result = await repository.getIslamicEvents(date: date);
-  
+
   return result.fold(
     (failure) => throw failure,
     (events) => events,
@@ -386,7 +452,7 @@ final islamicEventsProvider = FutureProvider.family<List<IslamicEvent>, DateTime
 final qiblaDirectionProvider = FutureProvider<double>((ref) async {
   final repository = ref.read(prayerTimesRepositoryProvider);
   final location = await ref.read(currentLocationProvider.future);
-  
+
   final result = await repository.getQiblaDirection(location);
   return result.fold(
     (failure) => throw failure,
@@ -395,10 +461,11 @@ final qiblaDirectionProvider = FutureProvider<double>((ref) async {
 });
 
 // Offline Status Provider
-final offlineStatusProvider = FutureProvider.family<bool, DateTime>((ref, date) async {
+final offlineStatusProvider =
+    FutureProvider.family<bool, DateTime>((ref, date) async {
   final repository = ref.read(prayerTimesRepositoryProvider);
   final result = await repository.arePrayerTimesAvailableOffline(date: date);
-  
+
   return result.fold(
     (failure) => false,
     (isAvailable) => isAvailable,
@@ -409,33 +476,81 @@ final offlineStatusProvider = FutureProvider.family<bool, DateTime>((ref, date) 
 final locationContextProvider = FutureProvider<LocationContext>((ref) async {
   final locationService = ref.read(locationServiceProvider);
   final location = await ref.read(currentLocationProvider.future);
-  
+
   return locationService.getIslamicLocationContext(location);
 });
 
 // Time Until Next Prayer Provider
-final timeUntilNextPrayerProvider = StreamProvider<Duration>((ref) {
-  return Stream.periodic(const Duration(seconds: 1), (count) {
-    return ref.watch(currentAndNextPrayerProvider).when(
-      data: (prayerDetail) => prayerDetail.timeUntilNextPrayer,
-      loading: () => Duration.zero,
-      error: (_, __) => Duration.zero,
-    );
+// Next prayer DateTime derived from currentAndNextPrayerProvider
+final nextPrayerDateTimeProvider = Provider<DateTime?>((ref) {
+  final asyncDetail = ref.watch(currentAndNextPrayerProvider);
+  return asyncDetail.maybeWhen(
+    data: (detail) {
+      final pt = detail.prayerTimes as PrayerTimes;
+      final nextName = detail.nextPrayer;
+      if (nextName == null) return null;
+      return _getPrayerTimeByName(pt, nextName);
+    },
+    orElse: () => null,
+  );
+});
+
+// Live countdown recomputed every second using current time and next prayer
+final timeUntilNextPrayerProvider = StreamProvider<Duration>((ref) async* {
+  // Rebuild the stream when next prayer target changes
+  final nextPrayerTime = ref.watch(nextPrayerDateTimeProvider);
+
+  // Emit immediately then every second
+  Duration computeRemaining() {
+    if (nextPrayerTime == null) return Duration.zero;
+    final remaining = nextPrayerTime.difference(DateTime.now());
+    return remaining.isNegative ? Duration.zero : remaining;
+  }
+
+  yield computeRemaining();
+
+  yield* Stream.periodic(const Duration(seconds: 1), (_) => computeRemaining());
+});
+
+// Auto-refresh at local midnight: invalidate relevant providers
+final prayerTimesMidnightRefreshProvider = Provider<void>((ref) {
+  Timer? timer;
+
+  void schedule() {
+    final now = DateTime.now();
+    final nextMidnight =
+        DateTime(now.year, now.month, now.day).add(const Duration(days: 1));
+    final delay = nextMidnight.difference(now);
+    timer = Timer(delay, () {
+      ref.invalidate(currentPrayerTimesProvider);
+      ref.invalidate(currentAndNextPrayerProvider);
+      // Reschedule for the following day
+      schedule();
+    });
+  }
+
+  schedule();
+
+  ref.onDispose(() {
+    timer?.cancel();
   });
 });
 
 // Prayer Completion State Notifier
-final prayerCompletionProvider = StateNotifierProvider<PrayerCompletionNotifier, Map<String, bool>>((ref) {
+final prayerCompletionProvider =
+    StateNotifierProvider<PrayerCompletionNotifier, Map<String, bool>>((ref) {
   return PrayerCompletionNotifier();
 });
 
 // Location State Notifier
-final locationStateProvider = StateNotifierProvider<LocationStateNotifier, LocationState>((ref) {
+final locationStateProvider =
+    StateNotifierProvider<LocationStateNotifier, LocationState>((ref) {
   return LocationStateNotifier(ref.read(locationServiceProvider));
 });
 
 // Prayer Times Settings State Notifier
-final prayerTimesSettingsProvider = StateNotifierProvider<PrayerTimesSettingsNotifier, PrayerCalculationSettings>((ref) {
+final prayerTimesSettingsProvider = StateNotifierProvider<
+    PrayerTimesSettingsNotifier, PrayerCalculationSettings>((ref) {
   return PrayerTimesSettingsNotifier(ref.read(prayerTimesRepositoryProvider));
 });
 
@@ -472,7 +587,8 @@ class PrayerCompletionNotifier extends StateNotifier<Map<String, bool>> {
 }
 
 class LocationStateNotifier extends StateNotifier<LocationState> {
-  LocationStateNotifier(this._locationService) : super(const LocationState.loading());
+  LocationStateNotifier(this._locationService)
+      : super(const LocationState.loading());
   final location_service.LocationService _locationService;
 
   Future<void> getCurrentLocation() async {
@@ -506,15 +622,18 @@ class LocationStateNotifier extends StateNotifier<LocationState> {
   }
 }
 
-class PrayerTimesSettingsNotifier extends StateNotifier<PrayerCalculationSettings> {
-  
-  PrayerTimesSettingsNotifier(this._repository) : super(PrayerCalculationSettings(
-    calculationMethod: 'MWL',
-    madhab: Madhab.shafi,
-    adjustments: const {},
-    highLatitudeRule: HighLatitudeRule.middleOfNight,
-    isDST: false,
-  ),) {
+class PrayerTimesSettingsNotifier
+    extends StateNotifier<PrayerCalculationSettings> {
+  PrayerTimesSettingsNotifier(this._repository)
+      : super(
+          PrayerCalculationSettings(
+            calculationMethod: 'MWL',
+            madhab: Madhab.shafi,
+            adjustments: const {},
+            highLatitudeRule: HighLatitudeRule.middleOfNight,
+            isDST: false,
+          ),
+        ) {
     _loadSettings();
   }
 
@@ -541,8 +660,23 @@ class PrayerTimesSettingsNotifier extends StateNotifier<PrayerCalculationSetting
     await _saveSettings(newSettings);
   }
 
+  static Madhab _madhabFromStringStatic(String name) {
+    switch (name.toLowerCase()) {
+      case 'hanafi':
+        return Madhab.hanafi;
+      case 'maliki':
+        return Madhab.maliki;
+      case 'hanbali':
+        return Madhab.hanbali;
+      case 'shafi':
+      default:
+        return Madhab.shafi;
+    }
+  }
+
   Future<void> updateMadhab(String madhab) async {
-    final newSettings = state.copyWith(madhab: Madhab.values.firstWhere((m) => m.name == madhab));
+    final newSettings = state.copyWith(
+        madhab: Madhab.values.firstWhere((m) => m.name == madhab));
     await _saveSettings(newSettings);
   }
 
@@ -566,7 +700,7 @@ class PrayerTimesSettingsNotifier extends StateNotifier<PrayerCalculationSetting
 
 sealed class LocationState {
   const LocationState();
-  
+
   const factory LocationState.loading() = LocationLoading;
   const factory LocationState.loaded(Location location) = LocationLoaded;
   const factory LocationState.error(Failure failure) = LocationError;
@@ -589,11 +723,10 @@ class LocationError extends LocationState {
 // Parameter Classes
 
 class MonthlyParams {
-  
   const MonthlyParams({required this.year, required this.month});
   final int year;
   final int month;
-  
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -601,17 +734,16 @@ class MonthlyParams {
           runtimeType == other.runtimeType &&
           year == other.year &&
           month == other.month;
-  
+
   @override
   int get hashCode => year.hashCode ^ month.hashCode;
 }
 
 class DateRangeParams {
-  
   const DateRangeParams({required this.fromDate, required this.toDate});
   final DateTime fromDate;
   final DateTime toDate;
-  
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -619,7 +751,7 @@ class DateRangeParams {
           runtimeType == other.runtimeType &&
           fromDate == other.fromDate &&
           toDate == other.toDate;
-  
+
   @override
   int get hashCode => fromDate.hashCode ^ toDate.hashCode;
 }
