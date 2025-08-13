@@ -4,19 +4,23 @@ import 'package:go_router/go_router.dart';
 import '../routing/app_router.dart';
 import '../theme/app_theme.dart';
 import '../localization/strings.dart';
+import '../../features/home/presentation/widgets/islamic_bottom_navigation.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 /// Bottom Navigation Wrapper for DeenMate
 /// Provides Islamic-themed bottom navigation without breaking existing routing
 class BottomNavigationWrapper extends StatefulWidget {
-
   const BottomNavigationWrapper({
-    required this.child, required this.currentLocation, super.key,
+    required this.child,
+    required this.currentLocation,
+    super.key,
   });
   final Widget child;
   final String currentLocation;
 
   @override
-  State<BottomNavigationWrapper> createState() => _BottomNavigationWrapperState();
+  State<BottomNavigationWrapper> createState() =>
+      _BottomNavigationWrapperState();
 }
 
 class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
@@ -24,7 +28,8 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: widget.child,
-      bottomNavigationBar: _shouldShowBottomNav() ? _buildBottomNavigation() : null,
+      bottomNavigationBar:
+          _shouldShowBottomNav() ? _buildBottomNavigation() : null,
     );
   }
 
@@ -34,79 +39,66 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
       AppRouter.athanSettings,
       AppRouter.calculationMethod,
     ];
-    
+
     return !hideOnRoutes.contains(widget.currentLocation);
   }
 
   Widget _buildBottomNavigation() {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-        child: NavigationBar(
-          selectedIndex: _getSelectedIndex(),
-          onDestinationSelected: _onDestinationSelected,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          indicatorColor: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.2),
-          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-          destinations: [
-            NavigationDestination(
-              icon: const Icon(Icons.home_outlined),
-              selectedIcon: Icon(
-                Icons.home,
-                color: AppTheme.lightTheme.colorScheme.primary,
-              ),
+    // Custom bottom nav to match the reference exactly (UI only)
+    final bottomInset = MediaQuery.of(context).padding.bottom;
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: bottomInset > 0 ? 0 : 10),
+        child: EnhancedBottomNavigation(
+          currentIndex: _getSelectedIndex(),
+          onTap: _onDestinationSelected,
+          items: [
+            BottomNavItem(
               label: S.t(context, 'home', 'Home'),
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.access_time_outlined),
-              selectedIcon: Icon(
-                Icons.access_time,
-                color: AppTheme.lightTheme.colorScheme.primary,
+              selectedColor: AppTheme.lightTheme.colorScheme.primary,
+              iconBuilder: (selected) => SvgPicture.asset(
+                'assets/images/icons/home_app_logo.svg',
+                width: 26,
+                height: 26,
+                colorFilter: ColorFilter.mode(
+                  selected
+                      ? AppTheme.lightTheme.colorScheme.primary
+                      : const Color(0xFF5D4037),
+                  BlendMode.srcIn,
+                ),
               ),
-              label: S.t(context, 'prayer', 'Prayer'),
             ),
-            // Zakat temporarily disabled
-            // NavigationDestination(
-            //   icon: const Icon(Icons.calculate_outlined),
-            //   selectedIcon: Icon(
-            //     Icons.calculate,
-            //     color: AppTheme.lightTheme.colorScheme.primary,
-            //   ),
-            //   label: S.t(context, 'zakat', 'Zakat'),
-            // ),
-            NavigationDestination(
-              icon: const Icon(Icons.explore_outlined),
-              selectedIcon: Icon(
-                Icons.explore,
-                color: AppTheme.lightTheme.colorScheme.primary,
+            BottomNavItem(
+              label: S.t(context, 'quran', 'Quran'),
+              selectedColor: const Color(0xFF5D4037),
+              iconBuilder: (selected) => Icon(
+                selected
+                    ? Icons.auto_stories_rounded
+                    : Icons.auto_stories_outlined,
+                size: 26,
+                color: const Color(0xFF5D4037),
               ),
-              label: S.t(context, 'qibla', 'Qibla'),
             ),
-            NavigationDestination(
-              icon: const Icon(Icons.more_horiz),
-              selectedIcon: Icon(
-                Icons.menu,
-                color: AppTheme.lightTheme.colorScheme.primary,
+            BottomNavItem(
+              label: S.t(context, 'hadith', 'Hadith'),
+              selectedColor: const Color(0xFF5D4037),
+              iconBuilder: (selected) => Icon(
+                selected ? Icons.menu_book_rounded : Icons.menu_book_outlined,
+                size: 26,
+                color: const Color(0xFF5D4037),
               ),
+            ),
+            BottomNavItem(
               label: S.t(context, 'more', 'More'),
+              selectedColor: AppTheme.lightTheme.colorScheme.primary,
+              iconBuilder: (selected) => Icon(
+                Icons.more_horiz,
+                size: 26,
+                color: selected
+                    ? AppTheme.lightTheme.colorScheme.primary
+                    : const Color(0xFF5D4037),
+              ),
             ),
           ],
         ),

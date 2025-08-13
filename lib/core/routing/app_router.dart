@@ -27,11 +27,11 @@ class AppRouter {
     initialLocation: home,
     debugLogDiagnostics: true,
     routes: [
-      // Home route
+      // Home route now points to PrayerTimesScreen
       GoRoute(
         path: home,
         name: 'home',
-        builder: (context, state) => const HomeScreen(),
+        builder: (context, state) => const PrayerTimesScreen(),
       ),
 
       // Zakat Calculator
@@ -141,195 +141,15 @@ class AppRouter {
   static GoRouter get router => _router;
 }
 
-/// Home screen with Islamic dashboard
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('DeenMate'),
-        backgroundColor: const Color(0xFF2E7D32),
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: Column(
-        children: [
-          // Islamic header
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0xFF2E7D32), Color(0xFF4CAF50)],
-              ),
-            ),
-            child: const Column(
-              children: [
-                Text(
-                  'بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                  textDirection: TextDirection.rtl,
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'In the name of Allah, the Most Gracious, the Most Merciful',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontStyle: FontStyle.italic,
-                    color: Colors.white70,
-                  ),
-                ),
-                SizedBox(height: 16),
-                Text(
-                  'Assalamu Alaikum! Welcome to your Islamic companion',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-          
-          // Feature grid
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: GridView.count(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                children: [
-                  _buildFeatureCard(
-                    context,
-                    'Zakat Calculator',
-                    Icons.calculate,
-                    'Calculate your Zakat obligation',
-                    const Color(0xFF2E7D32),
-                    AppRouter.zakatCalculator,
-                  ),
-                  _buildFeatureCard(
-                    context,
-                    'Prayer Times',
-                    Icons.access_time,
-                    'Accurate prayer times',
-                    const Color(0xFF1565C0),
-                    AppRouter.prayerTimes,
-                  ),
-                  _buildFeatureCard(
-                    context,
-                    'Qibla Finder',
-                    Icons.explore,
-                    'Find direction to Kaaba',
-                    const Color(0xFFFFD700),
-                    AppRouter.qiblaFinder,
-                  ),
-                  _buildFeatureCard(
-                    context,
-                    'Sawm Tracker',
-                    Icons.calendar_month,
-                    'Track your fasting',
-                    const Color(0xFF9C27B0),
-                    AppRouter.sawmTracker,
-                  ),
-                  _buildFeatureCard(
-                    context,
-                    'Islamic Will',
-                    Icons.description,
-                    'Generate Islamic will',
-                    const Color(0xFF795548),
-                    AppRouter.islamicWill,
-                  ),
-                  _buildFeatureCard(
-                    context,
-                    'Settings',
-                    Icons.settings,
-                    'Configure preferences',
-                    const Color(0xFF607D8B),
-                    AppRouter.settings,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFeatureCard(
-    BuildContext context,
-    String title,
-    IconData icon,
-    String description,
-    Color color,
-    String route,
-  ) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        onTap: () => context.go(route),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  icon,
-                  size: 32,
-                  color: color,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                description,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+// Removed old HomeScreen dashboard; PrayerTimesScreen is now the home.
 
 /// Placeholder screen for features under development
 class PlaceholderScreen extends StatelessWidget {
-
   const PlaceholderScreen({
-    required this.title, required this.icon, required this.description, super.key,
+    required this.title,
+    required this.icon,
+    required this.description,
+    super.key,
   });
   final String title;
   final IconData icon;
@@ -428,7 +248,6 @@ class PlaceholderScreen extends StatelessWidget {
 
 /// Error screen for navigation errors
 class ErrorScreen extends StatelessWidget {
-
   const ErrorScreen({super.key, this.error});
   final Exception? error;
 

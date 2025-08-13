@@ -1,0 +1,8 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Mushaf (book) top wedge -->
+  <path d="M12 6 L16 9 L12 12 L8 9 Z" fill="#8A6E53"/>
+  <!-- Rehal (book stand) light strokes -->
+  <path d="M7 16 L12 13 L17 16" stroke="#CFC6BB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M7 16 L12 19 L17 16" stroke="#CFC6BB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+

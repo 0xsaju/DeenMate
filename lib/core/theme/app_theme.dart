@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'app_colors.dart';
 
 /// Central theme management for DeenMate app
 /// Provides Material 3 compliant light and dark themes with Islamic design elements
@@ -39,16 +40,16 @@ class AppTheme {
 
   // Arabic Typography
   static TextStyle get arabicHeadline => GoogleFonts.amiri(
-    fontSize: 24,
-    fontWeight: FontWeight.w600,
-    color: const Color(0xFF1A1A1A),
-  );
+        fontSize: 24,
+        fontWeight: FontWeight.w600,
+        color: const Color(0xFF1A1A1A),
+      );
 
   static TextStyle get arabicBody => GoogleFonts.amiri(
-    fontSize: 16,
-    fontWeight: FontWeight.w400,
-    color: const Color(0xFF1A1A1A),
-  );
+        fontSize: 16,
+        fontWeight: FontWeight.w400,
+        color: const Color(0xFF1A1A1A),
+      );
 
   /// Light Theme Configuration
   static ThemeData get lightTheme {
@@ -72,7 +73,8 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: lightColorScheme,
       brightness: Brightness.light,
-      
+      extensions: const <ThemeExtension<dynamic>>[AppColors.light],
+
       // Typography
       textTheme: GoogleFonts.notoSansTextTheme().copyWith(
         displayLarge: GoogleFonts.amiri(
@@ -222,7 +224,8 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: lightColorScheme.error, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         hintStyle: GoogleFonts.notoSans(
           color: lightColorScheme.onSurface.withOpacity(0.6),
         ),
@@ -333,7 +336,8 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: darkColorScheme,
       brightness: Brightness.dark,
-      
+      extensions: const <ThemeExtension<dynamic>>[AppColors.dark],
+
       // Typography (same structure but with dark colors)
       textTheme: GoogleFonts.notoSansTextTheme().copyWith(
         displayLarge: GoogleFonts.amiri(
@@ -483,7 +487,8 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: darkColorScheme.error, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         hintStyle: GoogleFonts.notoSans(
           color: darkColorScheme.onSurface.withOpacity(0.6),
         ),
@@ -625,7 +630,7 @@ class AppTheme {
 }
 
 /// Extension for easy theme access
-extension ThemeExtension on BuildContext {
+extension ThemeX on BuildContext {
   ThemeData get theme => Theme.of(this);
   ColorScheme get colorScheme => Theme.of(this).colorScheme;
   TextTheme get textTheme => Theme.of(this).textTheme;

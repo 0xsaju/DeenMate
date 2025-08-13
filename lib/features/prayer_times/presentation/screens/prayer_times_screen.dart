@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../../../../core/theme/app_colors.dart';
 
 import '../../../../core/utils/islamic_utils.dart' as islamic_utils;
 import '../../domain/entities/prayer_times.dart' as prayer_entities;
@@ -22,7 +24,10 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
   DateTime _selectedDate = DateTime.now();
   // Unused in this design implementation; keep minimal state only
   // Soft warm card fill to match mock (slightly off-white)
-  static const Color _cardFill = Color(0xFFFBF7F3);
+  // Removed: using theme extension colors instead
+
+  AppColors get _colors =>
+      Theme.of(context).extension<AppColors>() ?? AppColors.light;
 
   @override
   Widget build(BuildContext context) {
@@ -30,133 +35,184 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
     final currentAndNextPrayerAsync = ref.watch(currentAndNextPrayerProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: _colors.background,
       body: SafeArea(
         top: true,
-        bottom: false,
-        child: Column(
-        children: [
-          // Header with Islamic date, current prayer, and attached alert pill
-          _buildHeader(),
-
-          // Main content area with proper scrolling
-          Expanded(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        bottom: true,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: constraints.maxHeight),
               child: Column(
                 children: [
-                  // Current and Next Prayer Cards
-                  _buildPrayerCards(currentAndNextPrayerAsync),
+                  // Header with Islamic date, current prayer, and attached alert pill
+                  _buildHeader(),
+                  _buildAlertPill(),
 
-                  const SizedBox(height: 4),
+                  // Main content area with proper scrolling
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      child: Column(
+                        children: [
+                          // Current and Next Prayer Cards
+                          _buildPrayerCards(currentAndNextPrayerAsync),
 
-                  // Suhoor and Iftaar Times
-                  _buildSuhoorIftaarSection(prayerTimesAsync),
+                          const SizedBox(height: 4),
 
-                  const SizedBox(height: 4),
+                          // Suhoor and Iftaar Times
+                          _buildSuhoorIftaarSection(prayerTimesAsync),
 
-                  // Small source line for server/provider
-                  _buildLocationCard(),
+                          const SizedBox(height: 4),
 
-                  const SizedBox(height: 4),
+                          // Small source line for server/provider
+                          _buildLocationCard(),
 
-                  // Prayer Times List
-                  _buildPrayerTimesList(prayerTimesAsync),
+                          const SizedBox(height: 4),
 
-                  // Bottom padding for navigation bar
-                  const SizedBox(height: 4),
+                          // Prayer Times List
+                          _buildPrayerTimesList(prayerTimesAsync),
 
-                  // Additional Daily Timings (horizontal) at bottom like the mock
-                  _buildAdditionalTimingsHorizontal(prayerTimesAsync),
+                          // Additional Daily Timings (horizontal) at bottom like the mock
+                          const SizedBox(height: 14),
+                          _buildAdditionalTimingsHorizontal(prayerTimesAsync),
+                          // Bottom safe padding to avoid overlap with custom 70px nav bar
+                          SizedBox(
+                            height: MediaQuery.of(context).padding.bottom + 110,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
-            ),
-          ),
-        ],
-      ),
+            );
+          },
+        ),
       ),
     );
   }
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          height: 166, // banner + attached pill inside same card
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color.fromARGB(255, 253, 245, 251), Color.fromARGB(255, 231, 202, 253)],
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Container(
+        height: 120,
+        decoration: BoxDecoration(
+          color: _colors.card,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-          ),
-          child: Stack(
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          child: Row(
             children: [
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(color: Colors.black.withOpacity(0.15)),
+              // Left: Hijri + Gregorian + Local date
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Safar 19 1447',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF3E2A1F),
+                        letterSpacing: 0.1,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Wednesday, 13 Aug 2025',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF6B5E56),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    const Text(
+                      '29 Srabon 1432',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF6B5E56),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              // Content row (hijri date and current prayer)
-              Positioned.fill(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 18, 16, 48), // leave space for pill
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              _getHijriDate(),
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 43, 43, 43)),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              DateFormat('EEEE, MMMM d yyyy').format(_selectedDate),
-                              style: const TextStyle(fontSize: 12, color: Color.fromARGB(179, 27, 26, 26)),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Text('Dhuhr', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 54, 53, 53))),
-                          SizedBox(height: 4),
-                          Text('11:40', style: TextStyle(fontSize: 14, color: Color.fromARGB(179, 47, 47, 48))),
-                        ],
-                      ),
-                    ],
+              // Right: Greeting
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: const [
+                  Text(
+                    'As-salāmu ‘alaykum,',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Color(0xFF6B5E56),
+                    ),
                   ),
-                ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Sazzad',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF3E2A1F),
+                    ),
+                  ),
+                ],
               ),
-              // Attached pill at bottom
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                height: 40,
-                child: Container(
-                  color: const Color.fromARGB(255, 46, 36, 59),
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  child: Row(
-                    children: const [
-                      Icon(Icons.alarm, color: Colors.white, size: 18),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'dhuhr in 10m, get ready to go to the mosque!',
-                          style: TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w500),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Standalone subtle alert pill under the header (matches mock)
+  Widget _buildAlertPill() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
+      child: Container(
+        height: 40,
+        decoration: BoxDecoration(
+          color: _colors.alertPill,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Icon(Icons.timer, size: 18, color: _colors.headerSecondary),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Dhuhr in 10 min, get ready to go to mosque!',
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: _colors.headerPrimary,
                   ),
                 ),
               ),
@@ -167,10 +223,8 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
     );
   }
 
-  // Removed separate alert bar; now attached under the header.
-
   Widget _buildPrayerCards(AsyncValue<PrayerDetail> currentAndNextPrayerAsync) {
-    const double cardHeight = 132;
+    const double cardHeight = 156;
     return Row(
       children: [
         // Current Prayer Card
@@ -178,14 +232,14 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
           child: SizedBox(
             height: cardHeight,
             child: _buildPrayerCard(
-            title: 'Now time is',
-            prayerName: 'Dhuhr',
-            time: '12:27 pm',
-            endTime: '3:54pm',
-            isCurrent: true,
-            backgroundColor: const Color(0xFFFFE7D6),
-            silhouetteColor: const Color(0xFFCC6E3C),
-          ),
+              title: 'Now time is',
+              prayerName: 'Dhuhr',
+              time: '12:27 pm',
+              endTime: '3:54pm',
+              isCurrent: true,
+              backgroundColor: const Color(0xFFFFE7D6),
+              silhouetteColor: const Color(0xFFCC6E3C),
+            ),
           ),
         ),
 
@@ -196,15 +250,15 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
           child: SizedBox(
             height: cardHeight,
             child: _buildPrayerCard(
-            title: 'Next prayer is',
-            prayerName: 'Asr',
-            time: '03:54 pm',
-            azanTime: '5:15pm',
-            jamaatTime: '5:30pm',
-            isCurrent: false,
-            backgroundColor: const Color(0xFFEAF4E6),
-            silhouetteColor: const Color(0xFF7BAA7F),
-          ),
+              title: 'Next prayer is',
+              prayerName: 'Asr',
+              time: '03:54 pm',
+              azanTime: '5:15pm',
+              jamaatTime: '5:30pm',
+              isCurrent: false,
+              backgroundColor: const Color(0xFFEAF4E6),
+              silhouetteColor: const Color.fromARGB(255, 118, 172, 122),
+            ),
           ),
         ),
       ],
@@ -223,46 +277,61 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
     Color silhouetteColor = const Color(0xFF2C3E50),
   }) {
     return ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: 108, maxHeight: 132),
+      constraints: const BoxConstraints(minHeight: 120),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final double h = constraints.maxHeight.isFinite ? constraints.maxHeight : 120;
-          final double scale = (h / 120).clamp(0.78, 1.0);
-          final bool hasSecondaryLines = (endTime != null) || (azanTime != null) || (jamaatTime != null);
+          final double h =
+              constraints.hasBoundedHeight ? constraints.maxHeight : 140;
+          final double scale = (h / 140).clamp(0.78, 1.0);
+          final bool hasSecondaryLines =
+              (endTime != null) || (azanTime != null) || (jamaatTime != null);
           final double adjust = hasSecondaryLines ? 0.88 : 1.0;
           final double nameSize = 18 * scale * adjust;
-          final double timeSize = 24 * scale * adjust;
-          final double meridiemSize = 11 * scale * adjust;
+          // final double timeSize = 24 * scale * adjust; // replaced by fixed design sizes below
+          // final double meridiemSize = 11 * scale * adjust; // replaced by fixed design sizes below
           final double subtitleSize = 10.5 * scale; // keep small for multi-line
           final double gapSmall = (hasSecondaryLines ? 2.0 : 3.0) * scale;
           final double gapTiny = 1 * scale;
           final double gapTop = (hasSecondaryLines ? 5.0 : 6.0) * scale;
-          final double silhouetteSize = 80 * scale;
+          final double silhouetteSize = 84 * scale;
 
           return Container(
-            padding: EdgeInsets.all(14 * scale),
+            padding: EdgeInsets.all(16 * scale),
             decoration: BoxDecoration(
-              color: isCurrent ? const Color(0xFFFFEADC) : const Color(0xFFEAF5EA),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
+                  color: Colors.black.withOpacity(0.06),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
               ],
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: isCurrent
+                    ? [
+                        const Color(0xFFFFE3CF),
+                        const Color(0xFFFFE9D9),
+                      ]
+                    : [
+                        const Color(0xFFF4F8F2),
+                        const Color(0xFFEFF6EB),
+                      ],
+              ),
             ),
             child: Stack(
               children: [
                 Positioned(
-                  right: -6,
-                  bottom: -6,
+                  right: 0,
+                  bottom: 0,
                   child: Opacity(
-                    opacity: 0.12,
-                    child: Icon(
-                      Icons.mosque,
-                      size: silhouetteSize,
-                      color: silhouetteColor.withOpacity(0.6),
+                    opacity: 0.18,
+                    child: SvgPicture.asset(
+                      isCurrent
+                          ? 'assets/images/cards/peach_skyline.svg'
+                          : 'assets/images/cards/mint_skyline.svg',
+                      width: silhouetteSize * 1.8,
                     ),
                   ),
                 ),
@@ -273,7 +342,8 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
                     Text(
                       title,
                       style: TextStyle(
-                        fontSize: 13 * scale,
+                        fontSize: 16 * scale,
+                        fontWeight: FontWeight.w600,
                         color: const Color(0xFF7F8C8D),
                       ),
                     ),
@@ -283,24 +353,29 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
                       style: TextStyle(
                         fontSize: nameSize,
                         fontWeight: FontWeight.w600,
-                        color: isCurrent
-                            ? const Color(0xFFFF6B35)
-                            : const Color(0xFF2C3E50),
+                        color: isCurrent ? _colors.accent : _colors.textPrimary,
                       ),
                     ),
                     SizedBox(height: gapSmall),
-                    _buildTimeWithMeridiem(time, mainSize: timeSize, meridiemSize: meridiemSize),
+                    _buildTimeWithMeridiem(
+                      time,
+                      mainSize: 34 * scale,
+                      meridiemSize: 16 * scale,
+                    ),
                     if (endTime != null) ...[
                       SizedBox(height: gapTiny),
-                      _buildSecondaryInfo('End time - $endTime', fontSize: subtitleSize),
+                      _buildSecondaryInfo('End time - $endTime',
+                          fontSize: subtitleSize),
                     ],
                     if (azanTime != null) ...[
                       SizedBox(height: (gapTiny - 1).clamp(0, 8).toDouble()),
-                      _buildSecondaryInfo('Azan - $azanTime', fontSize: subtitleSize),
+                      _buildSecondaryInfo('Azan - $azanTime',
+                          fontSize: subtitleSize),
                     ],
                     if (jamaatTime != null) ...[
                       SizedBox(height: (gapTiny - 1).clamp(0, 8).toDouble()),
-                      _buildSecondaryInfo("Jama'at - $jamaatTime", fontSize: subtitleSize),
+                      _buildSecondaryInfo("Jama'at - $jamaatTime",
+                          fontSize: subtitleSize),
                     ],
                   ],
                 ),
@@ -313,7 +388,10 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
   }
 
   // Renders time like 12:27 pm with smaller meridiem to match the mock
-  Widget _buildTimeWithMeridiem(String time, {double mainSize = 26, double meridiemSize = 13, Color color = const Color(0xFF2C3E50)}) {
+  Widget _buildTimeWithMeridiem(String time,
+      {double mainSize = 26,
+      double meridiemSize = 13,
+      Color color = const Color(0xFF2C3E50)}) {
     final parts = time.trim().split(' ');
     final mainTime = parts.isNotEmpty ? parts[0] : time;
     final meridiem = parts.length > 1 ? parts[1] : '';
@@ -322,12 +400,16 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
         children: [
           TextSpan(
             text: mainTime,
-            style: TextStyle(fontSize: mainSize, fontWeight: FontWeight.w700, color: color),
+            style: TextStyle(
+                fontSize: mainSize, fontWeight: FontWeight.w700, color: color),
           ),
           if (meridiem.isNotEmpty)
             TextSpan(
               text: ' $meridiem',
-              style: TextStyle(fontSize: meridiemSize, fontWeight: FontWeight.w600, color: color),
+              style: TextStyle(
+                  fontSize: meridiemSize,
+                  fontWeight: FontWeight.w600,
+                  color: color),
             ),
         ],
       ),
@@ -335,7 +417,8 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
   }
 
   // Smaller variant for list/footer chips with optional color override
-  Widget _buildSmallTimeWithMeridiem(String time, {Color color = const Color(0xFF2C3E50)}) {
+  Widget _buildSmallTimeWithMeridiem(String time,
+      {Color color = const Color(0xFF2C3E50)}) {
     final parts = time.trim().split(' ');
     final mainTime = parts.isNotEmpty ? parts[0] : time;
     final meridiem = parts.length > 1 ? parts[1] : '';
@@ -367,16 +450,20 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
   Widget _buildSecondaryInfo(String text, {double fontSize = 12}) {
     return Text(
       text,
-      style: TextStyle(fontSize: fontSize, color: const Color(0xFF7F8C8D)),
+      style: TextStyle(
+          fontSize: fontSize,
+          color: Theme.of(context).extension<AppColors>()?.textSecondary ??
+              const Color(0xFF7F8C8D)),
     );
   }
 
-  Widget _buildSuhoorIftaarSection(AsyncValue<prayer_entities.PrayerTimes> prayerTimesAsync) {
+  Widget _buildSuhoorIftaarSection(
+      AsyncValue<prayer_entities.PrayerTimes> prayerTimesAsync) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: _cardFill,
-        borderRadius: BorderRadius.circular(12),
+        color: Theme.of(context).extension<AppColors>()?.card ?? Colors.white,
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
@@ -392,18 +479,20 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10), // Increased padding
+                  width: 36,
+                  height: 36,
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: const Color(0xFFFF6B35).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10), // Larger radius
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
                     Icons.notifications_active,
                     color: Color(0xFFFF6B35),
-                    size: 22, // Larger icon
+                    size: 22,
                   ),
                 ),
-                const SizedBox(width: 16), // Increased spacing
+                const SizedBox(width: 16),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -430,9 +519,10 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
 
           // Divider
           Container(
-            width: 1,
-            height: 50, // Increased height
-            color: const Color(0xFFE5E7EB),
+            width: 2,
+            height: 52,
+            color: Theme.of(context).extension<AppColors>()?.divider ??
+                const Color(0xFFD6CBB3),
           ),
 
           // Iftaar
@@ -453,7 +543,9 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
                     ),
                     prayerTimesAsync.when(
                       data: (p) => _buildSmallTimeWithMeridiem(
-                        DateFormat('h:mm a').format(p.maghrib.time).toLowerCase(),
+                        DateFormat('h:mm a')
+                            .format(p.maghrib.time)
+                            .toLowerCase(),
                       ),
                       loading: () => _buildSmallTimeWithMeridiem('—'),
                       error: (_, __) => _buildSmallTimeWithMeridiem('—'),
@@ -462,15 +554,17 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
                 ),
                 const SizedBox(width: 16), // Increased spacing
                 Container(
-                  padding: const EdgeInsets.all(10), // Increased padding
+                  width: 36,
+                  height: 36,
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: const Color(0xFF7F8C8D).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10), // Larger radius
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
                     Icons.notifications_off,
                     color: Color(0xFF7F8C8D),
-                    size: 22, // Larger icon
+                    size: 22,
                   ),
                 ),
               ],
@@ -484,7 +578,7 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
   Widget _buildLocationCard() {
     // Render as a slim helper row to indicate server/source beneath the section title
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.fromLTRB(4, 2, 4, 0),
       child: Row(
         children: const [
           Icon(Icons.location_on, color: Color(0xFF2C3E50), size: 16),
@@ -505,7 +599,7 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
       AsyncValue<prayer_entities.PrayerTimes> prayerTimesAsync) {
     return Container(
       decoration: BoxDecoration(
-        color: _cardFill,
+        color: Theme.of(context).extension<AppColors>()?.card ?? Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -556,16 +650,19 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
     // Set Dhuhr as current prayer visually (can be dynamic later)
     const String currentPrayerName = 'Dhuhr';
 
-    final double rowVerticalPadding = 8; // reduce line space
+    final double rowVerticalPadding =
+        6; // slightly tighter to reduce row height
     final prayers = [
       {
         'name': 'Fajr',
-        'time': DateFormat('h:mm a').format(prayerTimes.fajr.time).toLowerCase(),
+        'time':
+            DateFormat('h:mm a').format(prayerTimes.fajr.time).toLowerCase(),
         'icon': Icons.nightlight_round,
       },
       {
         'name': 'Dhuhr',
-        'time': DateFormat('h:mm a').format(prayerTimes.dhuhr.time).toLowerCase(),
+        'time':
+            DateFormat('h:mm a').format(prayerTimes.dhuhr.time).toLowerCase(),
         'icon': Icons.wb_sunny,
       },
       {
@@ -575,12 +672,14 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
       },
       {
         'name': 'Maghrib',
-        'time': DateFormat('h:mm a').format(prayerTimes.maghrib.time).toLowerCase(),
+        'time':
+            DateFormat('h:mm a').format(prayerTimes.maghrib.time).toLowerCase(),
         'icon': Icons.wb_sunny_outlined,
       },
       {
         'name': 'Isha',
-        'time': DateFormat('h:mm a').format(prayerTimes.isha.time).toLowerCase(),
+        'time':
+            DateFormat('h:mm a').format(prayerTimes.isha.time).toLowerCase(),
         'icon': Icons.nightlight_round,
       },
     ];
@@ -600,19 +699,21 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
                 children: [
                   // Prayer Icon
                   Container(
-                    padding: const EdgeInsets.all(8), // Reduced padding
+                    width: 24,
+                    height: 24,
+                    alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: isCurrentPrayer
                           ? const Color(0xFFFF6B35).withOpacity(0.1)
                           : const Color(0xFF7F8C8D).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8), // Smaller radius
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
                       prayer['icon'] as IconData,
                       color: isCurrentPrayer
                           ? const Color(0xFFFF6B35)
                           : const Color(0xFF7F8C8D),
-                      size: 18, // Smaller icon
+                      size: 16,
                     ),
                   ),
 
@@ -623,7 +724,7 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
                     child: Text(
                       prayer['name'] as String,
                       style: TextStyle(
-                        fontSize: 15, // Smaller font
+                        fontSize: 14, // Reduced to compact row
                         fontWeight: FontWeight.w600,
                         color: isCurrentPrayer
                             ? const Color(0xFFFF6B35)
@@ -644,7 +745,7 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
 
                   // Notification Bell
                   Container(
-                    padding: const EdgeInsets.all(8), // Reduced padding
+                    padding: const EdgeInsets.all(6), // tighter padding
                     decoration: BoxDecoration(
                       color: const Color(0xFFFF6B35).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8), // Smaller radius
@@ -652,7 +753,7 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
                     child: const Icon(
                       Icons.notifications_active,
                       color: Color(0xFFFF6B35),
-                      size: 18, // Smaller icon
+                      size: 16, // compact icon
                     ),
                   ),
                 ],
@@ -661,8 +762,9 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
             // Add divider between prayers (except after the last one)
             if (index < prayers.length - 1)
               Container(
-                height: 1,
-                color: const Color(0xFFE5E7EB),
+                height: 2,
+                color: Theme.of(context).extension<AppColors>()?.divider ??
+                    const Color(0xFFD6CBB3),
                 margin: const EdgeInsets.symmetric(horizontal: 16),
               ),
           ],
@@ -671,11 +773,12 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
     );
   }
 
-  Widget _buildAdditionalTimingsHorizontal(AsyncValue<prayer_entities.PrayerTimes> prayerTimesAsync) {
+  Widget _buildAdditionalTimingsHorizontal(
+      AsyncValue<prayer_entities.PrayerTimes> prayerTimesAsync) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        color: _cardFill,
+        color: Theme.of(context).extension<AppColors>()?.card ?? Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -696,15 +799,17 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
                 Icons.wb_sunny,
               ),
               loading: () => _buildTimingColumn('Sunrise', '—', Icons.wb_sunny),
-              error: (_, __) => _buildTimingColumn('Sunrise', '—', Icons.wb_sunny),
+              error: (_, __) =>
+                  _buildTimingColumn('Sunrise', '—', Icons.wb_sunny),
             ),
           ),
 
           // Divider
           Container(
-            width: 1,
-            height: 40,
-            color: const Color(0xFFE5E7EB),
+            width: 2,
+            height: 48,
+            color: Theme.of(context).extension<AppColors>()?.divider ??
+                const Color(0xFFD6CBB3),
           ),
 
           // Mid Day
@@ -715,16 +820,19 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
                 DateFormat('h:mm a').format(p.dhuhr.time).toLowerCase(),
                 Icons.access_time,
               ),
-              loading: () => _buildTimingColumn('Mid Day', '—', Icons.access_time),
-              error: (_, __) => _buildTimingColumn('Mid Day', '—', Icons.access_time),
+              loading: () =>
+                  _buildTimingColumn('Mid Day', '—', Icons.access_time),
+              error: (_, __) =>
+                  _buildTimingColumn('Mid Day', '—', Icons.access_time),
             ),
           ),
 
           // Divider
           Container(
-            width: 1,
-            height: 40,
-            color: const Color(0xFFE5E7EB),
+            width: 2,
+            height: 48,
+            color: Theme.of(context).extension<AppColors>()?.divider ??
+                const Color(0xFFD6CBB3),
           ),
 
           // Sunset
@@ -735,8 +843,10 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
                 DateFormat('h:mm a').format(p.maghrib.time).toLowerCase(),
                 Icons.wb_sunny_outlined,
               ),
-              loading: () => _buildTimingColumn('Sunset', '—', Icons.wb_sunny_outlined),
-              error: (_, __) => _buildTimingColumn('Sunset', '—', Icons.wb_sunny_outlined),
+              loading: () =>
+                  _buildTimingColumn('Sunset', '—', Icons.wb_sunny_outlined),
+              error: (_, __) =>
+                  _buildTimingColumn('Sunset', '—', Icons.wb_sunny_outlined),
             ),
           ),
         ],
@@ -745,25 +855,26 @@ class _PrayerTimesScreenState extends ConsumerState<PrayerTimesScreen>
   }
 
   Widget _buildTimingColumn(String label, String time, IconData icon) {
-    return Column(
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(
-          icon,
-          size: 20,
-          color: const Color(0xFF7F8C8D),
+        Icon(icon, size: 16, color: const Color(0xFF7F8C8D)),
+        const SizedBox(width: 6),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF2C3E50),
+              ),
+            ),
+            const SizedBox(height: 2),
+            _buildSmallTimeWithMeridiem(time),
+          ],
         ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF2C3E50),
-          ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 4),
-        _buildSmallTimeWithMeridiem(time),
       ],
     );
   }

@@ -3,9 +3,10 @@ import '../../../../core/theme/islamic_theme.dart';
 
 /// Islamic bottom navigation bar matching the design
 class IslamicBottomNavigation extends StatelessWidget {
-  
   const IslamicBottomNavigation({
-    required this.currentIndex, required this.onTap, super.key,
+    required this.currentIndex,
+    required this.onTap,
+    super.key,
   });
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -31,22 +32,25 @@ class IslamicBottomNavigation extends StatelessWidget {
             _buildNavItem(0, '🏠', 'Home', isActive: currentIndex == 0),
             _buildNavItem(1, '🕌', 'Prayer', isActive: currentIndex == 1),
             // _buildNavItem(2, '🧮', 'Zakat', isActive: currentIndex == 2),
-                          _buildNavItem(2, '🧭', 'Qibla', isActive: currentIndex == 2),
-              _buildNavItem(3, '⋯', 'More', isActive: currentIndex == 3),
+            _buildNavItem(2, '🧭', 'Qibla', isActive: currentIndex == 2),
+            _buildNavItem(3, '⋯', 'More', isActive: currentIndex == 3),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNavItem(int index, String icon, String label, {required bool isActive}) {
+  Widget _buildNavItem(int index, String icon, String label,
+      {required bool isActive}) {
     return GestureDetector(
       onTap: () => onTap(index),
       child: Container(
         width: 60,
         height: 50,
         decoration: BoxDecoration(
-          color: isActive ? IslamicTheme.islamicGreen.withOpacity(0.1) : Colors.transparent,
+          color: isActive
+              ? IslamicTheme.islamicGreen.withOpacity(0.1)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Column(
@@ -76,23 +80,33 @@ class IslamicBottomNavigation extends StatelessWidget {
 
   Color _getSelectedColor(int index) {
     switch (index) {
-      case 0: return const Color(0xFFE8F5E8); // Home - Islamic green
-      case 1: return const Color(0xFFE3F2FD); // Prayer - Blue
-              // case 2: return const Color(0xFFE8F5E8); // Zakat - Islamic green
-      case 3: return const Color(0xFFFFF3E0); // Qibla - Orange
-      case 4: return const Color(0xFFEFEBE9); // More - Brown
-      default: return const Color(0xFFE8F5E8);
+      case 0:
+        return const Color(0xFFE8F5E8); // Home - Islamic green
+      case 1:
+        return const Color(0xFFE3F2FD); // Prayer - Blue
+      // case 2: return const Color(0xFFE8F5E8); // Zakat - Islamic green
+      case 3:
+        return const Color(0xFFFFF3E0); // Qibla - Orange
+      case 4:
+        return const Color(0xFFEFEBE9); // More - Brown
+      default:
+        return const Color(0xFFE8F5E8);
     }
   }
 
   Color _getSelectedTextColor(int index) {
     switch (index) {
-      case 0: return IslamicTheme.islamicGreen; // Home
-      case 1: return IslamicTheme.prayerBlue; // Prayer
-              // case 2: return IslamicTheme.islamicGreen; // Zakat
-      case 3: return IslamicTheme.hadithOrange; // Qibla
-      case 4: return IslamicTheme.duaBrown; // More
-      default: return IslamicTheme.islamicGreen;
+      case 0:
+        return IslamicTheme.islamicGreen; // Home
+      case 1:
+        return IslamicTheme.prayerBlue; // Prayer
+      // case 2: return IslamicTheme.islamicGreen; // Zakat
+      case 3:
+        return IslamicTheme.hadithOrange; // Qibla
+      case 4:
+        return IslamicTheme.duaBrown; // More
+      default:
+        return IslamicTheme.islamicGreen;
     }
   }
 
@@ -104,9 +118,11 @@ class IslamicBottomNavigation extends StatelessWidget {
 
 /// Enhanced bottom navigation with more detailed design
 class EnhancedBottomNavigation extends StatelessWidget {
-  
   const EnhancedBottomNavigation({
-    required this.currentIndex, required this.onTap, required this.items, super.key,
+    required this.currentIndex,
+    required this.onTap,
+    required this.items,
+    super.key,
   });
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -134,15 +150,15 @@ class EnhancedBottomNavigation extends StatelessWidget {
       ),
       child: SafeArea(
         child: Container(
-          height: 70,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          height: 76,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: items.asMap().entries.map((entry) {
               final index = entry.key;
               final item = entry.value;
               final isSelected = currentIndex == index;
-              
+
               return _buildEnhancedNavItem(
                 index: index,
                 item: item,
@@ -166,10 +182,12 @@ class EnhancedBottomNavigation extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         width: 56,
         decoration: BoxDecoration(
-          color: isSelected ? item.selectedColor.withOpacity(0.15) : Colors.transparent,
+          color: isSelected
+              ? item.selectedColor.withOpacity(0.15)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(vertical: 6),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -183,17 +201,21 @@ class EnhancedBottomNavigation extends StatelessWidget {
                 child: item.iconBuilder(isSelected),
               ),
             ),
-            
+
             const SizedBox(height: 4),
-            
+
             // Label
             AnimatedDefaultTextStyle(
               duration: const Duration(milliseconds: 200),
               style: IslamicTheme.textTheme.labelSmall?.copyWith(
-                color: isSelected ? item.selectedColor : IslamicTheme.textSecondary,
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              ) ?? const TextStyle(),
+                    color: isSelected
+                        ? item.selectedColor
+                        : IslamicTheme.textSecondary,
+                    fontSize: 10,
+                    fontWeight:
+                        isSelected ? FontWeight.w600 : FontWeight.normal,
+                  ) ??
+                  const TextStyle(),
               child: Text(
                 item.label,
                 textAlign: TextAlign.center,
@@ -210,7 +232,6 @@ class EnhancedBottomNavigation extends StatelessWidget {
 
 /// Bottom navigation item model
 class BottomNavItem {
-  
   const BottomNavItem({
     required this.label,
     required this.iconBuilder,

@@ -93,6 +93,8 @@ flutter:
     - assets/fonts/
     - assets/audio/
     - assets/images/
+    - assets/images/cards/
+    - assets/images/icons/
     - assets/islamic_patterns/
     # Uncomment if using JSON translations per README
     # - assets/translations/

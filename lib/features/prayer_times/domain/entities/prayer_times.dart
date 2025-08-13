@@ -1,11 +1,7 @@
 import 'package:equatable/equatable.dart';
-import 'package:hijri/hijri_calendar.dart';
 
 import 'location.dart';
-import 'prayer_tracking.dart';
-import 'prayer_calculation_settings.dart';
-import 'athan_settings.dart';
-import 'calculation_method.dart';
+// Removed unused imports to satisfy lints for static design work
 
 /// Prayer time entity representing Islamic prayer times for a specific date and location
 class PrayerTimes extends Equatable {
@@ -118,7 +114,9 @@ class PrayerTimes extends Equatable {
       midnight: PrayerTime.fromJson(json['midnight'] as Map<String, dynamic>),
       calculationMethod: json['calculationMethod'] as String,
       metadata: Map<String, dynamic>.from(json['metadata'] as Map),
-      lastUpdated: json['lastUpdated'] != null ? DateTime.parse(json['lastUpdated'] as String) : null,
+      lastUpdated: json['lastUpdated'] != null
+          ? DateTime.parse(json['lastUpdated'] as String)
+          : null,
     );
   }
 }
@@ -234,9 +232,8 @@ extension PrayerTimesExtension on PrayerTimes {
 
   /// Get current prayer based on current time
   PrayerTime? get currentPrayer {
-    final now = DateTime.now();
     final prayers = [fajr, dhuhr, asr, maghrib, isha];
-    
+
     for (final prayer in prayers) {
       if (prayer.status == PrayerStatus.current) {
         return prayer;
@@ -247,9 +244,8 @@ extension PrayerTimesExtension on PrayerTimes {
 
   /// Get next prayer based on current time
   PrayerTime? get nextPrayer {
-    final now = DateTime.now();
     final prayers = [fajr, dhuhr, asr, maghrib, isha];
-    
+
     for (final prayer in prayers) {
       if (prayer.status == PrayerStatus.upcoming) {
         return prayer;
@@ -288,7 +284,11 @@ extension PrayerTimeExtension on PrayerTime {
     if (use24Hour) {
       return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
     } else {
-      final hour = time.hour == 0 ? 12 : time.hour > 12 ? time.hour - 12 : time.hour;
+      final hour = time.hour == 0
+          ? 12
+          : time.hour > 12
+              ? time.hour - 12
+              : time.hour;
       final period = time.hour >= 12 ? 'PM' : 'AM';
       return '${hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')} $period';
     }
