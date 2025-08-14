@@ -22,7 +22,6 @@ import '../datasources/prayer_times_local_storage.dart';
 /// Implementation of PrayerTimesRepository
 /// Coordinates between API and local storage with Islamic compliance
 class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
-
   const PrayerTimesRepositoryImpl({
     required AladhanApi aladhanApi,
     required PrayerTimesLocalStorage localStorage,
@@ -39,10 +38,31 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
   }) async {
     try {
       // First try to get from local storage
-      final cachedPrayerTimes = await _localStorage.getPrayerTimes(date, location);
-      
-      if (cachedPrayerTimes != null && _isCacheValid(cachedPrayerTimes)) {
-        return Right(cachedPrayerTimes);
+      final cachedPrayerTimes =
+          await _localStorage.getPrayerTimes(date, location);
+
+      if (cachedPrayerTimes != null) {
+        bool cacheOk = _isCacheValid(cachedPrayerTimes);
+        if (settings != null) {
+          final cachedMethod =
+              (cachedPrayerTimes.calculationMethod).toString().toUpperCase();
+          final desiredMethod = settings.calculationMethod.toUpperCase();
+          if (cachedMethod != desiredMethod) cacheOk = false;
+
+          final dynamic cachedSchool = cachedPrayerTimes.metadata['school'];
+          final int desiredSchool = settings.madhab == Madhab.hanafi ? 1 : 0;
+          if (cachedSchool != null && cachedSchool != desiredSchool) {
+            cacheOk = false;
+          }
+
+          final String src =
+              (cachedPrayerTimes.metadata['source']?.toString() ?? '')
+                  .toLowerCase();
+          if (!src.contains('calendar')) cacheOk = false;
+        }
+        if (cacheOk) {
+          return Right(cachedPrayerTimes);
+        }
       }
 
       // If not cached or cache is stale, fetch from API
@@ -58,22 +78,39 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
       return Right(prayerTimes);
     } on Failure catch (failure) {
       // If API fails, try to return cached data even if stale
-      final cachedPrayerTimes = await _localStorage.getPrayerTimes(date, location);
+      final cachedPrayerTimes =
+          await _localStorage.getPrayerTimes(date, location);
       if (cachedPrayerTimes != null) {
-        return Right(cachedPrayerTimes.copyWith(
-          metadata: {
-            ...cachedPrayerTimes.metadata,
-            'source': 'Local Cache (Offline)',
-            'warning': 'Data may be outdated due to network issues',
-          },
-        ),);
+        return Right(
+          cachedPrayerTimes.copyWith(
+            metadata: {
+              ...cachedPrayerTimes.metadata,
+              'source': 'Local Cache (Offline)',
+              'warning': 'Data may be outdated due to network issues',
+            },
+          ),
+        );
       }
       return Left(failure);
     } catch (e) {
-      return Left(Failure.unknownFailure(
-        message: 'Failed to get prayer times',
-        details: e.toString(),
-      ),);
+      return Left(
+        Failure.unknownFailure(
+          message: 'Failed to get prayer times',
+          details: e.toString(),
+        ),
+      );
+    }
+  }
+
+  Madhab _madhabFromString(String? s) {
+    switch ((s ?? '').toLowerCase()) {
+      case 'hanafi':
+        return Madhab.hanafi;
+      case 'shafi':
+      case 'maliki':
+      case 'hanbali':
+      default:
+        return Madhab.shafi;
     }
   }
 
@@ -87,12 +124,14 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
     try {
       // Check how many days we need
       final daysDifference = endDate.difference(startDate).inDays + 1;
-      
+
       if (daysDifference > 31) {
-        return const Left(Failure.validationFailure(
-          field: 'dateRange',
-          message: 'Date range cannot exceed 31 days',
-        ),);
+        return const Left(
+          Failure.validationFailure(
+            field: 'dateRange',
+            message: 'Date range cannot exceed 31 days',
+          ),
+        );
       }
 
       // Try to get from local storage first
@@ -127,44 +166,57 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
         endDate,
         location,
       );
-      
+
       if (cachedPrayerTimes.isNotEmpty) {
-        return Right(cachedPrayerTimes.map((pt) => pt.copyWith(
-          metadata: {
-            ...pt.metadata,
-            'source': 'Local Cache (Offline)',
-            'warning': 'Data may be outdated due to network issues',
-          },
-        ),).toList(),);
+        return Right(
+          cachedPrayerTimes
+              .map(
+                (pt) => pt.copyWith(
+                  metadata: {
+                    ...pt.metadata,
+                    'source': 'Local Cache (Offline)',
+                    'warning': 'Data may be outdated due to network issues',
+                  },
+                ),
+              )
+              .toList(),
+        );
       }
-      
+
       return Left(failure);
     } catch (e) {
-      return Left(Failure.unknownFailure(
-        message: 'Failed to get prayer times range',
-        details: e.toString(),
-      ),);
+      return Left(
+        Failure.unknownFailure(
+          message: 'Failed to get prayer times range',
+          details: e.toString(),
+        ),
+      );
     }
   }
 
   @override
   Future<Either<Failure, PrayerTimes>> getCurrentPrayerTimes() async {
     try {
-      void log(String m) { if (kDebugMode) print(m); }
+      void log(String m) {
+        if (kDebugMode) print(m);
+      }
+
       log('=== REPOSITORY getCurrentPrayerTimes START ===');
       log('Repository: Getting current prayer times...');
-      
+
       // Get current location first
       final locationResult = await getCurrentLocation();
       log('Repository: Location result: ${locationResult.isRight() ? 'Success' : 'Failed'}');
-      
+
       if (locationResult.isLeft()) {
-          log('Repository: Location failed, trying preferred location...');
+        log('Repository: Location failed, trying preferred location...');
         // Try to use preferred location if GPS fails
         final preferredLocationResult = await getPreferredLocation();
-        if (preferredLocationResult.isLeft() || preferredLocationResult.getOrElse(() => null) == null) {
+        if (preferredLocationResult.isLeft() ||
+            preferredLocationResult.getOrElse(() => null) == null) {
           log('Repository: Preferred location also failed');
-          return Left(locationResult.fold((failure) => failure, (_) => throw Exception()));
+          return Left(locationResult.fold(
+              (failure) => failure, (_) => throw Exception()));
         }
       }
 
@@ -183,42 +235,52 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
       final resolvedLocation = await location;
       if (resolvedLocation == null) {
         log('Repository: No location available');
-        return const Left(Failure.locationUnavailable(
-          message: 'Unable to determine location for prayer times',
-        ),);
+        return const Left(
+          Failure.locationUnavailable(
+            message: 'Unable to determine location for prayer times',
+          ),
+        );
       }
 
       // Get prayer calculation settings from global state (force reload)
       await PrayerSettingsState.instance.loadSettings();
       final method = PrayerSettingsState.instance.calculationMethod;
+      final madhhabString = PrayerSettingsState.instance.madhhab;
+      final madhab = _madhabFromString(madhhabString);
       final settings = PrayerCalculationSettings(
         calculationMethod: method,
-        madhab: Madhab.shafi,
+        madhab: madhab,
+        // Regional convention: Asr/Isha often shown one minute earlier
+        adjustments: const {'asr': -1, 'isha': -1},
       );
+      // Invalidate cache if method/school changed
+      await clearOldCache(daysToKeep: 0);
       log('Repository: Using calculation method: $method (forced reload)');
 
       log('Repository: Calling API with location: ${resolvedLocation.latitude}, ${resolvedLocation.longitude}');
       log('Repository: Settings - Method: ${settings.calculationMethod}, Madhab: ${settings.madhab}');
-      
+
       final result = await getPrayerTimes(
         date: DateTime.now(),
         location: resolvedLocation,
         settings: settings,
       );
-      
+
       log('Repository: API call result: ${result.isRight() ? 'Success' : 'Failed'}');
       if (result.isRight()) {
         final prayerTimes = result.getOrElse(() => throw Exception('No data'));
         log('Repository: Prayer times - Fajr: ${prayerTimes.fajr.time}, Dhuhr: ${prayerTimes.dhuhr.time}');
       }
       log('=== REPOSITORY getCurrentPrayerTimes END ===');
-      
+
       return result;
     } catch (e) {
-      return Left(Failure.unknownFailure(
-        message: 'Failed to get current prayer times',
-        details: e.toString(),
-      ),);
+      return Left(
+        Failure.unknownFailure(
+          message: 'Failed to get current prayer times',
+          details: e.toString(),
+        ),
+      );
     }
   }
 
@@ -228,18 +290,20 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
   }) async {
     try {
       Location resolvedLocation;
-      
+
       if (location != null) {
         resolvedLocation = location;
       } else {
         final locationResult = await getCurrentLocation();
         if (locationResult.isLeft()) {
           final preferredLocationResult = await getPreferredLocation();
-          if (preferredLocationResult.isLeft() || 
+          if (preferredLocationResult.isLeft() ||
               preferredLocationResult.getOrElse(() => null) == null) {
-            return const Left(Failure.locationUnavailable(
-              message: 'Location is required for weekly prayer times',
-            ),);
+            return const Left(
+              Failure.locationUnavailable(
+                message: 'Location is required for weekly prayer times',
+              ),
+            );
           }
           resolvedLocation = preferredLocationResult.getOrElse(() => null)!;
         } else {
@@ -256,24 +320,29 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
         location: resolvedLocation,
       );
     } catch (e) {
-      return Left(Failure.unknownFailure(
-        message: 'Failed to get weekly prayer times',
-        details: e.toString(),
-      ),);
+      return Left(
+        Failure.unknownFailure(
+          message: 'Failed to get weekly prayer times',
+          details: e.toString(),
+        ),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, void>> savePrayerTracking(PrayerTracking tracking) async {
+  Future<Either<Failure, void>> savePrayerTracking(
+      PrayerTracking tracking) async {
     try {
       await _localStorage.savePrayerTracking(tracking);
       return const Right(null);
     } catch (e) {
       if (e is Failure) return Left(e);
-      return Left(Failure.databaseFailure(
-        operation: 'save_prayer_tracking',
-        message: 'Failed to save prayer tracking: $e',
-      ),);
+      return Left(
+        Failure.databaseFailure(
+          operation: 'save_prayer_tracking',
+          message: 'Failed to save prayer tracking: $e',
+        ),
+      );
     }
   }
 
@@ -322,31 +391,37 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
     required DateTime toDate,
   }) async {
     try {
-      final history = await _localStorage.getPrayerTrackingHistory(fromDate, toDate);
-      
+      final history =
+          await _localStorage.getPrayerTrackingHistory(fromDate, toDate);
+
       // Calculate statistics from history
       final statistics = _calculateStatistics(history, fromDate, toDate);
       return Right(statistics);
     } catch (e) {
       if (e is Failure) return Left(e);
-      return Left(Failure.databaseFailure(
-        operation: 'get_prayer_statistics',
-        message: 'Failed to calculate prayer statistics: $e',
-      ),);
+      return Left(
+        Failure.databaseFailure(
+          operation: 'get_prayer_statistics',
+          message: 'Failed to calculate prayer statistics: $e',
+        ),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, void>> savePrayerSettings(PrayerCalculationSettings settings) async {
+  Future<Either<Failure, void>> savePrayerSettings(
+      PrayerCalculationSettings settings) async {
     try {
       await _localStorage.savePrayerSettings(settings);
       return const Right(null);
     } catch (e) {
       if (e is Failure) return Left(e);
-      return Left(Failure.databaseFailure(
-        operation: 'save_prayer_settings',
-        message: 'Failed to save prayer settings: $e',
-      ),);
+      return Left(
+        Failure.databaseFailure(
+          operation: 'save_prayer_settings',
+          message: 'Failed to save prayer settings: $e',
+        ),
+      );
     }
   }
 
@@ -362,24 +437,29 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
       }
     } catch (e) {
       if (e is Failure) return Left(e);
-      return Left(Failure.databaseFailure(
-        operation: 'get_prayer_settings',
-        message: 'Failed to get prayer settings: $e',
-      ),);
+      return Left(
+        Failure.databaseFailure(
+          operation: 'get_prayer_settings',
+          message: 'Failed to get prayer settings: $e',
+        ),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, void>> saveAthanSettings(AthanSettings settings) async {
+  Future<Either<Failure, void>> saveAthanSettings(
+      AthanSettings settings) async {
     try {
       await _localStorage.saveAthanSettings(settings);
       return const Right(null);
     } catch (e) {
       if (e is Failure) return Left(e);
-      return Left(Failure.databaseFailure(
-        operation: 'save_athan_settings',
-        message: 'Failed to save Athan settings: $e',
-      ),);
+      return Left(
+        Failure.databaseFailure(
+          operation: 'save_athan_settings',
+          message: 'Failed to save Athan settings: $e',
+        ),
+      );
     }
   }
 
@@ -395,10 +475,12 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
       }
     } catch (e) {
       if (e is Failure) return Left(e);
-      return Left(Failure.databaseFailure(
-        operation: 'get_athan_settings',
-        message: 'Failed to get Athan settings: $e',
-      ),);
+      return Left(
+        Failure.databaseFailure(
+          operation: 'get_athan_settings',
+          message: 'Failed to get Athan settings: $e',
+        ),
+      );
     }
   }
 
@@ -415,9 +497,12 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
       }
 
       if (permission == LocationPermission.deniedForever) {
-        return const Left(Failure.locationPermissionDenied(
-          message: 'Location permissions are permanently denied. Please enable them in device settings.',
-        ),);
+        return const Left(
+          Failure.locationPermissionDenied(
+            message:
+                'Location permissions are permanently denied. Please enable them in device settings.',
+          ),
+        );
       }
 
       // Check if location services are enabled
@@ -451,13 +536,17 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
     } on PermissionDeniedException {
       return const Left(Failure.locationPermissionDenied());
     } on TimeoutException {
-      return const Left(Failure.timeoutFailure(
-        message: 'Location request timed out. Please try again.',
-      ),);
+      return const Left(
+        Failure.timeoutFailure(
+          message: 'Location request timed out. Please try again.',
+        ),
+      );
     } catch (e) {
-      return Left(Failure.locationUnavailable(
-        message: 'Failed to get current location: ${e.toString()}',
-      ),);
+      return Left(
+        Failure.locationUnavailable(
+          message: 'Failed to get current location: ${e.toString()}',
+        ),
+      );
     }
   }
 
@@ -468,10 +557,12 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
       return const Right(null);
     } catch (e) {
       if (e is Failure) return Left(e);
-      return Left(Failure.databaseFailure(
-        operation: 'save_preferred_location',
-        message: 'Failed to save preferred location: $e',
-      ),);
+      return Left(
+        Failure.databaseFailure(
+          operation: 'save_preferred_location',
+          message: 'Failed to save preferred location: $e',
+        ),
+      );
     }
   }
 
@@ -482,15 +573,18 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
       return Right(location);
     } catch (e) {
       if (e is Failure) return Left(e);
-      return Left(Failure.databaseFailure(
-        operation: 'get_preferred_location',
-        message: 'Failed to get preferred location: $e',
-      ),);
+      return Left(
+        Failure.databaseFailure(
+          operation: 'get_preferred_location',
+          message: 'Failed to get preferred location: $e',
+        ),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, List<Location>>> searchLocationsByCity(String cityName) async {
+  Future<Either<Failure, List<Location>>> searchLocationsByCity(
+      String cityName) async {
     try {
       // Use AlAdhan API to search by address
       final location = await _aladhanApi.getLocationByAddress(cityName);
@@ -498,9 +592,11 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
     } on Failure catch (failure) {
       return Left(failure);
     } catch (e) {
-      return Left(Failure.unknownFailure(
-        message: 'Failed to search locations: $e',
-      ),);
+      return Left(
+        Failure.unknownFailure(
+          message: 'Failed to search locations: $e',
+        ),
+      );
     }
   }
 
@@ -516,7 +612,7 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
       // Validate with API if possible
       try {
         final apiDirection = await _aladhanApi.getQiblaDirection(location);
-        
+
         // If API result differs significantly (>5 degrees), prefer API
         if ((qiblaDirection - apiDirection).abs() > 5) {
           return Right(apiDirection);
@@ -532,15 +628,18 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
   }
 
   @override
-  Future<Either<Failure, void>> cachePrayerTimes(List<PrayerTimes> prayerTimesList) async {
+  Future<Either<Failure, void>> cachePrayerTimes(
+      List<PrayerTimes> prayerTimesList) async {
     try {
       await _localStorage.savePrayerTimesList(prayerTimesList);
       return const Right(null);
     } catch (e) {
       if (e is Failure) return Left(e);
-      return Left(Failure.cacheFailure(
-        message: 'Failed to cache prayer times: $e',
-      ),);
+      return Left(
+        Failure.cacheFailure(
+          message: 'Failed to cache prayer times: $e',
+        ),
+      );
     }
   }
 
@@ -552,10 +651,13 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
     try {
       if (location == null) {
         final locationResult = await getPreferredLocation();
-        if (locationResult.isLeft() || locationResult.getOrElse(() => null) == null) {
-          return const Left(Failure.locationUnavailable(
-            message: 'Location is required to get cached prayer times',
-          ),);
+        if (locationResult.isLeft() ||
+            locationResult.getOrElse(() => null) == null) {
+          return const Left(
+            Failure.locationUnavailable(
+              message: 'Location is required to get cached prayer times',
+            ),
+          );
         }
         location = locationResult.getOrElse(() => null);
       }
@@ -570,9 +672,11 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
       return Right(cachedPrayerTimes);
     } catch (e) {
       if (e is Failure) return Left(e);
-      return Left(Failure.cacheFailure(
-        message: 'Failed to get cached prayer times: $e',
-      ),);
+      return Left(
+        Failure.cacheFailure(
+          message: 'Failed to get cached prayer times: $e',
+        ),
+      );
     }
   }
 
@@ -583,9 +687,11 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
       return const Right(null);
     } catch (e) {
       if (e is Failure) return Left(e);
-      return Left(Failure.cacheFailure(
-        message: 'Failed to clear old cache: $e',
-      ),);
+      return Left(
+        Failure.cacheFailure(
+          message: 'Failed to clear old cache: $e',
+        ),
+      );
     }
   }
 
@@ -597,13 +703,15 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
     try {
       if (location == null) {
         final locationResult = await getPreferredLocation();
-        if (locationResult.isLeft() || locationResult.getOrElse(() => null) == null) {
+        if (locationResult.isLeft() ||
+            locationResult.getOrElse(() => null) == null) {
           return const Right(false);
         }
         location = locationResult.getOrElse(() => null);
       }
 
-      final isAvailable = await _localStorage.arePrayerTimesAvailable(date, location!);
+      final isAvailable =
+          await _localStorage.arePrayerTimesAvailable(date, location!);
       return Right(isAvailable);
     } catch (e) {
       return const Right(false);
@@ -611,7 +719,8 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
   }
 
   @override
-  Future<Either<Failure, List<CalculationMethod>>> getAvailableCalculationMethods() async {
+  Future<Either<Failure, List<CalculationMethod>>>
+      getAvailableCalculationMethods() async {
     try {
       final methods = await _aladhanApi.getAvailableCalculationMethods();
       return Right(methods);
@@ -656,9 +765,11 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
 
       return const Right(true);
     } catch (e) {
-      return Left(Failure.unknownFailure(
-        message: 'Failed to validate prayer times: $e',
-      ),);
+      return Left(
+        Failure.unknownFailure(
+          message: 'Failed to validate prayer times: $e',
+        ),
+      );
     }
   }
 
@@ -672,68 +783,82 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
 
       // Check for major Islamic events
       if (hijriDate.hMonth == 9) {
-        events.add(IslamicEvent(
-          date: date,
-          hijriDate: hijriDate,
-          name: 'Ramadan',
-          arabicName: 'رمضان',
-          description: 'The holy month of fasting',
-          type: IslamicEventType.ramadan,
-          affectsPrayerTimes: true,
-        ),);
+        events.add(
+          IslamicEvent(
+            date: date,
+            hijriDate: hijriDate,
+            name: 'Ramadan',
+            arabicName: 'رمضان',
+            description: 'The holy month of fasting',
+            type: IslamicEventType.ramadan,
+            affectsPrayerTimes: true,
+          ),
+        );
       }
 
       if (hijriDate.hMonth == 10 && hijriDate.hDay == 1) {
-        events.add(IslamicEvent(
-          date: date,
-          hijriDate: hijriDate,
-          name: 'Eid al-Fitr',
-          arabicName: 'عيد الفطر',
-          description: 'Festival of Breaking the Fast',
-          type: IslamicEventType.eid,
-        ),);
+        events.add(
+          IslamicEvent(
+            date: date,
+            hijriDate: hijriDate,
+            name: 'Eid al-Fitr',
+            arabicName: 'عيد الفطر',
+            description: 'Festival of Breaking the Fast',
+            type: IslamicEventType.eid,
+          ),
+        );
       }
 
-      if (hijriDate.hMonth == 12 && hijriDate.hDay >= 10 && hijriDate.hDay <= 13) {
-        events.add(IslamicEvent(
-          date: date,
-          hijriDate: hijriDate,
-          name: 'Eid al-Adha',
-          arabicName: 'عيد الأضحى',
-          description: 'Festival of Sacrifice',
-          type: IslamicEventType.eid,
-        ),);
+      if (hijriDate.hMonth == 12 &&
+          hijriDate.hDay >= 10 &&
+          hijriDate.hDay <= 13) {
+        events.add(
+          IslamicEvent(
+            date: date,
+            hijriDate: hijriDate,
+            name: 'Eid al-Adha',
+            arabicName: 'عيد الأضحى',
+            description: 'Festival of Sacrifice',
+            type: IslamicEventType.eid,
+          ),
+        );
       }
 
       if (hijriDate.hMonth == 1 && hijriDate.hDay == 10) {
-        events.add(IslamicEvent(
-          date: date,
-          hijriDate: hijriDate,
-          name: 'Day of Ashura',
-          arabicName: 'يوم عاشوراء',
-          description: 'The 10th day of Muharram',
-          type: IslamicEventType.ashurah,
-        ),);
+        events.add(
+          IslamicEvent(
+            date: date,
+            hijriDate: hijriDate,
+            name: 'Day of Ashura',
+            arabicName: 'يوم عاشوراء',
+            description: 'The 10th day of Muharram',
+            type: IslamicEventType.ashurah,
+          ),
+        );
       }
 
       // Add weekly Jummah
       if (date.weekday == DateTime.friday) {
-        events.add(IslamicEvent(
-          date: date,
-          hijriDate: hijriDate,
-          name: 'Jummah',
-          arabicName: 'جمعة مباركة',
-          description: 'Blessed Friday',
-          type: IslamicEventType.jummamubarakah,
-          affectsPrayerTimes: true,
-        ),);
+        events.add(
+          IslamicEvent(
+            date: date,
+            hijriDate: hijriDate,
+            name: 'Jummah',
+            arabicName: 'جمعة مباركة',
+            description: 'Blessed Friday',
+            type: IslamicEventType.jummamubarakah,
+            affectsPrayerTimes: true,
+          ),
+        );
       }
 
       return Right(events);
     } catch (e) {
-      return Left(Failure.unknownFailure(
-        message: 'Failed to get Islamic events: $e',
-      ),);
+      return Left(
+        Failure.unknownFailure(
+          message: 'Failed to get Islamic events: $e',
+        ),
+      );
     }
   }
 
@@ -746,10 +871,13 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
     try {
       if (location == null) {
         final locationResult = await getPreferredLocation();
-        if (locationResult.isLeft() || locationResult.getOrElse(() => null) == null) {
-          return const Left(Failure.locationUnavailable(
-            message: 'Location is required for monthly prayer calendar',
-          ),);
+        if (locationResult.isLeft() ||
+            locationResult.getOrElse(() => null) == null) {
+          return const Left(
+            Failure.locationUnavailable(
+              message: 'Location is required for monthly prayer calendar',
+            ),
+          );
         }
         location = locationResult.getOrElse(() => null);
       }
@@ -763,9 +891,11 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
         location: location!,
       );
     } catch (e) {
-      return Left(Failure.unknownFailure(
-        message: 'Failed to get monthly prayer calendar: $e',
-      ),);
+      return Left(
+        Failure.unknownFailure(
+          message: 'Failed to get monthly prayer calendar: $e',
+        ),
+      );
     }
   }
 
@@ -791,20 +921,22 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
           // This would be implemented with actual PDF/CSV generation
           final exportData = prayerTimesList.map((pt) {
             return '${pt.date.toIso8601String().split('T')[0]}: '
-                   'Fajr: ${pt.fajr.getFormattedTime()}, '
-                   'Dhuhr: ${pt.dhuhr.getFormattedTime()}, '
-                   'Asr: ${pt.asr.getFormattedTime()}, '
-                   'Maghrib: ${pt.maghrib.getFormattedTime()}, '
-                   'Isha: ${pt.isha.getFormattedTime()}';
+                'Fajr: ${pt.fajr.getFormattedTime()}, '
+                'Dhuhr: ${pt.dhuhr.getFormattedTime()}, '
+                'Asr: ${pt.asr.getFormattedTime()}, '
+                'Maghrib: ${pt.maghrib.getFormattedTime()}, '
+                'Isha: ${pt.isha.getFormattedTime()}';
           }).join('\n');
 
           return Right(exportData);
         },
       );
     } catch (e) {
-      return Left(Failure.unknownFailure(
-        message: 'Failed to export prayer times: $e',
-      ),);
+      return Left(
+        Failure.unknownFailure(
+          message: 'Failed to export prayer times: $e',
+        ),
+      );
     }
   }
 
@@ -823,9 +955,11 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
       return Right(backupData.toString());
     } catch (e) {
       if (e is Failure) return Left(e);
-      return Left(Failure.unknownFailure(
-        message: 'Failed to backup prayer data: $e',
-      ),);
+      return Left(
+        Failure.unknownFailure(
+          message: 'Failed to backup prayer data: $e',
+        ),
+      );
     }
   }
 
@@ -838,9 +972,11 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
       return const Right(null);
     } catch (e) {
       if (e is Failure) return Left(e);
-      return Left(Failure.unknownFailure(
-        message: 'Failed to restore prayer data: $e',
-      ),);
+      return Left(
+        Failure.unknownFailure(
+          message: 'Failed to restore prayer data: $e',
+        ),
+      );
     }
   }
 
@@ -849,7 +985,7 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
   /// Check if cached prayer times are still valid (within 24 hours)
   bool _isCacheValid(PrayerTimes prayerTimes) {
     if (prayerTimes.lastUpdated == null) return false;
-    
+
     final cacheAge = DateTime.now().difference(prayerTimes.lastUpdated!);
     return cacheAge.inHours < 24;
   }
@@ -895,10 +1031,10 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
   String _detectTimezone(double latitude, double longitude) {
     // This is a simplified timezone detection
     // In a real implementation, you'd use a proper timezone detection library
-    
+
     // Rough timezone calculation based on longitude
     final timezoneOffset = (longitude / 15).round();
-    
+
     if (timezoneOffset >= 0) {
       return 'UTC+$timezoneOffset';
     } else {
@@ -914,24 +1050,25 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
   ) {
     final totalDays = toDate.difference(fromDate).inDays + 1;
     final totalPossiblePrayers = totalDays * 5; // 5 daily prayers
-    
+
     final completedPrayers = history.where((h) => h.isCompleted).length;
     // Count of on-time prayers (reserved for potential analytics)
     // final onTimePrayers = history.where((h) => h.isOnTime && h.isCompleted).length;
-    
-    final completionRate = totalPossiblePrayers > 0 
-        ? completedPrayers / totalPossiblePrayers 
+
+    final completionRate = totalPossiblePrayers > 0
+        ? completedPrayers / totalPossiblePrayers
         : 0.0;
-    
+
     // (on-time rate reserved for future analytics)
 
     // Calculate prayer-wise completion
     final prayerWiseCompletion = <String, int>{};
     final prayerNames = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
-    
+
     for (final prayerName in prayerNames) {
       final count = history
-          .where((h) => h.prayerName.toLowerCase() == prayerName && h.isCompleted)
+          .where(
+              (h) => h.prayerName.toLowerCase() == prayerName && h.isCompleted)
           .length;
       prayerWiseCompletion[prayerName] = count;
     }
@@ -945,10 +1082,21 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
       totalPrayers: totalPossiblePrayers,
       completedCount: completedPrayers,
       completionRate: completionRate,
-      totalPrayerTime: Duration(minutes: completedPrayers * 5), // Estimate 5 minutes per prayer
-      missedPrayers: prayerNames.where((name) => prayerWiseCompletion[name] == 0).toList(),
-      onTimePrayers: prayerNames.where((name) => history.any((h) => h.prayerName.toLowerCase() == name && h.isOnTime && h.isCompleted)).toList(),
-      delayedPrayers: prayerNames.where((name) => prayerWiseCompletion[name]! > 0 && prayerWiseCompletion[name]! < totalDays).toList(),
+      totalPrayerTime: Duration(
+          minutes: completedPrayers * 5), // Estimate 5 minutes per prayer
+      missedPrayers:
+          prayerNames.where((name) => prayerWiseCompletion[name] == 0).toList(),
+      onTimePrayers: prayerNames
+          .where((name) => history.any((h) =>
+              h.prayerName.toLowerCase() == name &&
+              h.isOnTime &&
+              h.isCompleted))
+          .toList(),
+      delayedPrayers: prayerNames
+          .where((name) =>
+              prayerWiseCompletion[name]! > 0 &&
+              prayerWiseCompletion[name]! < totalDays)
+          .toList(),
     );
   }
 

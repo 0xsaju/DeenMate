@@ -18,7 +18,8 @@ class MadhhabScreen extends StatefulWidget {
 }
 
 class _MadhhabScreenState extends State<MadhhabScreen> {
-  Madhab _selectedMadhhab = Madhab.hanafi;
+  // Default should be Shafi/Maliki/Hanbali group
+  Madhab _selectedMadhhab = Madhab.shafi;
 
   @override
   Widget build(BuildContext context) {

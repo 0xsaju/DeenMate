@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/providers/network_providers.dart' as net_core;
 import 'dart:async';
@@ -70,9 +69,23 @@ final prayerTimesRepositoryProvider = Provider<PrayerTimesRepository>((ref) {
 final prayerLocalInitAndPrefetchProvider = FutureProvider<void>((ref) async {
   final storage = ref.read(prayerTimesLocalStorageProvider);
   await storage.initialize();
-  // Prefetch current times (resolves location/settings internally) and caches.
+  // Prefetch using preferred location if available to avoid GPS prompt
   final repo = ref.read(prayerTimesRepositoryProvider);
-  await repo.getCurrentPrayerTimes();
+  final settings = await ref.read(prayerSettingsProvider.future);
+  final preferredEither = await repo.getPreferredLocation();
+  final preferred = preferredEither.fold<Location?>(
+    (_) => null,
+    (loc) => loc,
+  );
+  if (preferred != null) {
+    await repo.getPrayerTimes(
+      date: DateTime.now(),
+      location: preferred,
+      settings: settings,
+    );
+  } else {
+    await repo.getCurrentPrayerTimes();
+  }
 });
 
 // Use Cases
@@ -152,6 +165,8 @@ final prayerSettingsProvider =
   return PrayerCalculationSettings(
     calculationMethod: method,
     madhab: PrayerTimesSettingsNotifier._madhabFromStringStatic(madhhabString),
+    // Regional convention: Asr/Isha often shown one minute earlier
+    adjustments: const {'asr': -1, 'isha': -1},
   );
 });
 
@@ -172,14 +187,30 @@ final currentCalculationMethodProvider =
 final currentPrayerTimesProvider = FutureProvider<PrayerTimes>((ref) async {
   print('PrayerTimesProvider: Starting to fetch prayer times...');
   try {
-    // Force reload settings first
-    await PrayerSettingsState.instance.loadSettings();
-    print(
-        'PrayerTimesProvider: Settings reloaded: ${PrayerSettingsState.instance.calculationMethod}');
-
+    // Try preferred location first (manual city), then GPS fallback inside repo
     final repository = ref.read(prayerTimesRepositoryProvider);
-    print(
-        'PrayerTimesProvider: Repository obtained, calling getCurrentPrayerTimes...');
+    final preferred = await repository.getPreferredLocation();
+    if (preferred.isRight() && preferred.getOrElse(() => null) != null) {
+      // Use preferred location path with persisted madhab
+      await PrayerSettingsState.instance.loadSettings();
+      final method = PrayerSettingsState.instance.calculationMethod;
+      final madhhabString = PrayerSettingsState.instance.madhhab;
+      final settings = PrayerCalculationSettings(
+        calculationMethod: method,
+        madhab:
+            PrayerTimesSettingsNotifier._madhabFromStringStatic(madhhabString),
+        adjustments: const {'asr': -1, 'isha': -1},
+      );
+      final result = await repository.getPrayerTimes(
+        date: DateTime.now(),
+        location: preferred.getOrElse(() => null)!,
+        settings: settings,
+      );
+      return result.fold((failure) => throw failure, (pt) => pt);
+    }
+
+    // No preferred location saved: fall back to repository's current flow
+    await PrayerSettingsState.instance.loadSettings();
     final result = await repository.getCurrentPrayerTimes();
 
     return result.fold(
@@ -238,16 +269,26 @@ final currentAndNextPrayerProvider = FutureProvider<PrayerDetail>((ref) async {
   try {
     print('=== CURRENT AND NEXT PRAYER PROVIDER START ===');
 
-    // Force refresh by watching the settings provider
+    // Ensure settings are fresh
     final settings = await ref.read(prayerSettingsProvider.future);
     print(
         'CurrentAndNextPrayer: Using calculation method: ${settings.calculationMethod}');
-    print('CurrentAndNextPrayer: Current time: ${DateTime.now()}');
 
     final usecase = ref.read(getCurrentAndNextPrayerUsecaseProvider);
-    final location = await ref.read(currentLocationProvider.future);
-    print(
-        'CurrentAndNextPrayer: Location: ${location.latitude}, ${location.longitude}');
+    final repo = ref.read(prayerTimesRepositoryProvider);
+
+    // Prefer saved manual city to avoid GPS prompts
+    final preferredEither = await repo.getPreferredLocation();
+    final preferred = preferredEither.fold<Location?>(
+      (_) => null,
+      (loc) => loc,
+    );
+
+    final Location location =
+        preferred ?? await ref.read(currentLocationProvider.future);
+    print('CurrentAndNextPrayer: Location source = '
+        '${preferred != null ? 'preferred' : 'gps'}, '
+        'lat=${location.latitude}, lon=${location.longitude}');
 
     final result = await usecase(
       location: location,
@@ -256,8 +297,7 @@ final currentAndNextPrayerProvider = FutureProvider<PrayerDetail>((ref) async {
 
     return result.fold(
       (failure) {
-        // If API fails, throw the failure instead of using mock data
-        print('API failed for current prayer: ${failure.message}');
+        print('API failed for current/next prayer: ${failure.message}');
         throw failure;
       },
       (data) {
@@ -265,50 +305,34 @@ final currentAndNextPrayerProvider = FutureProvider<PrayerDetail>((ref) async {
         final nextPrayerName = data['nextPrayer'] as String?;
         final currentPrayerName = data['currentPrayer'] as String?;
 
-        print(
-            'CurrentAndNextPrayer: API data - Current: $currentPrayerName, Next: $nextPrayerName');
-        print(
-            'CurrentAndNextPrayer: Prayer times - Fajr: ${prayerTimes.fajr.time}, Dhuhr: ${prayerTimes.dhuhr.time}');
-
-        // Calculate actual time until next prayer
-        Duration timeUntilNextPrayer =
-            const Duration(minutes: 30); // Default fallback
-
+        Duration timeUntilNextPrayer = const Duration(minutes: 30);
         if (nextPrayerName != null) {
           final nextPrayerTime =
               _getPrayerTimeByName(prayerTimes, nextPrayerName);
           if (nextPrayerTime != null) {
             final now = DateTime.now();
             timeUntilNextPrayer = nextPrayerTime.difference(now);
-            print(
-                'CurrentAndNextPrayer: Time until next prayer: $timeUntilNextPrayer');
           }
         }
 
-        final result = PrayerDetail(
+        return PrayerDetail(
           currentPrayer: currentPrayerName,
           nextPrayer: nextPrayerName,
           prayerTimes: prayerTimes,
-          timeUntilNextPrayer: timeUntilNextPrayer,
+          timeUntilNextPrayer: timeUntilNextPrayer.isNegative
+              ? Duration.zero
+              : timeUntilNextPrayer,
         );
-
-        print(
-            'CurrentAndNextPrayer: Final result - Current: ${result.currentPrayer}, Next: ${result.nextPrayer}');
-        print('=== CURRENT AND NEXT PRAYER PROVIDER END ===');
-
-        return result;
       },
     );
   } catch (e) {
-    // If any error occurs, throw the error instead of using mock data
-    print('Error getting current prayer: $e');
+    print('Error getting current/next prayer: $e');
     throw e;
   }
 });
 DateTime _rolloverIfBefore(DateTime time, DateTime reference) {
   return time.isBefore(reference) ? time.add(const Duration(days: 1)) : time;
 }
-
 
 // Alert banner modeling for header pill
 enum AlertKind {
@@ -338,7 +362,7 @@ class AlertBannerState {
 const Duration _kUpcomingLeadWindow = Duration(minutes: 15);
 const Duration _kSunriseForbiddenWindow = Duration(minutes: 15);
 const Duration _kZenithForbiddenWindow = Duration(minutes: 5);
-const Duration _kSunsetForbiddenWindow = Duration(minutes: 10);
+const Duration _kSunsetForbiddenWindow = Duration(minutes: 15);
 
 DateTime? _getPrayerEndTimeFor(PrayerTimes pt, String currentName) {
   switch (currentName.toLowerCase()) {
@@ -361,6 +385,7 @@ DateTime? _getPrayerEndTimeFor(PrayerTimes pt, String currentName) {
 // Stream provider that emits the current alert banner state once per second
 final alertBannerStateProvider = StreamProvider<AlertBannerState>((ref) async* {
   final detailAsync = ref.watch(currentAndNextPrayerOfflineAwareProvider);
+  final cachedDetail = ref.watch(cachedCurrentAndNextPrayerProvider);
 
   AlertBannerState compute() {
     return detailAsync.maybeWhen(
@@ -371,12 +396,12 @@ final alertBannerStateProvider = StreamProvider<AlertBannerState>((ref) async* {
         final DateTime sunrise = _rolloverIfBefore(pt.sunrise.time, now);
         final DateTime dhuhr = _rolloverIfBefore(pt.dhuhr.time, now);
         final DateTime maghrib = _rolloverIfBefore(pt.maghrib.time, now);
-        final DateTime midnight = _rolloverIfBefore(pt.midnight.time, now);
 
         final DateTime sunriseStart = sunrise;
         final DateTime sunriseEnd = sunrise.add(_kSunriseForbiddenWindow);
 
-        final zenithHalf = Duration(minutes: _kZenithForbiddenWindow.inMinutes ~/ 2);
+        final zenithHalf =
+            Duration(minutes: _kZenithForbiddenWindow.inMinutes ~/ 2);
         final DateTime zenithStart = dhuhr.subtract(zenithHalf);
         final DateTime zenithEnd = dhuhr.add(zenithHalf);
 
@@ -404,7 +429,9 @@ final alertBannerStateProvider = StreamProvider<AlertBannerState>((ref) async* {
 
         final String? currentName = detail.currentPrayer;
         final String? nextName = detail.nextPrayer;
-        final DateTime? nextTime = nextName != null ? _rolloverIfBefore(_getPrayerTimeByName(pt, nextName)!, now) : null;
+        final DateTime? nextTime = nextName != null
+            ? _rolloverIfBefore(_getPrayerTimeByName(pt, nextName)!, now)
+            : null;
 
         if (nextName != null && nextTime != null) {
           final windowStart = nextTime.subtract(_kUpcomingLeadWindow);
@@ -440,7 +467,30 @@ final alertBannerStateProvider = StreamProvider<AlertBannerState>((ref) async* {
           remaining: Duration.zero,
         );
       },
-      orElse: () => const AlertBannerState(kind: AlertKind.upcoming, prayerName: null, remaining: Duration.zero),
+      orElse: () {
+        // Fallback to cached derivation for instant countdown text
+        if (cachedDetail != null) {
+          final pt = cachedDetail.prayerTimes as PrayerTimes;
+          final now = DateTime.now();
+          final nextName = cachedDetail.nextPrayer;
+          if (nextName != null) {
+            final nextTime = _getPrayerTimeByName(pt, nextName);
+            if (nextTime != null) {
+              final remaining = nextTime.difference(now);
+              return AlertBannerState(
+                kind: AlertKind.upcoming,
+                prayerName: nextName,
+                remaining: remaining.isNegative ? Duration.zero : remaining,
+                targetTime: nextTime,
+              );
+            }
+          }
+        }
+        return const AlertBannerState(
+            kind: AlertKind.upcoming,
+            prayerName: null,
+            remaining: Duration.zero);
+      },
     );
   }
 
@@ -451,81 +501,121 @@ final alertBannerStateProvider = StreamProvider<AlertBannerState>((ref) async* {
 /// Offline-first derived provider: computes current and next prayers from cached daily timings.
 /// - If online: falls back to the existing usecase path (same behavior).
 /// - If offline: uses currentPrayerTimesProvider (which returns cache) to compute values locally.
-final currentAndNextPrayerOfflineAwareProvider = FutureProvider<PrayerDetail>((ref) async {
-  // Check connectivity
-  final network = await ref.read(net_core.networkStatusProvider.future);
-  final isOnline = (network).any((c) =>
-      c == ConnectivityResult.mobile || c == ConnectivityResult.wifi || c == ConnectivityResult.ethernet);
+final currentAndNextPrayerOfflineAwareProvider =
+    FutureProvider<PrayerDetail>((ref) async {
+  try {
+    // Always derive from currentPrayerTimesProvider which already prefers
+    // preferred (manual) location and falls back appropriately. This avoids
+    // triggering GPS prompts here.
+    final pt = await ref.read(currentPrayerTimesProvider.future);
+    final now = DateTime.now();
 
-  if (isOnline) {
-    // Use the existing flow
-    return await ref.read(currentAndNextPrayerProvider.future);
-  }
+    // If we are before Fajr, current is Isha (from yesterday), next is Fajr
+    if (now.isBefore(pt.fajr.time)) {
+      final remaining = pt.fajr.time.difference(now);
+      return PrayerDetail(
+        currentPrayer: 'Isha',
+        nextPrayer: 'Fajr',
+        prayerTimes: pt,
+        timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+      );
+    }
 
-  // Offline: derive from cached PrayerTimes for TODAY only (no normalization)
-  final pt = await ref.read(currentPrayerTimesProvider.future);
-  final now = DateTime.now();
+    // Build ordered list with Fajr wrapped to next day for proper ordering
+    final times = <String, DateTime>{
+      'Fajr': pt.fajr.time,
+      'Dhuhr': pt.dhuhr.time,
+      'Asr': pt.asr.time,
+      'Maghrib': pt.maghrib.time,
+      'Isha': pt.isha.time,
+    };
 
-  String? current;
-  String? next;
+    final fajrWrapped = pt.fajr.time.isBefore(now)
+        ? pt.fajr.time.add(const Duration(days: 1))
+        : pt.fajr.time;
+    times['Fajr'] = fajrWrapped;
 
-  DateTime? t(String name) => _getPrayerTimeByName(pt, name);
+    final ordered = times.entries.toList()
+      ..sort((a, b) => a.value.compareTo(b.value));
 
-  // Early case: after midnight and before today's Fajr → current is Isha, next is Fajr
-  if (now.isBefore(pt.fajr.time)) {
-    final nextTime = pt.fajr.time;
-    final remaining = nextTime.difference(now);
+    String current = 'Isha';
+    String next = 'Fajr';
+
+    for (var i = 0; i < ordered.length; i++) {
+      final name = ordered[i].key;
+      final time = ordered[i].value;
+      final DateTime? end =
+          i < ordered.length - 1 ? ordered[i + 1].value : null;
+      if (now.isAfter(time) && (end == null || now.isBefore(end))) {
+        current = name;
+        next = i < ordered.length - 1 ? ordered[i + 1].key : 'Fajr';
+        break;
+      }
+      if (now.isBefore(time)) {
+        current = 'Isha';
+        next = name;
+        break;
+      }
+    }
+
+    final DateTime? nextTime = _getPrayerTimeByName(pt, next);
+    final remaining =
+        nextTime != null ? nextTime.difference(now) : Duration.zero;
+
     return PrayerDetail(
-      currentPrayer: 'Isha',
-      nextPrayer: 'Fajr',
+      currentPrayer: current,
+      nextPrayer: next,
       prayerTimes: pt,
       timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
     );
-  }
-
-  final entries = <String, DateTime?>{
-    'Fajr': pt.fajr.time,
-    'Dhuhr': pt.dhuhr.time,
-    'Asr': pt.asr.time,
-    'Maghrib': pt.maghrib.time,
-    'Isha': pt.isha.time,
-  };
-
-  // Ensure wrap-around: after Isha, next is next day's Fajr
-  final fajrWrapped = pt.fajr.time.isBefore(now) ? pt.fajr.time.add(const Duration(days: 1)) : pt.fajr.time;
-
-  // Determine current/next by scanning times
-  // Replace Fajr entry with wrapped value for ordering
-  entries['Fajr'] = fajrWrapped;
-  final ordered = entries.entries.toList()..sort((a, b) => a.value!.compareTo(b.value!));
-  for (var i = 0; i < ordered.length; i++) {
-    final name = ordered[i].key;
-    final time = ordered[i].value!;
-    final DateTime? end = (i < ordered.length - 1) ? ordered[i + 1].value : null;
-    if (now.isAfter(time) && (end == null || now.isBefore(end))) {
-      current = name;
-      next = (i < ordered.length - 1) ? ordered[i + 1].key : null;
-      break;
+  } catch (_) {
+    // Fallback: derive from cached prayer times if available
+    final cached = await ref.read(cachedCurrentPrayerTimesProvider.future);
+    if (cached == null) {
+      rethrow;
     }
-    if (now.isBefore(time) && next == null) {
-      next = name; // before first prayer of the day
+    final now = DateTime.now();
+    final times = <String, DateTime>{
+      'Fajr': cached.fajr.time,
+      'Dhuhr': cached.dhuhr.time,
+      'Asr': cached.asr.time,
+      'Maghrib': cached.maghrib.time,
+      'Isha': cached.isha.time,
+    };
+    final fajrWrapped = cached.fajr.time.isBefore(now)
+        ? cached.fajr.time.add(const Duration(days: 1))
+        : cached.fajr.time;
+    times['Fajr'] = fajrWrapped;
+    final ordered = times.entries.toList()
+      ..sort((a, b) => a.value.compareTo(b.value));
+    String current = 'Isha';
+    String next = 'Fajr';
+    for (var i = 0; i < ordered.length; i++) {
+      final name = ordered[i].key;
+      final time = ordered[i].value;
+      final DateTime? end =
+          i < ordered.length - 1 ? ordered[i + 1].value : null;
+      if (now.isAfter(time) && (end == null || now.isBefore(end))) {
+        current = name;
+        next = i < ordered.length - 1 ? ordered[i + 1].key : 'Fajr';
+        break;
+      }
+      if (now.isBefore(time)) {
+        current = 'Isha';
+        next = name;
+        break;
+      }
     }
+    final DateTime? nextTime = _getPrayerTimeByName(cached, next);
+    final remaining =
+        nextTime != null ? nextTime.difference(now) : Duration.zero;
+    return PrayerDetail(
+      currentPrayer: current,
+      nextPrayer: next,
+      prayerTimes: cached,
+      timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+    );
   }
-  current ??= 'Isha'; // after isha
-  next ??= 'Fajr';    // wrap to next day
-
-  // Compute countdown
-  final nextTime = t(next);
-  final remaining = nextTime != null
-      ? nextTime.difference(now)
-      : const Duration(minutes: 0);
-
-  return PrayerDetail(
-    currentPrayer: current,
-    nextPrayer: next,
-    prayerTimes: pt,
-    timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
-  );
 });
 
 /// Fast cached derivation of current/next prayer for instant header

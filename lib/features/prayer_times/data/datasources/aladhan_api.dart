@@ -11,7 +11,6 @@ import '../../domain/entities/calculation_method.dart';
 /// API service for fetching prayer times from AlAdhan API
 /// Provides accurate Islamic prayer times with multiple calculation methods
 class AladhanApi {
-
   AladhanApi(this._dio);
   final Dio _dio;
   final String _baseUrl = 'https://api.aladhan.com/v1';
@@ -24,19 +23,58 @@ class AladhanApi {
   }) async {
     try {
       print('AlAdhan API: Fetching prayer times for ${date.toIso8601String()}');
-      print('AlAdhan API: Location: ${location.latitude}, ${location.longitude}');
+      print(
+          'AlAdhan API: Location: ${location.latitude}, ${location.longitude}');
       print('AlAdhan API: Method: ${settings?.calculationMethod ?? 'MWL'}');
       print('AlAdhan API: Madhab: ${settings?.madhab}');
-      
+
+      // Prefer calendar endpoint for consistent minute rounding (matches Google/AlAdhan tables)
+      try {
+        final responseCal = await _dio.get(
+          '$_baseUrl/calendar/${date.year}/${date.month}',
+          queryParameters: {
+            'latitude': location.latitude,
+            'longitude': location.longitude,
+            'method':
+                _getCalculationMethodCode(settings?.calculationMethod ?? 'MWL'),
+            'school': _getMadhabCode(settings?.madhab),
+            'tune': _formatAdjustments(settings?.adjustments ?? {}),
+            if (_isIanaTimezone(location.timezone))
+              'timezone': location.timezone,
+          },
+          options: Options(
+            receiveTimeout: const Duration(seconds: 25),
+          ),
+        );
+
+        if (responseCal.statusCode == 200 && responseCal.data != null) {
+          final data = responseCal.data as Map<String, dynamic>;
+          final List<dynamic> calendarData = data['data'] ?? [];
+          for (final dayData in calendarData) {
+            final dateStr = dayData['date']['gregorian']['date'];
+            final dayDate = DateFormat('dd-MM-yyyy').parse(dateStr);
+            if (dayDate.year == date.year &&
+                dayDate.month == date.month &&
+                dayDate.day == date.day) {
+              return _parsePrayerTimesFromCalendar(
+                  dayData, dayDate, location, settings);
+            }
+          }
+        }
+      } catch (e) {
+        print('AlAdhan API: Calendar endpoint fallback due to error: $e');
+      }
+
+      // Fallback to timings endpoint
       final response = await _dio.get(
         '$_baseUrl/timings/${_formatDate(date)}',
         queryParameters: {
           'latitude': location.latitude,
           'longitude': location.longitude,
-          'method': _getCalculationMethodCode(settings?.calculationMethod ?? 'MWL'),
+          'method':
+              _getCalculationMethodCode(settings?.calculationMethod ?? 'MWL'),
           'school': _getMadhabCode(settings?.madhab),
           'tune': _formatAdjustments(settings?.adjustments ?? {}),
-          // Only pass timezone if it looks like a valid IANA timezone. AlAdhan can auto-detect otherwise.
           if (_isIanaTimezone(location.timezone)) 'timezone': location.timezone,
         },
         options: Options(
@@ -50,18 +88,10 @@ class AladhanApi {
 
       print('AlAdhan API: Response status: ${response.statusCode}');
       print('AlAdhan API: Response data keys: ${response.data?.keys.toList()}');
-      
       if (response.statusCode == 200 && response.data != null) {
-        final data = response.data as Map<String, dynamic>;
-        print('AlAdhan API: Data structure: ${data.keys}');
-        if (data['data'] != null) {
-          final timingsData = data['data']['timings'] as Map<String, dynamic>?;
-          print('AlAdhan API: Timings keys: ${timingsData?.keys.toList()}');
-          print('AlAdhan API: Sample timing (Fajr): ${timingsData?['Fajr']}');
-        }
-        return _parsePrayerTimesResponse(response.data, date, location, settings);
+        return _parsePrayerTimesResponse(
+            response.data, date, location, settings);
       } else {
-        print('AlAdhan API: Failed with status ${response.statusCode}');
         throw Failure.serverFailure(
           message: 'Failed to fetch prayer times',
           statusCode: response.statusCode ?? 500,
@@ -111,13 +141,13 @@ class AladhanApi {
         queryParameters: {
           'latitude': location.latitude,
           'longitude': location.longitude,
-          'method': _getCalculationMethodCode(settings?.calculationMethod ?? 'MWL'),
+          'method':
+              _getCalculationMethodCode(settings?.calculationMethod ?? 'MWL'),
           'school': _getMadhabCode(settings?.madhab),
           'tune': _formatAdjustments(settings?.adjustments ?? {}),
           if (_isIanaTimezone(location.timezone)) 'timezone': location.timezone,
         },
         options: Options(
-
           receiveTimeout: const Duration(seconds: 30),
         ),
       );
@@ -129,10 +159,11 @@ class AladhanApi {
         for (final dayData in calendarData) {
           final dateStr = dayData['date']['gregorian']['date'];
           final dayDate = DateFormat('dd-MM-yyyy').parse(dateStr);
-          
+
           if (dayDate.isAfter(startDate.subtract(const Duration(days: 1))) &&
               dayDate.isBefore(endDate.add(const Duration(days: 1)))) {
-            final prayerTimes = _parsePrayerTimesFromCalendar(dayData, dayDate, location, settings);
+            final prayerTimes = _parsePrayerTimesFromCalendar(
+                dayData, dayDate, location, settings);
             prayerTimesList.add(prayerTimes);
           }
         }
@@ -166,7 +197,7 @@ class AladhanApi {
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data as Map<String, dynamic>;
         final meta = data['data']['meta'] as Map<String, dynamic>;
-        
+
         return Location(
           latitude: (meta['latitude'] as num).toDouble(),
           longitude: (meta['longitude'] as num).toDouble(),
@@ -223,12 +254,15 @@ class AladhanApi {
 
     // Parse prayer times
     final fajr = _parsePrayerTime(timingsData['Fajr'], 'fajr', 'الفجر');
-    final sunrise = _parsePrayerTime(timingsData['Sunrise'], 'sunrise', 'الشروق');
+    final sunrise =
+        _parsePrayerTime(timingsData['Sunrise'], 'sunrise', 'الشروق');
     final dhuhr = _parsePrayerTime(timingsData['Dhuhr'], 'dhuhr', 'الظهر');
     final asr = _parsePrayerTime(timingsData['Asr'], 'asr', 'العصر');
-    final maghrib = _parsePrayerTime(timingsData['Maghrib'], 'maghrib', 'المغرب');
+    final maghrib =
+        _parsePrayerTime(timingsData['Maghrib'], 'maghrib', 'المغرب');
     final isha = _parsePrayerTime(timingsData['Isha'], 'isha', 'العشاء');
-    final midnight = _parsePrayerTime(timingsData['Midnight'], 'midnight', 'منتصف الليل');
+    final midnight =
+        _parsePrayerTime(timingsData['Midnight'], 'midnight', 'منتصف الليل');
 
     // Parse Hijri date
     final hijriCalendar = HijriCalendar()
@@ -238,7 +272,8 @@ class AladhanApi {
 
     return PrayerTimes(
       date: date,
-      hijriDate: '${hijriCalendar.hDay}-${hijriCalendar.hMonth}-${hijriCalendar.hYear}',
+      hijriDate:
+          '${hijriCalendar.hDay}-${hijriCalendar.hMonth}-${hijriCalendar.hYear}',
       location: location,
       fajr: fajr,
       sunrise: sunrise,
@@ -275,12 +310,15 @@ class AladhanApi {
 
     // Parse prayer times
     final fajr = _parsePrayerTime(timingsData['Fajr'], 'fajr', 'الفجر');
-    final sunrise = _parsePrayerTime(timingsData['Sunrise'], 'sunrise', 'الشروق');
+    final sunrise =
+        _parsePrayerTime(timingsData['Sunrise'], 'sunrise', 'الشروق');
     final dhuhr = _parsePrayerTime(timingsData['Dhuhr'], 'dhuhr', 'الظهر');
     final asr = _parsePrayerTime(timingsData['Asr'], 'asr', 'العصر');
-    final maghrib = _parsePrayerTime(timingsData['Maghrib'], 'maghrib', 'المغرب');
+    final maghrib =
+        _parsePrayerTime(timingsData['Maghrib'], 'maghrib', 'المغرب');
     final isha = _parsePrayerTime(timingsData['Isha'], 'isha', 'العشاء');
-    final midnight = _parsePrayerTime(timingsData['Midnight'], 'midnight', 'منتصف الليل');
+    final midnight =
+        _parsePrayerTime(timingsData['Midnight'], 'midnight', 'منتصف الليل');
 
     // Parse Hijri date
     final hijriCalendar = HijriCalendar()
@@ -290,7 +328,8 @@ class AladhanApi {
 
     return PrayerTimes(
       date: date,
-      hijriDate: '${hijriCalendar.hDay}-${hijriCalendar.hMonth}-${hijriCalendar.hYear}',
+      hijriDate:
+          '${hijriCalendar.hDay}-${hijriCalendar.hMonth}-${hijriCalendar.hYear}',
       location: location,
       fajr: fajr,
       sunrise: sunrise,
@@ -303,22 +342,25 @@ class AladhanApi {
       metadata: {
         'source': 'AlAdhan API Calendar',
         'requestTime': DateTime.now().toIso8601String(),
+        'method': settings?.calculationMethod,
+        'school': settings?.madhab == Madhab.hanafi ? 1 : 0,
       },
       lastUpdated: DateTime.now(),
     );
   }
 
   /// Parse individual prayer time
-  PrayerTime _parsePrayerTime(String timeString, String name, String arabicName) {
+  PrayerTime _parsePrayerTime(
+      String timeString, String name, String arabicName) {
     try {
       // Remove timezone suffix if present (e.g., "05:30 (+06)")
       final cleanTimeString = timeString.split(' ')[0];
-      
+
       // Parse time
       final timeParts = cleanTimeString.split(':');
       final hour = int.parse(timeParts[0]);
       final minute = int.parse(timeParts[1]);
-      
+
       final now = DateTime.now();
       final prayerTime = DateTime(now.year, now.month, now.day, hour, minute);
 
@@ -329,11 +371,12 @@ class AladhanApi {
         status: _determinePrayerStatus(prayerTime),
       );
     } catch (e) {
-      print('AlAdhan API: Error parsing prayer time "$timeString" for $name: $e');
+      print(
+          'AlAdhan API: Error parsing prayer time "$timeString" for $name: $e');
       // Return a default time if parsing fails
       final now = DateTime.now();
       final defaultTime = DateTime(now.year, now.month, now.day, 12, 0);
-      
+
       return PrayerTime(
         time: defaultTime,
         name: name,
@@ -346,13 +389,14 @@ class AladhanApi {
   /// Determine prayer status based on time
   PrayerStatus _determinePrayerStatus(DateTime prayerTime) {
     final now = DateTime.now();
-    
+
     if (now.isBefore(prayerTime)) {
       return PrayerStatus.upcoming;
     } else if (now.difference(prayerTime).inMinutes < 30) {
       return PrayerStatus.current;
     } else {
-      return PrayerStatus.completed; // Fixed: prayers that have passed should be completed, not in progress
+      return PrayerStatus
+          .completed; // Fixed: prayers that have passed should be completed, not in progress
     }
   }
 
@@ -414,7 +458,7 @@ class AladhanApi {
   /// Convert Madhab enum to API code
   String _getMadhabCodeFromString(String? madhabString) {
     if (madhabString == null) return '0';
-    
+
     switch (madhabString.toLowerCase()) {
       case 'hanafi':
         return '1';
@@ -446,7 +490,6 @@ class AladhanApi {
       final response = await _dio.get(
         '$_baseUrl/status',
         options: Options(
-
           receiveTimeout: const Duration(seconds: 5),
         ),
       );
@@ -461,22 +504,22 @@ class AladhanApi {
   Future<List<CalculationMethod>> getAvailableCalculationMethods() async {
     try {
       final response = await _dio.get('$_baseUrl/methods');
-      
+
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data as Map<String, dynamic>;
         final methods = data['data'] as Map<String, dynamic>;
-        
+
         final availableMethods = <CalculationMethod>[];
-        
+
         for (final method in CalculationMethod.values) {
           if (methods.containsKey(_getCalculationMethodCode(method.name))) {
             availableMethods.add(method);
           }
         }
-        
+
         return availableMethods;
       }
-      
+
       // Return default methods if API call fails
       return CalculationMethod.values;
     } catch (e) {

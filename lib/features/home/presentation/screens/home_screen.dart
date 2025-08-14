@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -10,6 +9,7 @@ import '../../../prayer_times/domain/entities/prayer_times.dart'
 import '../../../prayer_times/domain/entities/prayer_tracking.dart';
 import '../../../prayer_times/presentation/providers/prayer_times_providers.dart';
 import '../../../prayer_times/domain/entities/athan_settings.dart';
+import '../../../prayer_times/domain/entities/prayer_calculation_settings.dart';
 
 /// Home Screen (replaces old home) — shows live prayer times, countdown, etc.
 class HomeScreen extends ConsumerStatefulWidget {
@@ -30,7 +30,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final cachedAsync = ref.watch(cachedCurrentPrayerTimesProvider);
     final cachedDetail = ref.watch(cachedCurrentAndNextPrayerProvider);
     final prayerTimesAsync = ref.watch(currentPrayerTimesProvider);
-    final currentAndNextPrayerAsync = ref.watch(currentAndNextPrayerOfflineAwareProvider);
+    final currentAndNextPrayerAsync =
+        ref.watch(currentAndNextPrayerOfflineAwareProvider);
     // Keep providers warm for midnight refresh and countdown
     ref.watch(prayerTimesMidnightRefreshProvider);
     final countdownAsync = ref.watch(alertBannerStateProvider);
@@ -75,9 +76,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           horizontal: 16, vertical: 12),
                       child: Column(
                         children: [
-                  _buildPrayerCards(currentAndNextPrayerAsync,
-                              prayerTimesAsync, use24h),
-                          const SizedBox(height: 4),
+                          _buildPrayerCards(
+                              // Prefer live current/next; fall back to cached derivation for instant UI
+                              currentAndNextPrayerAsync.hasValue
+                                  ? currentAndNextPrayerAsync
+                                  : (cachedDetail == null
+                                      ? currentAndNextPrayerAsync
+                                      : AsyncValue.data(cachedDetail)),
+                              prayerTimesAsync,
+                              use24h),
+                          const SizedBox(height: 10),
                           _buildSuhoorIftaarSection(prayerTimesAsync, use24h),
                           const SizedBox(height: 4),
                           _buildLocationCard(),
@@ -159,7 +167,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             'Dhu al-Hijjah',
                           ];
                           final month = months[(monthNum - 1).clamp(0, 11)];
-                          hijriText = '$month $day $year';
+                          // Expected format: 20 Safar 1447
+                          hijriText = '$day $month $year';
                         } else {
                           hijriText = p.hijriDate;
                         }
@@ -187,7 +196,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      DateFormat('EEEE, d MMM').format(DateTime.now()),
+                      DateFormat('EEEE, d MMMM y').format(DateTime.now()),
                       style: const TextStyle(
                         fontSize: 14,
                         color: Color(0xFF6B5E56),
@@ -195,7 +204,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      _formatBengaliDate(DateTime.now()),
+                      _formatBanglaCalendarDate(DateTime.now()),
                       style: const TextStyle(
                         fontSize: 14,
                         color: Color(0xFF6B5E56),
@@ -270,15 +279,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     switch (alert.kind) {
                       case AlertKind.forbiddenSunrise:
                         prefix = '';
-                        value = alert.message ?? 'Salah is forbidden during sunrise';
+                        value = alert.message ??
+                            'Salah is forbidden during sunrise';
                         break;
                       case AlertKind.forbiddenZenith:
                         prefix = '';
-                        value = alert.message ?? 'Salah is forbidden during solar noon (zenith)';
+                        value = alert.message ??
+                            'Salah is forbidden during solar noon (zenith)';
                         break;
                       case AlertKind.forbiddenSunset:
                         prefix = '';
-                        value = alert.message ?? 'Salah is forbidden during sunset';
+                        value =
+                            alert.message ?? 'Salah is forbidden during sunset';
                         break;
                       case AlertKind.upcoming:
                         prefix = '${_capitalize(alert.prayerName ?? '—')} in ';
@@ -289,7 +301,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         value = h > 0 ? '${h}h ${m}m ${s}s' : '${m}m ${s}s';
                         break;
                       case AlertKind.remaining:
-                        prefix = '${_capitalize(alert.prayerName ?? '—')} remaining ';
+                        prefix =
+                            '${_capitalize(alert.prayerName ?? '—')} remaining ';
                         final dur = alert.remaining ?? Duration.zero;
                         final h = dur.inHours;
                         final m = dur.inMinutes.remainder(60);
@@ -338,7 +351,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   Widget _buildPrayerCards(AsyncValue<PrayerDetail> currentAndNextPrayerAsync,
       AsyncValue<prayer_entities.PrayerTimes> prayerTimesAsync, bool use24h) {
-    const double cardHeight = 156;
+    const double cardHeight = 148;
     return Row(
       children: [
         Expanded(
@@ -350,39 +363,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 final currentName = d.currentPrayer ?? '—';
                 final currentTime =
                     _formatTime(_getPrayerTimeByName(pt, currentName), use24h);
-                final endTime =
-                    _formatTime(_getPrayerEndTime(pt, currentName), use24h);
-                final azan = currentTime;
-                final jamaat = _formatTime(
-                    _getPrayerTimeByName(pt, currentName)
-                        ?.add(const Duration(minutes: 15)),
-                    use24h);
+                final endTime = _formatTime(
+                    _getPrayerEndTimeForCard(pt, currentName), use24h);
                 return _buildPrayerCard(
-                  title: 'Now time is',
+                  title: 'Current Prayer',
                   prayerName: currentName,
                   time: currentTime ?? '—',
                   endTime: endTime,
-                  azanTime: azan,
-                  jamaatTime: jamaat,
                   isCurrent: true,
-                  backgroundColor: const Color(0xFFFFE7D6),
+                  backgroundColor:
+                      Theme.of(context).extension<AppColors>()?.card ??
+                          Colors.white,
                   silhouetteColor: const Color(0xFFCC6E3C),
                 );
               },
               loading: () => _buildPrayerCard(
-                title: 'Now time is',
+                title: 'Current Prayer',
                 prayerName: '—',
                 time: '—',
                 isCurrent: true,
-                backgroundColor: const Color(0xFFFFE7D6),
+                backgroundColor:
+                    Theme.of(context).extension<AppColors>()?.card ??
+                        Colors.white,
                 silhouetteColor: const Color(0xFFCC6E3C),
               ),
               error: (_, __) => _buildPrayerCard(
-                title: 'Now time is',
+                title: 'Current Prayer',
                 prayerName: '—',
                 time: '—',
                 isCurrent: true,
-                backgroundColor: const Color(0xFFFFE7D6),
+                backgroundColor:
+                    Theme.of(context).extension<AppColors>()?.card ??
+                        Colors.white,
                 silhouetteColor: const Color(0xFFCC6E3C),
               ),
             ),
@@ -404,30 +416,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         ?.add(const Duration(minutes: 15)),
                     use24h);
                 return _buildPrayerCard(
-                  title: 'Next prayer is',
+                  title: 'Next Prayer',
                   prayerName: nextName,
                   time: nextTime ?? '—',
                   azanTime: azan,
                   jamaatTime: jamaat,
                   isCurrent: false,
-                  backgroundColor: const Color(0xFFEAF4E6),
+                  backgroundColor:
+                      Theme.of(context).extension<AppColors>()?.card ??
+                          Colors.white,
                   silhouetteColor: const Color.fromARGB(255, 118, 172, 122),
                 );
               },
               loading: () => _buildPrayerCard(
-                title: 'Next prayer is',
+                title: 'Next Prayer',
                 prayerName: '—',
                 time: '—',
                 isCurrent: false,
-                backgroundColor: const Color(0xFFEAF4E6),
+                backgroundColor:
+                    Theme.of(context).extension<AppColors>()?.card ??
+                        Colors.white,
                 silhouetteColor: const Color.fromARGB(255, 118, 172, 122),
               ),
               error: (_, __) => _buildPrayerCard(
-                title: 'Next prayer is',
+                title: 'Next Prayer',
                 prayerName: '—',
                 time: '—',
                 isCurrent: false,
-                backgroundColor: const Color(0xFFEAF4E6),
+                backgroundColor:
+                    Theme.of(context).extension<AppColors>()?.card ??
+                        Colors.white,
                 silhouetteColor: const Color.fromARGB(255, 118, 172, 122),
               ),
             ),
@@ -456,8 +474,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               constraints.hasBoundedHeight ? constraints.maxHeight : 140;
           final bool hasSecondaryLines =
               (endTime != null) || (azanTime != null) || (jamaatTime != null);
-          final int secondaryCount =
-              (endTime != null ? 1 : 0) + (azanTime != null ? 1 : 0) + (jamaatTime != null ? 1 : 0);
+          final int secondaryCount = (endTime != null ? 1 : 0) +
+              (azanTime != null ? 1 : 0) +
+              (jamaatTime != null ? 1 : 0);
 
           // Base scale relative to available height, then shrink more if many lines
           double scale = (h / 140).clamp(0.74, 1.0);
@@ -469,15 +488,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           scale = (scale - extraShrink).clamp(0.70, 1.0);
 
           final double nameSize = 18 * scale * (hasSecondaryLines ? 0.90 : 1.0);
-          final double subtitleSize =
-              (secondaryCount >= 3 ? 9.5 : secondaryCount == 2 ? 10.0 : 10.5) * scale;
-          final double gapSmall = (secondaryCount >= 3 ? 1.0 : secondaryCount == 2 ? 1.5 : 2.0) * scale;
+          final double subtitleSize = (secondaryCount >= 3
+                  ? 12.0
+                  : secondaryCount == 2
+                      ? 12.5
+                      : 13.0) *
+              scale;
+          final double gapSmall = (secondaryCount >= 3
+                  ? 1.0
+                  : secondaryCount == 2
+                      ? 1.5
+                      : 2.0) *
+              scale;
           final double gapTiny = (secondaryCount >= 3 ? 0.8 : 1.0) * scale;
-          final double gapTop = (secondaryCount >= 3 ? 4.0 : secondaryCount == 2 ? 5.0 : 6.0) * scale;
-          final double silhouetteSize = 84 * scale;
+          final double gapTop = (secondaryCount >= 3
+                  ? 4.0
+                  : secondaryCount == 2
+                      ? 5.0
+                      : 6.0) *
+              scale;
+          // silhouette removed
 
           return Container(
-            padding: EdgeInsets.fromLTRB(16 * scale, 14 * scale, 16 * scale, 12 * scale),
+            padding: EdgeInsets.fromLTRB(
+                16 * scale, 14 * scale, 16 * scale, 12 * scale),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
@@ -491,25 +525,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: isCurrent
-                    ? [const Color(0xFFFFE3CF), const Color(0xFFFFE9D9)]
-                    : [const Color(0xFFF4F8F2), const Color(0xFFEFF6EB)],
+                    ? [const Color(0xFFFFD9C2), const Color(0xFFFFE9D9)]
+                    : [const Color(0xFFE6F2E7), const Color(0xFFF0F7EF)],
               ),
             ),
             child: Stack(
               children: [
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: Opacity(
-                    opacity: 0.18,
-                    child: SvgPicture.asset(
-                      isCurrent
-                          ? 'assets/images/cards/peach_skyline.svg'
-                          : 'assets/images/cards/mint_skyline.svg',
-                      width: silhouetteSize * 1.8,
-                    ),
-                  ),
-                ),
+                // Skyline removed per request
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
@@ -611,18 +633,75 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 
+  Widget _buildCompactTimeWithMeridiem(String time,
+      {double mainSize = 22,
+      double meridiemSize = 13,
+      Color color = const Color(0xFF2C3E50)}) {
+    final parts = time.trim().split(' ');
+    final mainTime = parts.isNotEmpty ? parts[0] : time;
+    final meridiem = parts.length > 1 ? parts[1] : '';
+    return RichText(
+      text: TextSpan(
+        children: [
+          TextSpan(
+              text: mainTime,
+              style: TextStyle(
+                  fontSize: mainSize,
+                  fontWeight: FontWeight.w800,
+                  color: color)),
+          if (meridiem.isNotEmpty)
+            TextSpan(
+                text: meridiem,
+                style: TextStyle(
+                    fontSize: meridiemSize,
+                    fontWeight: FontWeight.w700,
+                    color: color)),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSecondaryInfo(String text, {double fontSize = 12}) {
-    return Text(text,
-        style: TextStyle(
-            fontSize: fontSize,
-            color: Theme.of(context).extension<AppColors>()?.textSecondary ??
-                const Color(0xFF7F8C8D)));
+    final Color labelColor =
+        Theme.of(context).extension<AppColors>()?.textSecondary ??
+            const Color(0xFF7F8C8D);
+    final Color valueColor =
+        Theme.of(context).extension<AppColors>()?.textPrimary ??
+            const Color(0xFF2C3E50);
+    final parts = text.split(' - ');
+    if (parts.length == 2) {
+      final label = parts[0];
+      final value = parts[1];
+      return RichText(
+        text: TextSpan(
+          children: [
+            TextSpan(
+              text: label,
+              style: TextStyle(fontSize: fontSize, color: labelColor),
+            ),
+            TextSpan(
+              text: ' - ',
+              style: TextStyle(fontSize: fontSize, color: labelColor),
+            ),
+            TextSpan(
+              text: value,
+              style: TextStyle(
+                fontSize: fontSize,
+                fontWeight: FontWeight.w700,
+                color: valueColor,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    return Text(text, style: TextStyle(fontSize: fontSize, color: labelColor));
   }
 
   Widget _buildSuhoorIftaarSection(
       AsyncValue<prayer_entities.PrayerTimes> prayerTimesAsync, bool use24h) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: Theme.of(context).extension<AppColors>()?.card ?? Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -643,20 +722,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   final settings = ref.watch(athanSettingsNotifierProvider);
                   final enabled = settings?.isPrayerEnabled('fajr') ?? true;
                   return InkWell(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(999),
                     onTap: () {
                       ref
                           .read(athanSettingsNotifierProvider.notifier)
                           .togglePrayer('fajr');
                     },
                     child: Container(
-                      width: 36,
-                      height: 36,
+                      width: 44,
+                      height: 44,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: (enabled ? const Color(0xFFFF6B35) : Colors.grey)
-                            .withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(10),
+                            .withOpacity(0.12),
+                        shape: BoxShape.circle,
                       ),
                       child: Icon(
                           enabled
@@ -668,73 +747,81 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     ),
                   );
                 }),
-                const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Suhoor',
-                        style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF2C3E50))),
-                    prayerTimesAsync.when(
-                      data: (p) => _buildSmallTimeWithMeridiem(
-                          _formatTime(p.fajr.time, use24h)!),
-                      loading: () => _buildSmallTimeWithMeridiem('—'),
-                      error: (_, __) => _buildSmallTimeWithMeridiem('—'),
-                    ),
-                  ],
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Text('Suhoor',
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF2C3E50))),
+                      prayerTimesAsync.when(
+                        data: (p) => _buildCompactTimeWithMeridiem(
+                            _formatTime(p.fajr.time, use24h)!,
+                            mainSize: 22,
+                            meridiemSize: 13,
+                            color: const Color(0xFF2C3E50)),
+                        loading: () => _buildCompactTimeWithMeridiem('—'),
+                        error: (_, __) => _buildCompactTimeWithMeridiem('—'),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
           Container(
-            width: 2,
+            width: 1,
             height: 52,
-            color: Theme.of(context).extension<AppColors>()?.divider ??
-                const Color(0xFFD6CBB3),
+            color: const Color(0xFFFFC39B),
           ),
           Expanded(
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    const Text('Iftaar',
-                        style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF2C3E50))),
-                    prayerTimesAsync.when(
-                      data: (p) => _buildSmallTimeWithMeridiem(
-                          _formatTime(p.maghrib.time, use24h)!),
-                      loading: () => _buildSmallTimeWithMeridiem('—'),
-                      error: (_, __) => _buildSmallTimeWithMeridiem('—'),
-                    ),
-                  ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Text('Iftaar',
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF2C3E50))),
+                      prayerTimesAsync.when(
+                        data: (p) => _buildCompactTimeWithMeridiem(
+                            _formatTime(p.maghrib.time, use24h)!,
+                            mainSize: 22,
+                            meridiemSize: 13,
+                            color: const Color(0xFF2C3E50)),
+                        loading: () => _buildCompactTimeWithMeridiem('—'),
+                        error: (_, __) => _buildCompactTimeWithMeridiem('—'),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 Consumer(builder: (context, ref, _) {
                   final settings = ref.watch(athanSettingsNotifierProvider);
                   final enabled = settings?.isPrayerEnabled('maghrib') ?? true;
                   return InkWell(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(999),
                     onTap: () {
                       ref
                           .read(athanSettingsNotifierProvider.notifier)
                           .togglePrayer('maghrib');
                     },
                     child: Container(
-                      width: 36,
-                      height: 36,
+                      width: 44,
+                      height: 44,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: (enabled
                                 ? const Color(0xFFFF6B35)
                                 : const Color(0xFF7F8C8D))
-                            .withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(10),
+                            .withOpacity(0.12),
+                        shape: BoxShape.circle,
                       ),
                       child: Icon(
                           enabled
@@ -777,12 +864,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 children: [
                   Expanded(
                     child: settingsAsync.when(
-                      data: (s) => Text(
-                        '${s.calculationMethod} method · timings from AlAdhan',
-                        style: const TextStyle(
-                            fontSize: 12, color: Color(0xFF7F8C8D)),
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      data: (s) {
+                        final method = s.calculationMethod.toUpperCase();
+                        final school =
+                            s.madhab == Madhab.hanafi ? 'Hanafi' : 'Shafi';
+                        return Text(
+                          '$method · $school · timings from AlAdhan',
+                          style: const TextStyle(
+                              fontSize: 12, color: Color(0xFF7F8C8D)),
+                          overflow: TextOverflow.ellipsis,
+                        );
+                      },
                       loading: () => const Text('timings from AlAdhan',
                           style: TextStyle(
                               fontSize: 12, color: Color(0xFF7F8C8D))),
@@ -848,27 +940,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final prayers = [
       {
         'name': 'Fajr',
-        'time': _formatTime(prayerTimes.fajr.time, use24h)!,
+        'start': prayerTimes.fajr.time,
+        'end': _getPrayerEndTimeForCard(prayerTimes, 'Fajr'),
         'icon': Icons.nightlight_round
       },
       {
         'name': 'Dhuhr',
-        'time': _formatTime(prayerTimes.dhuhr.time, use24h)!,
+        'start': prayerTimes.dhuhr.time,
+        'end': _getPrayerEndTimeForCard(prayerTimes, 'Dhuhr'),
         'icon': Icons.wb_sunny
       },
       {
         'name': 'Asr',
-        'time': _formatTime(prayerTimes.asr.time, use24h)!,
+        'start': prayerTimes.asr.time,
+        'end': _getPrayerEndTimeForCard(prayerTimes, 'Asr'),
         'icon': Icons.wb_sunny_outlined
       },
       {
         'name': 'Maghrib',
-        'time': _formatTime(prayerTimes.maghrib.time, use24h)!,
+        'start': prayerTimes.maghrib.time,
+        'end': _getPrayerEndTimeForCard(prayerTimes, 'Maghrib'),
         'icon': Icons.wb_sunny_outlined
       },
       {
         'name': 'Isha',
-        'time': _formatTime(prayerTimes.isha.time, use24h)!,
+        'start': prayerTimes.isha.time,
+        'end': _getPrayerEndTimeForCard(prayerTimes, 'Isha'),
         'icon': Icons.nightlight_round
       },
     ];
@@ -915,10 +1012,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               : const Color(0xFF2C3E50)),
                     ),
                   ),
-                  _buildSmallTimeWithMeridiem(prayer['time'] as String,
-                      color: isCurrentPrayer
-                          ? const Color(0xFFFF6B35)
-                          : const Color(0xFF2C3E50)),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      _buildSmallTimeWithMeridiem(
+                        _formatTime(prayer['start'] as DateTime, use24h)!,
+                        color: isCurrentPrayer
+                            ? const Color(0xFFFF6B35)
+                            : const Color(0xFF2C3E50),
+                      ),
+                      const SizedBox(height: 2),
+                      () {
+                        final DateTime? start = prayer['start'] as DateTime?;
+                        DateTime? end = prayer['end'] as DateTime?;
+                        if (end != null &&
+                            start != null &&
+                            end.isBefore(start)) {
+                          end = end.add(const Duration(days: 1));
+                        }
+                        final endStr =
+                            end == null ? '—' : _formatTime(end, use24h)!;
+                        return _buildSecondaryInfo('End - $endStr',
+                            fontSize: 10);
+                      }(),
+                    ],
+                  ),
                   const SizedBox(width: 12),
                   Consumer(builder: (context, ref, _) {
                     final settings = ref.watch(athanSettingsNotifierProvider);
@@ -1058,36 +1176,98 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     return DateFormat('h:mm a').format(time).toLowerCase();
   }
 
-  // Simple Bengali date formatter using localized month/day names
-  String _formatBengaliDate(DateTime date) {
-    const bengaliMonths = [
-      'জানুয়ারি',
-      'ফেব্রুয়ারি',
-      'মার্চ',
-      'এপ্রিল',
-      'মে',
-      'জুন',
-      'জুলাই',
-      'আগস্ট',
-      'সেপ্টেম্বর',
-      'অক্টোবর',
-      'নভেম্বর',
-      'ডিসেম্বর',
-    ];
-    const bengaliWeekdays = [
+  // Bangla national calendar (Bangladesh, 2019 reform)
+  // Example: বৃহস্পতিবার, ৩০শে শ্রাবণ ১৪৩২
+  String _formatBanglaCalendarDate(DateTime date) {
+    const weekdaysBn = [
       'সোমবার',
       'মঙ্গলবার',
       'বুধবার',
       'বৃহস্পতিবার',
       'শুক্রবার',
       'শনিবার',
-      'রবিবার',
+      'রবিবার'
     ];
-    final weekday = bengaliWeekdays[(date.weekday % 7)];
-    final month = bengaliMonths[date.month - 1];
-    final day = date.day.toString();
-    final year = (date.year).toString();
-    return '$weekday, $day $month $year';
+    const monthsBn = [
+      'বৈশাখ',
+      'জ্যৈষ্ঠ',
+      'আষাঢ়',
+      'শ্রাবণ',
+      'ভাদ্র',
+      'আশ্বিন',
+      'কার্তিক',
+      'অগ্রহায়ণ',
+      'পৌষ',
+      'মাঘ',
+      'ফাল্গুন',
+      'চৈত্র'
+    ];
+
+    // Anchor Pohela Boishakh (Apr 14) for the appropriate year
+    final d = DateTime(date.year, date.month, date.day);
+    final anchorThisYear = DateTime(d.year, 4, 14);
+    final onOrAfterAnchor = !d.isBefore(anchorThisYear);
+    final anchor =
+        onOrAfterAnchor ? anchorThisYear : DateTime(d.year - 1, 4, 14);
+
+    // Bangla year
+    final banglaYear = onOrAfterAnchor ? (d.year - 593) : (d.year - 594);
+
+    // Month lengths per reform: first 5 -> 31, next 6 -> 30, Falgun 29 (30 if next G-year leap), Chaitra 30
+    final nextGregorianIsLeap = _isGregorianLeapYear(anchor.year + 1);
+    final falgunLen = nextGregorianIsLeap ? 30 : 29;
+    final monthLens = [31, 31, 31, 31, 31, 30, 30, 30, 30, 30, falgunLen, 30];
+
+    // Days since anchor
+    int offset = d.difference(anchor).inDays;
+    int monthIndex = 0;
+    for (int i = 0; i < monthLens.length; i++) {
+      if (offset < monthLens[i]) {
+        monthIndex = i;
+        break;
+      }
+      offset -= monthLens[i];
+    }
+    final banglaDay = offset + 1;
+
+    final weekdayBn = weekdaysBn[(d.weekday - 1).clamp(0, 6)];
+    final dayOrdinal = _toBanglaOrdinal(banglaDay);
+    final monthBn = monthsBn[monthIndex];
+    final yearBn = _toBanglaDigits(banglaYear.toString());
+    return '$weekdayBn, $dayOrdinal $monthBn $yearBn';
+  }
+
+  bool _isGregorianLeapYear(int year) {
+    if (year % 400 == 0) return true;
+    if (year % 100 == 0) return false;
+    return year % 4 == 0;
+  }
+
+  String _toBanglaDigits(String input) {
+    const english = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    const bangla = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    var out = input;
+    for (int i = 0; i < english.length; i++) {
+      out = out.replaceAll(english[i], bangla[i]);
+    }
+    return out;
+  }
+
+  String _toBanglaOrdinal(int day) {
+    final dStr = _toBanglaDigits(day.toString());
+    String suffix;
+    if (day == 1) {
+      suffix = 'লা';
+    } else if (day == 2 || day == 3) {
+      suffix = 'রা';
+    } else if (day == 4) {
+      suffix = 'ঠা';
+    } else if (day >= 5 && day <= 19) {
+      suffix = 'ই';
+    } else {
+      suffix = 'শে';
+    }
+    return dStr + suffix;
   }
 
   Future<String?> _loadUserName() async {
@@ -1120,20 +1300,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     return null;
   }
 
-  DateTime? _getPrayerEndTime(
+  // Removed end-time computation from card per new design
+  DateTime? _getPrayerEndTimeForCard(
       prayer_entities.PrayerTimes pt, String currentName) {
+    // End time is the next prayer's start minus one second (no artificial 1m gap)
+    final Duration gap = const Duration(seconds: 1);
     switch (currentName.toLowerCase()) {
       case 'fajr':
-        return pt.sunrise.time;
+        return pt.sunrise.time.subtract(gap);
       case 'dhuhr':
-        return pt.asr.time;
+        return pt.asr.time.subtract(gap);
       case 'asr':
-        return pt.maghrib.time;
+        return pt.maghrib.time.subtract(gap);
       case 'maghrib':
-        return pt.isha.time;
+        return pt.isha.time.subtract(gap);
       case 'isha':
-        // Isha continues until Fajr
-        return pt.fajr.time;
+        return pt.fajr.time.subtract(gap);
     }
     return null;
   }

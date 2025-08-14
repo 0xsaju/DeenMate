@@ -32,9 +32,12 @@ class DeenMateApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final hasCompletedOnboarding = ref.watch(onboardingProvider);
-    // Initialize storage and prefetch; also warm cache for instant UI
-    ref.watch(prayerLocalInitAndPrefetchProvider);
+    // Warm cache for instant UI (no GPS prompt)
     ref.listen(cachedCurrentPrayerTimesProvider, (_, __) {});
+    // Only prefetch after onboarding (prevents early GPS prompt)
+    if (hasCompletedOnboarding) {
+      ref.watch(prayerLocalInitAndPrefetchProvider);
+    }
     return hasCompletedOnboarding
         ? MaterialApp.router(
             title: 'DeenMate',
