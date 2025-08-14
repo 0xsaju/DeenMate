@@ -27,10 +27,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   @override
   Widget build(BuildContext context) {
     final prayerTimesAsync = ref.watch(currentPrayerTimesProvider);
-    final currentAndNextPrayerAsync = ref.watch(currentAndNextPrayerProvider);
+    final currentAndNextPrayerAsync = ref.watch(currentAndNextPrayerOfflineAwareProvider);
     // Keep providers warm for midnight refresh and countdown
     ref.watch(prayerTimesMidnightRefreshProvider);
-    final countdownAsync = ref.watch(timeUntilNextPrayerProvider);
+    final countdownAsync = ref.watch(alertBannerStateProvider);
     final use24hPref = ref.watch(timeFormat24hProvider);
     final bool use24h = use24hPref.maybeWhen(
       data: (v) => v,
@@ -57,7 +57,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           horizontal: 16, vertical: 12),
                       child: Column(
                         children: [
-                          _buildPrayerCards(currentAndNextPrayerAsync,
+                  _buildPrayerCards(currentAndNextPrayerAsync,
                               prayerTimesAsync, use24h),
                           const SizedBox(height: 4),
                           _buildSuhoorIftaarSection(prayerTimesAsync, use24h),
@@ -213,7 +213,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 
-  Widget _buildAlertPill(AsyncValue<Duration> countdownAsync,
+  Widget _buildAlertPill(AsyncValue<AlertBannerState> countdownAsync,
       AsyncValue<PrayerDetail> detailAsync) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
@@ -237,35 +237,52 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               Icon(Icons.timer, size: 18, color: _colors.headerSecondary),
               const SizedBox(width: 10),
               Expanded(
-                child: Row(
-                  children: [
-                    detailAsync.when(
-                      data: (d) => Text(
-                        '${d.nextPrayer ?? '—'} in ',
-                        maxLines: 1,
-                        softWrap: false,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontSize: 14, color: _colors.headerPrimary),
-                      ),
-                      loading: () => Text('— in ',
-                          style: TextStyle(
-                              fontSize: 14, color: _colors.headerPrimary)),
-                      error: (_, __) => Text('— in ',
-                          style: TextStyle(
-                              fontSize: 14, color: _colors.headerPrimary)),
-                    ),
-                    Flexible(
-                      child: countdownAsync.when(
-                        data: (dur) {
-                          final hours = dur.inHours;
-                          final minutes = dur.inMinutes.remainder(60);
-                          final seconds = dur.inSeconds.remainder(60);
-                          final text = hours > 0
-                              ? '${hours}h ${minutes}m ${seconds}s'
-                              : '${minutes}m ${seconds}s';
-                          return Text(
-                            text,
+                child: countdownAsync.when(
+                  data: (AlertBannerState alert) {
+                    String prefix = '';
+                    String value = '';
+                    switch (alert.kind) {
+                      case AlertKind.forbiddenSunrise:
+                        prefix = '';
+                        value = alert.message ?? 'Salah is forbidden during sunrise';
+                        break;
+                      case AlertKind.forbiddenZenith:
+                        prefix = '';
+                        value = alert.message ?? 'Salah is forbidden during solar noon (zenith)';
+                        break;
+                      case AlertKind.forbiddenSunset:
+                        prefix = '';
+                        value = alert.message ?? 'Salah is forbidden during sunset';
+                        break;
+                      case AlertKind.upcoming:
+                        prefix = '${_capitalize(alert.prayerName ?? '—')} in ';
+                        final dur = alert.remaining ?? Duration.zero;
+                        final h = dur.inHours;
+                        final m = dur.inMinutes.remainder(60);
+                        final s = dur.inSeconds.remainder(60);
+                        value = h > 0 ? '${h}h ${m}m ${s}s' : '${m}m ${s}s';
+                        break;
+                      case AlertKind.remaining:
+                        prefix = '${_capitalize(alert.prayerName ?? '—')} remaining ';
+                        final dur = alert.remaining ?? Duration.zero;
+                        final h = dur.inHours;
+                        final m = dur.inMinutes.remainder(60);
+                        final s = dur.inSeconds.remainder(60);
+                        value = h > 0 ? '${h}h ${m}m ${s}s' : '${m}m ${s}s';
+                        break;
+                    }
+                    return Row(
+                      children: [
+                        if (prefix.isNotEmpty)
+                          Text(prefix,
+                              maxLines: 1,
+                              softWrap: false,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontSize: 14, color: _colors.headerPrimary)),
+                        Flexible(
+                          child: Text(
+                            value,
                             maxLines: 1,
                             softWrap: false,
                             overflow: TextOverflow.ellipsis,
@@ -273,17 +290,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: _colors.headerPrimary),
-                          );
-                        },
-                        loading: () => Text('—',
-                            style: TextStyle(
-                                fontSize: 14, color: _colors.headerPrimary)),
-                        error: (_, __) => Text('—',
-                            style: TextStyle(
-                                fontSize: 14, color: _colors.headerPrimary)),
-                      ),
-                    ),
-                  ],
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                  loading: () => Text('—',
+                      style: TextStyle(
+                          fontSize: 14, color: _colors.headerPrimary)),
+                  error: (_, __) => Text('—',
+                      style: TextStyle(
+                          fontSize: 14, color: _colors.headerPrimary)),
                 ),
               ),
             ],
@@ -411,19 +428,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         builder: (context, constraints) {
           final double h =
               constraints.hasBoundedHeight ? constraints.maxHeight : 140;
-          final double scale = (h / 140).clamp(0.78, 1.0);
           final bool hasSecondaryLines =
               (endTime != null) || (azanTime != null) || (jamaatTime != null);
-          final double adjust = hasSecondaryLines ? 0.88 : 1.0;
-          final double nameSize = 18 * scale * adjust;
-          final double subtitleSize = 10.5 * scale;
-          final double gapSmall = (hasSecondaryLines ? 2.0 : 3.0) * scale;
-          final double gapTiny = 1 * scale;
-          final double gapTop = (hasSecondaryLines ? 5.0 : 6.0) * scale;
+          final int secondaryCount =
+              (endTime != null ? 1 : 0) + (azanTime != null ? 1 : 0) + (jamaatTime != null ? 1 : 0);
+
+          // Base scale relative to available height, then shrink more if many lines
+          double scale = (h / 140).clamp(0.74, 1.0);
+          final double extraShrink = secondaryCount >= 3
+              ? 0.08
+              : (secondaryCount == 2
+                  ? 0.05
+                  : (secondaryCount == 1 ? 0.02 : 0.0));
+          scale = (scale - extraShrink).clamp(0.70, 1.0);
+
+          final double nameSize = 18 * scale * (hasSecondaryLines ? 0.90 : 1.0);
+          final double subtitleSize =
+              (secondaryCount >= 3 ? 9.5 : secondaryCount == 2 ? 10.0 : 10.5) * scale;
+          final double gapSmall = (secondaryCount >= 3 ? 1.0 : secondaryCount == 2 ? 1.5 : 2.0) * scale;
+          final double gapTiny = (secondaryCount >= 3 ? 0.8 : 1.0) * scale;
+          final double gapTop = (secondaryCount >= 3 ? 4.0 : secondaryCount == 2 ? 5.0 : 6.0) * scale;
           final double silhouetteSize = 84 * scale;
 
           return Container(
-            padding: EdgeInsets.all(16 * scale),
+            padding: EdgeInsets.fromLTRB(16 * scale, 14 * scale, 16 * scale, 12 * scale),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
@@ -477,20 +505,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               isCurrent ? _colors.accent : _colors.textPrimary),
                     ),
                     SizedBox(height: gapSmall),
-                    _buildTimeWithMeridiem(time,
-                        mainSize: 34 * scale, meridiemSize: 16 * scale),
+                    _buildTimeWithMeridiem(
+                      time,
+                      mainSize: 32 * scale,
+                      meridiemSize: 15 * scale,
+                    ),
                     if (endTime != null) ...[
                       SizedBox(height: gapTiny),
                       _buildSecondaryInfo('End time - $endTime',
                           fontSize: subtitleSize),
                     ],
                     if (azanTime != null) ...[
-                      SizedBox(height: (gapTiny - 1).clamp(0, 8).toDouble()),
+                      SizedBox(height: (gapTiny - 1).clamp(0, 6).toDouble()),
                       _buildSecondaryInfo('Azan - $azanTime',
                           fontSize: subtitleSize),
                     ],
                     if (jamaatTime != null) ...[
-                      SizedBox(height: (gapTiny - 1).clamp(0, 8).toDouble()),
+                      SizedBox(height: (gapTiny - 1).clamp(0, 6).toDouble()),
                       _buildSecondaryInfo("Jama'at - $jamaatTime",
                           fontSize: subtitleSize),
                     ],
@@ -706,23 +737,53 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           const Icon(Icons.location_on, color: Color(0xFF2C3E50), size: 16),
           const SizedBox(width: 6),
           Expanded(
-            child: Consumer(
-              builder: (context, ref, _) {
-                final settingsAsync = ref.watch(prayerSettingsProvider);
-                return settingsAsync.when(
-                  data: (s) => Text(
-                    '${s.calculationMethod} method · timings from AlAdhan',
-                    style:
-                        const TextStyle(fontSize: 12, color: Color(0xFF7F8C8D)),
-                    overflow: TextOverflow.ellipsis,
+            child: Consumer(builder: (context, ref, _) {
+              final settingsAsync = ref.watch(prayerSettingsProvider);
+              final ptAsync = ref.watch(currentPrayerTimesProvider);
+              final isOffline = ptAsync.maybeWhen(
+                data: (p) =>
+                    (p.metadata['source']?.toString().toLowerCase() ?? '')
+                        .contains('offline'),
+                orElse: () => false,
+              );
+
+              return Row(
+                children: [
+                  Expanded(
+                    child: settingsAsync.when(
+                      data: (s) => Text(
+                        '${s.calculationMethod} method · timings from AlAdhan',
+                        style: const TextStyle(
+                            fontSize: 12, color: Color(0xFF7F8C8D)),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      loading: () => const Text('timings from AlAdhan',
+                          style: TextStyle(
+                              fontSize: 12, color: Color(0xFF7F8C8D))),
+                      error: (_, __) => const Text('timings from AlAdhan',
+                          style: TextStyle(
+                              fontSize: 12, color: Color(0xFF7F8C8D))),
+                    ),
                   ),
-                  loading: () => const Text('timings from AlAdhan',
-                      style: TextStyle(fontSize: 12, color: Color(0xFF7F8C8D))),
-                  error: (_, __) => const Text('timings from AlAdhan',
-                      style: TextStyle(fontSize: 12, color: Color(0xFF7F8C8D))),
-                );
-              },
-            ),
+                  if (isOffline) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFB00020).withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: const Text(
+                        'Offline',
+                        style:
+                            TextStyle(fontSize: 11, color: Color(0xFFB00020)),
+                      ),
+                    ),
+                  ],
+                ],
+              );
+            }),
           ),
         ],
       ),
@@ -1013,7 +1074,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       case 'maghrib':
         return pt.isha.time;
       case 'isha':
-        return pt.midnight.time;
+        // Isha continues until Fajr
+        return pt.fajr.time;
     }
     return null;
   }
@@ -1022,4 +1084,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 extension on String {
   String capitalize() =>
       isEmpty ? this : this[0].toUpperCase() + substring(1).toLowerCase();
+}
+
+String _capitalize(String input) {
+  if (input.isEmpty) return input;
+  return input[0].toUpperCase() + input.substring(1).toLowerCase();
 }

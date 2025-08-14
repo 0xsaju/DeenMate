@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
-import 'package:dio/dio.dart';
-import 'package:hijri/hijri_calendar.dart';
+import 'package:flutter/foundation.dart';
+// import 'package:dio/dio.dart';
+// import 'package:hijri/hijri_calendar.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:async';
 
@@ -149,38 +150,39 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
   @override
   Future<Either<Failure, PrayerTimes>> getCurrentPrayerTimes() async {
     try {
-      print('=== REPOSITORY getCurrentPrayerTimes START ===');
-      print('Repository: Getting current prayer times...');
+      void log(String m) { if (kDebugMode) print(m); }
+      log('=== REPOSITORY getCurrentPrayerTimes START ===');
+      log('Repository: Getting current prayer times...');
       
       // Get current location first
       final locationResult = await getCurrentLocation();
-      print('Repository: Location result: ${locationResult.isRight() ? 'Success' : 'Failed'}');
+      log('Repository: Location result: ${locationResult.isRight() ? 'Success' : 'Failed'}');
       
       if (locationResult.isLeft()) {
-        print('Repository: Location failed, trying preferred location...');
+          log('Repository: Location failed, trying preferred location...');
         // Try to use preferred location if GPS fails
         final preferredLocationResult = await getPreferredLocation();
         if (preferredLocationResult.isLeft() || preferredLocationResult.getOrElse(() => null) == null) {
-          print('Repository: Preferred location also failed');
+          log('Repository: Preferred location also failed');
           return Left(locationResult.fold((failure) => failure, (_) => throw Exception()));
         }
       }
 
       final location = locationResult.fold(
         (failure) async {
-          print('Repository: Using preferred location due to GPS failure');
+          log('Repository: Using preferred location due to GPS failure');
           final preferredLocation = await getPreferredLocation();
           return preferredLocation.getOrElse(() => null);
         },
         (loc) async {
-          print('Repository: Using GPS location: ${loc.latitude}, ${loc.longitude}');
+          log('Repository: Using GPS location: ${loc.latitude}, ${loc.longitude}');
           return loc;
         },
       );
 
       final resolvedLocation = await location;
       if (resolvedLocation == null) {
-        print('Repository: No location available');
+        log('Repository: No location available');
         return const Left(Failure.locationUnavailable(
           message: 'Unable to determine location for prayer times',
         ),);
@@ -193,10 +195,10 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
         calculationMethod: method,
         madhab: Madhab.shafi,
       );
-      print('Repository: Using calculation method: $method (forced reload)');
+      log('Repository: Using calculation method: $method (forced reload)');
 
-      print('Repository: Calling API with location: ${resolvedLocation.latitude}, ${resolvedLocation.longitude}');
-      print('Repository: Settings - Method: ${settings.calculationMethod}, Madhab: ${settings.madhab}');
+      log('Repository: Calling API with location: ${resolvedLocation.latitude}, ${resolvedLocation.longitude}');
+      log('Repository: Settings - Method: ${settings.calculationMethod}, Madhab: ${settings.madhab}');
       
       final result = await getPrayerTimes(
         date: DateTime.now(),
@@ -204,12 +206,12 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
         settings: settings,
       );
       
-      print('Repository: API call result: ${result.isRight() ? 'Success' : 'Failed'}');
+      log('Repository: API call result: ${result.isRight() ? 'Success' : 'Failed'}');
       if (result.isRight()) {
         final prayerTimes = result.getOrElse(() => throw Exception('No data'));
-        print('Repository: Prayer times - Fajr: ${prayerTimes.fajr.time}, Dhuhr: ${prayerTimes.dhuhr.time}');
+        log('Repository: Prayer times - Fajr: ${prayerTimes.fajr.time}, Dhuhr: ${prayerTimes.dhuhr.time}');
       }
-      print('=== REPOSITORY getCurrentPrayerTimes END ===');
+      log('=== REPOSITORY getCurrentPrayerTimes END ===');
       
       return result;
     } catch (e) {
@@ -914,15 +916,14 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
     final totalPossiblePrayers = totalDays * 5; // 5 daily prayers
     
     final completedPrayers = history.where((h) => h.isCompleted).length;
-    final onTimePrayers = history.where((h) => h.isOnTime && h.isCompleted).length;
+    // Count of on-time prayers (reserved for potential analytics)
+    // final onTimePrayers = history.where((h) => h.isOnTime && h.isCompleted).length;
     
     final completionRate = totalPossiblePrayers > 0 
         ? completedPrayers / totalPossiblePrayers 
         : 0.0;
     
-    final onTimeRate = completedPrayers > 0 
-        ? onTimePrayers / completedPrayers 
-        : 0.0;
+    // (on-time rate reserved for future analytics)
 
     // Calculate prayer-wise completion
     final prayerWiseCompletion = <String, int>{};
@@ -936,7 +937,7 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
     }
 
     // Calculate streak (consecutive days with all prayers completed)
-    final streak = _calculateStreak(history, toDate);
+    // (streak reserved for future insights)
 
     return PrayerStatistics(
       date: fromDate,
@@ -951,36 +952,5 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
     );
   }
 
-  /// Calculate prayer streak
-  List<DateTime> _calculateStreak(List<PrayerTracking> history, DateTime endDate) {
-    final streak = <DateTime>[];
-    final prayerNames = {'fajr', 'dhuhr', 'asr', 'maghrib', 'isha'};
-    
-    // Group by date
-    final prayersByDate = <String, Set<String>>{};
-    for (final prayer in history.where((h) => h.isCompleted)) {
-      final dateKey = '${prayer.date.year}-${prayer.date.month}-${prayer.date.day}';
-      prayersByDate[dateKey] = prayersByDate[dateKey] ?? <String>{};
-      prayersByDate[dateKey]!.add(prayer.prayerName.toLowerCase());
-    }
-    
-    // Check consecutive days with all prayers completed
-    var currentDate = endDate;
-    while (true) {
-      final dateKey = '${currentDate.year}-${currentDate.month}-${currentDate.day}';
-      final dayPrayers = prayersByDate[dateKey] ?? <String>{};
-      
-      if (prayerNames.every(dayPrayers.contains)) {
-        streak.insert(0, currentDate);
-        currentDate = currentDate.subtract(const Duration(days: 1));
-      } else {
-        break;
-      }
-      
-      // Prevent infinite loop
-      if (streak.length > 365) break;
-    }
-    
-    return streak;
-  }
+  // Streak calculation reserved for future analytics (removed unused implementation)
 }

@@ -8,6 +8,7 @@ import 'core/state/prayer_settings_state.dart';
 import 'features/onboarding/presentation/screens/onboarding_navigation_screen.dart';
 import 'features/onboarding/presentation/providers/onboarding_providers.dart';
 import 'core/navigation/shell_wrapper.dart';
+import 'features/prayer_times/presentation/providers/prayer_times_providers.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,6 +32,8 @@ class DeenMateApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final hasCompletedOnboarding = ref.watch(onboardingProvider);
+    // Initialize local storage and prefetch today's prayer times in background
+    ref.watch(prayerLocalInitAndPrefetchProvider);
     
     return hasCompletedOnboarding
         ? MaterialApp.router(
