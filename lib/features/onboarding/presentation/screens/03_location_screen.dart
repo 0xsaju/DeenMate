@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../prayer_times/presentation/providers/prayer_times_providers.dart';
 
 import '../../../../core/theme/islamic_theme.dart';
 import '../widgets/islamic_decorative_elements.dart';
 import '../widgets/islamic_gradient_background.dart';
 
 /// Location selection screen for DeenMate onboarding
-class LocationScreen extends StatefulWidget {
+class LocationScreen extends ConsumerStatefulWidget {
   final VoidCallback? onNext;
   final VoidCallback? onPrevious;
 
   const LocationScreen({super.key, this.onNext, this.onPrevious});
 
   @override
-  State<LocationScreen> createState() => _LocationScreenState();
+  ConsumerState<LocationScreen> createState() => _LocationScreenState();
 }
 
-class _LocationScreenState extends State<LocationScreen> {
+class _LocationScreenState extends ConsumerState<LocationScreen> {
   bool _isLoading = false;
   bool _locationPermissionGranted = false;
   String _selectedCity = 'Dhaka';
@@ -38,7 +40,7 @@ class _LocationScreenState extends State<LocationScreen> {
                   color: const Color(0xFF1565C0).withOpacity(0.05),
                 ),
               ),
-              
+
               // Progress indicator
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 20),
@@ -47,7 +49,7 @@ class _LocationScreenState extends State<LocationScreen> {
                   totalSteps: 8,
                 ),
               ),
-              
+
               // Main content
               Expanded(
                 child: Padding(
@@ -55,7 +57,7 @@ class _LocationScreenState extends State<LocationScreen> {
                   child: Column(
                     children: [
                       const SizedBox(height: 40),
-                      
+
                       // Header icon
                       Container(
                         width: 70,
@@ -75,9 +77,9 @@ class _LocationScreenState extends State<LocationScreen> {
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 40),
-                      
+
                       // Title
                       Text(
                         'Set Location for Salah Time',
@@ -88,9 +90,9 @@ class _LocationScreenState extends State<LocationScreen> {
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       // Description
                       Text(
                         'Choose your country and city for',
@@ -101,7 +103,7 @@ class _LocationScreenState extends State<LocationScreen> {
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      
+
                       Text(
                         'accurate prayer time calculations',
                         style: IslamicTheme.textTheme.bodyLarge?.copyWith(
@@ -111,9 +113,9 @@ class _LocationScreenState extends State<LocationScreen> {
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      
+
                       const SizedBox(height: 40),
-                      
+
                       // Location options
                       Expanded(
                         child: ListView(
@@ -136,12 +138,12 @@ class _LocationScreenState extends State<LocationScreen> {
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 40),
-                      
+
                       // Continue button
                       _buildContinueButton(context),
-                      
+
                       const SizedBox(height: 20),
                     ],
                   ),
@@ -166,14 +168,13 @@ class _LocationScreenState extends State<LocationScreen> {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: isSelected 
+          color: isSelected
               ? const Color(0xFFE3F2FD).withOpacity(0.8)
               : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected 
-                ? const Color(0xFF1565C0)
-                : const Color(0xFFE0E0E0),
+            color:
+                isSelected ? const Color(0xFF1565C0) : const Color(0xFFE0E0E0),
             width: isSelected ? 2 : 1,
           ),
           boxShadow: [
@@ -191,7 +192,7 @@ class _LocationScreenState extends State<LocationScreen> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: isSelected 
+                color: isSelected
                     ? const Color(0xFF1565C0).withOpacity(0.1)
                     : const Color(0xFFF8F9FA),
                 borderRadius: BorderRadius.circular(8),
@@ -203,9 +204,9 @@ class _LocationScreenState extends State<LocationScreen> {
                 ),
               ),
             ),
-            
+
             const SizedBox(width: 16),
-            
+
             // Text content
             Expanded(
               child: Column(
@@ -216,7 +217,7 @@ class _LocationScreenState extends State<LocationScreen> {
                     style: IslamicTheme.textTheme.titleMedium?.copyWith(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: isSelected 
+                      color: isSelected
                           ? const Color(0xFF1565C0)
                           : const Color(0xFF2E2E2E),
                     ),
@@ -232,18 +233,17 @@ class _LocationScreenState extends State<LocationScreen> {
                 ],
               ),
             ),
-            
+
             // Selection indicator
             Container(
               width: 24,
               height: 24,
               decoration: BoxDecoration(
-                color: isSelected 
-                    ? const Color(0xFF1565C0)
-                    : Colors.transparent,
+                color:
+                    isSelected ? const Color(0xFF1565C0) : Colors.transparent,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isSelected 
+                  color: isSelected
                       ? const Color(0xFF1565C0)
                       : const Color(0xFFE0E0E0),
                   width: 2,
@@ -292,7 +292,7 @@ class _LocationScreenState extends State<LocationScreen> {
       }
 
       // Get current position
-      await Geolocator.getCurrentPosition(
+      final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
 
@@ -301,13 +301,16 @@ class _LocationScreenState extends State<LocationScreen> {
         _isLoading = false;
       });
 
-      // TODO: Save location to preferences
-      // await _preferencesService.updatePreferences(
-      //   latitude: position.latitude,
-      //   longitude: position.longitude,
-      //   locationPermissionGranted: true,
-      // );
-
+      // Persist preferred location for app usage
+      try {
+        final locService = ref.read(locationServiceProvider);
+        final repo = ref.read(prayerTimesRepositoryProvider);
+        final loc = await locService.getLocationFromCoordinates(
+          latitude: position.latitude,
+          longitude: position.longitude,
+        );
+        await repo.savePreferredLocation(loc);
+      } catch (_) {}
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -331,11 +334,19 @@ class _LocationScreenState extends State<LocationScreen> {
                 labelText: 'Country',
                 border: OutlineInputBorder(),
               ),
-              items: ['Bangladesh', 'Pakistan', 'Saudi Arabia', 'Turkey', 'Malaysia']
-                  .map((country) => DropdownMenuItem(
-                        value: country,
-                        child: Text(country),
-                      ),)
+              items: [
+                'Bangladesh',
+                'Pakistan',
+                'Saudi Arabia',
+                'Turkey',
+                'Malaysia'
+              ]
+                  .map(
+                    (country) => DropdownMenuItem(
+                      value: country,
+                      child: Text(country),
+                    ),
+                  )
                   .toList(),
               onChanged: (value) {
                 setState(() {
@@ -352,10 +363,12 @@ class _LocationScreenState extends State<LocationScreen> {
                 border: OutlineInputBorder(),
               ),
               items: _getCitiesForCountry(_selectedCountry)
-                  .map((city) => DropdownMenuItem(
-                        value: city,
-                        child: Text(city),
-                      ),)
+                  .map(
+                    (city) => DropdownMenuItem(
+                      value: city,
+                      child: Text(city),
+                    ),
+                  )
                   .toList(),
               onChanged: (value) {
                 setState(() {
@@ -371,12 +384,33 @@ class _LocationScreenState extends State<LocationScreen> {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               setState(() {
                 _locationPermissionGranted = false;
+                _isLoading = true;
               });
-              // TODO: Save manual location
-              Navigator.pop(context);
+              try {
+                final query = '$_selectedCity, $_selectedCountry';
+                final locService = ref.read(locationServiceProvider);
+                final repo = ref.read(prayerTimesRepositoryProvider);
+                final results = await locService.searchLocations(query);
+                if (results.isNotEmpty) {
+                  await repo.savePreferredLocation(results.first);
+                }
+                if (mounted) Navigator.pop(context);
+                widget.onNext?.call();
+              } catch (e) {
+                if (mounted) {
+                  Navigator.pop(context);
+                  _showErrorDialog('Failed to set location: $e');
+                }
+              } finally {
+                if (mounted) {
+                  setState(() {
+                    _isLoading = false;
+                  });
+                }
+              }
             },
             child: const Text('Confirm'),
           ),
@@ -462,7 +496,7 @@ class _LocationScreenState extends State<LocationScreen> {
         height: 60,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: _isLoading 
+            colors: _isLoading
                 ? [Colors.grey, Colors.grey.shade400]
                 : [const Color(0xFF1565C0), const Color(0xFF42A5F5)],
             begin: Alignment.topLeft,
@@ -502,11 +536,6 @@ class _LocationScreenState extends State<LocationScreen> {
   }
 
   void _navigateToNext(BuildContext context) {
-    // TODO: Save location preference
-    // await _preferencesService.updatePreferences(
-    //   locationPermissionGranted: _locationPermissionGranted,
-    // );
-    
     // Navigate to next onboarding screen
     widget.onNext?.call();
   }

@@ -200,6 +200,39 @@ final currentPrayerTimesProvider = FutureProvider<PrayerTimes>((ref) async {
   }
 });
 
+/// Fast cached prayer times for instant boot (stale-while-revalidate UX)
+final cachedCurrentPrayerTimesProvider =
+    FutureProvider<PrayerTimes?>((ref) async {
+  try {
+    final repo = ref.read(prayerTimesRepositoryProvider);
+    final preferredLocEither = await repo.getPreferredLocation();
+    final preferredLoc = preferredLocEither.fold<Location?>(
+      (_) => null,
+      (loc) => loc,
+    );
+    if (preferredLoc == null) return null;
+
+    final now = DateTime.now();
+    final cachedEither =
+        await repo.getCachedPrayerTimes(date: now, location: preferredLoc);
+    return cachedEither.fold<PrayerTimes?>(
+      (_) => null,
+      (list) {
+        for (final pt in list) {
+          if (pt.date.year == now.year &&
+              pt.date.month == now.month &&
+              pt.date.day == now.day) {
+            return pt;
+          }
+        }
+        return null;
+      },
+    );
+  } catch (_) {
+    return null;
+  }
+});
+
 // Current and Next Prayer Provider
 final currentAndNextPrayerProvider = FutureProvider<PrayerDetail>((ref) async {
   try {
@@ -491,6 +524,50 @@ final currentAndNextPrayerOfflineAwareProvider = FutureProvider<PrayerDetail>((r
     currentPrayer: current,
     nextPrayer: next,
     prayerTimes: pt,
+    timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+  );
+});
+
+/// Fast cached derivation of current/next prayer for instant header
+final cachedCurrentAndNextPrayerProvider = Provider<PrayerDetail?>((ref) {
+  final cached = ref.watch(cachedCurrentPrayerTimesProvider).value;
+  if (cached == null) return null;
+  // Derive current/next based on time ordering and now
+  final now = DateTime.now();
+  final list = [
+    cached.fajr,
+    cached.sunrise,
+    cached.dhuhr,
+    cached.asr,
+    cached.maghrib,
+    cached.isha,
+  ];
+  list.sort((a, b) => a.time.compareTo(b.time));
+  String? current;
+  String? next;
+  for (var i = 0; i < list.length; i++) {
+    final t = list[i].time;
+    final name = list[i].name;
+    final nextIndex = (i + 1 < list.length) ? i + 1 : null;
+    if (now.isAfter(t) &&
+        (nextIndex == null || now.isBefore(list[nextIndex].time))) {
+      current = name;
+      next = nextIndex != null ? list[nextIndex].name : null;
+      break;
+    }
+    if (now.isBefore(t)) {
+      current = null;
+      next = name;
+      break;
+    }
+  }
+  final nextTime =
+      next == null ? null : list.firstWhere((e) => e.name == next).time;
+  final remaining = nextTime == null ? Duration.zero : nextTime.difference(now);
+  return PrayerDetail(
+    currentPrayer: current,
+    nextPrayer: next,
+    prayerTimes: cached,
     timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
   );
 });

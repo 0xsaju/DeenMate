@@ -110,8 +110,11 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
     switch (widget.currentLocation) {
       case AppRouter.home:
         return 0;
-      case AppRouter.prayerTimes:
+      case '/islamic-content':
         return 1;
+      case AppRouter.prayerTimes:
+        // Treat prayer-times as Home for selection since it renders HomeScreen
+        return 0;
       case AppRouter.qiblaFinder:
         return 2;
       default:
@@ -142,7 +145,7 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
         context.go(AppRouter.home);
         break;
       case 1:
-        context.go(AppRouter.prayerTimes);
+        context.go('/islamic-content');
         break;
       case 2:
         context.go(AppRouter.qiblaFinder);

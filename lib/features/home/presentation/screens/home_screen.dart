@@ -26,6 +26,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Fast-path cached data for instant render, while live fetch updates
+    final cachedAsync = ref.watch(cachedCurrentPrayerTimesProvider);
+    final cachedDetail = ref.watch(cachedCurrentAndNextPrayerProvider);
     final prayerTimesAsync = ref.watch(currentPrayerTimesProvider);
     final currentAndNextPrayerAsync = ref.watch(currentAndNextPrayerOfflineAwareProvider);
     // Keep providers warm for midnight refresh and countdown
@@ -48,8 +51,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               constraints: BoxConstraints(maxHeight: constraints.maxHeight),
               child: Column(
                 children: [
-                  _buildHeader(prayerTimesAsync),
-                  _buildAlertPill(countdownAsync, currentAndNextPrayerAsync),
+                  _buildHeader(
+                    // header prefers live; fallback to cached PT for instant
+                    prayerTimesAsync.hasValue
+                        ? prayerTimesAsync
+                        : (cachedAsync.value == null
+                            ? prayerTimesAsync
+                            : AsyncValue.data(cachedAsync.value!)),
+                  ),
+                  _buildAlertPill(
+                    // use cached derivation for immediate pill text
+                    countdownAsync,
+                    currentAndNextPrayerAsync.hasValue
+                        ? currentAndNextPrayerAsync
+                        : (cachedDetail == null
+                            ? currentAndNextPrayerAsync
+                            : AsyncValue.data(cachedDetail)),
+                  ),
                   Expanded(
                     child: SingleChildScrollView(
                       physics: const BouncingScrollPhysics(),
@@ -64,7 +82,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           const SizedBox(height: 4),
                           _buildLocationCard(),
                           const SizedBox(height: 4),
-                          _buildPrayerTimesList(prayerTimesAsync, use24h),
+                          _buildPrayerTimesList(
+                            // Prefer live data; fallback to cached for instant boot
+                            prayerTimesAsync.hasValue
+                                ? prayerTimesAsync
+                                : (cachedAsync.value == null
+                                    ? prayerTimesAsync
+                                    : AsyncValue.data(cachedAsync.value!)),
+                            use24h,
+                          ),
                           const SizedBox(height: 14),
                           _buildAdditionalTimingsHorizontal(
                               prayerTimesAsync, use24h),
@@ -168,9 +194,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       ),
                     ),
                     const SizedBox(height: 2),
-                    const Text(
-                      '29 Srabon 1432',
-                      style: TextStyle(
+                    Text(
+                      _formatBengaliDate(DateTime.now()),
+                      style: const TextStyle(
                         fontSize: 14,
                         color: Color(0xFF6B5E56),
                       ),
@@ -1030,6 +1056,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       return DateFormat('HH:mm').format(time);
     }
     return DateFormat('h:mm a').format(time).toLowerCase();
+  }
+
+  // Simple Bengali date formatter using localized month/day names
+  String _formatBengaliDate(DateTime date) {
+    const bengaliMonths = [
+      'জানুয়ারি',
+      'ফেব্রুয়ারি',
+      'মার্চ',
+      'এপ্রিল',
+      'মে',
+      'জুন',
+      'জুলাই',
+      'আগস্ট',
+      'সেপ্টেম্বর',
+      'অক্টোবর',
+      'নভেম্বর',
+      'ডিসেম্বর',
+    ];
+    const bengaliWeekdays = [
+      'সোমবার',
+      'মঙ্গলবার',
+      'বুধবার',
+      'বৃহস্পতিবার',
+      'শুক্রবার',
+      'শনিবার',
+      'রবিবার',
+    ];
+    final weekday = bengaliWeekdays[(date.weekday % 7)];
+    final month = bengaliMonths[date.month - 1];
+    final day = date.day.toString();
+    final year = (date.year).toString();
+    return '$weekday, $day $month $year';
   }
 
   Future<String?> _loadUserName() async {

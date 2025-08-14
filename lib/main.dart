@@ -12,13 +12,13 @@ import 'features/prayer_times/presentation/providers/prayer_times_providers.dart
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize Hive
   await Hive.initFlutter();
-  
+
   // Initialize prayer settings state
   await PrayerSettingsState.instance.loadSettings();
-  
+
   runApp(
     const ProviderScope(
       child: DeenMateApp(),
@@ -32,9 +32,9 @@ class DeenMateApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final hasCompletedOnboarding = ref.watch(onboardingProvider);
-    // Initialize local storage and prefetch today's prayer times in background
+    // Initialize storage and prefetch; also warm cache for instant UI
     ref.watch(prayerLocalInitAndPrefetchProvider);
-    
+    ref.listen(cachedCurrentPrayerTimesProvider, (_, __) {});
     return hasCompletedOnboarding
         ? MaterialApp.router(
             title: 'DeenMate',
