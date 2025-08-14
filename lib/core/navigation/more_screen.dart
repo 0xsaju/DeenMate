@@ -51,6 +51,15 @@ class MoreScreen extends ConsumerWidget {
                 children: [
                   _buildFeatureCard(
                     context,
+                    'Athan Settings',
+                    'আজান সেটিংস',
+                    Icons.volume_up,
+                    'Athan & notifications',
+                    FeatureColors.getColor('prayer', context),
+                    AppRouter.athanSettings,
+                  ),
+                  _buildFeatureCard(
+                    context,
                     'Sawm Tracker',
                     'সিয়াম ট্র্যাকার',
                     Icons.calendar_month,

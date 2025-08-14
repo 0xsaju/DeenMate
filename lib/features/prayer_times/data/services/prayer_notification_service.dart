@@ -1,8 +1,11 @@
-import 'dart:io';
+// duplicate removed
 import 'dart:typed_data';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/services.dart' show rootBundle, ByteData;
+import 'dart:convert';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -21,7 +24,6 @@ class PrayerNotificationService {
   static final PrayerNotificationService _instance = PrayerNotificationService._internal();
 
   final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final AudioPlayer _audioPlayer = AudioPlayer();
   
   bool _isInitialized = false;
@@ -45,7 +47,7 @@ class PrayerNotificationService {
 
     try {
       await _initializeLocalNotifications();
-      await _initializeFirebaseMessaging();
+      // Firebase Cloud Messaging not required for local Azan scheduling
       await _requestPermissions();
       
       _isInitialized = true;
@@ -96,14 +98,14 @@ class PrayerNotificationService {
       ),
     );
 
-    // Athan Channel
+    // Athan Channel (enable sound by default; full Azan audio may be handled in-app)
     await plugin.createNotificationChannel(
       const AndroidNotificationChannel(
         _athanChannel,
         'Athan (Call to Prayer)',
         description: 'Full Athan call to prayer notifications',
         importance: Importance.max,
-        playSound: false, // We'll handle audio manually
+        playSound: true,
       ),
     );
 
@@ -118,22 +120,7 @@ class PrayerNotificationService {
     );
   }
 
-  /// Initialize Firebase messaging
-  Future<void> _initializeFirebaseMessaging() async {
-    // Request permission for iOS
-    await _firebaseMessaging.requestPermission(
-      
-    );
-
-    // Handle background messages
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-    // Handle foreground messages
-    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
-
-    // Handle message opened from terminated state
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
-  }
+  // Firebase messaging removed; local notifications are sufficient for Azan
 
   /// Request necessary permissions
   Future<void> _requestPermissions() async {
@@ -241,7 +228,7 @@ class PrayerNotificationService {
           channelId: _athanChannel,
           importance: Importance.max,
           priority: Priority.max,
-          playSound: false, // We'll handle Athan audio manually
+          playSound: true, // Ensure audible cue even if app is backgrounded
           actions: [
             const AndroidNotificationAction(
               'MARK_COMPLETED',
@@ -348,8 +335,29 @@ class PrayerNotificationService {
     try {
       _isAthanPlaying = true;
       
-      // Load Athan audio based on muadhin voice
-      await _audioPlayer.setSource(AssetSource('audio/athan/${muadhinVoice}_athan.mp3'));
+      // Load asset via manifest resolution and play from temp file (robust on all platforms)
+      final manifestJson = await rootBundle.loadString('AssetManifest.json');
+      final Map<String, dynamic> manifest = jsonDecode(manifestJson) as Map<String, dynamic>;
+      final wantedSuffix = '/${muadhinVoice}_athan.mp3';
+      final matches = manifest.keys.where((k) => k.endsWith(wantedSuffix)).toList();
+      ByteData? bytes;
+      if (matches.isNotEmpty) {
+        for (final k in matches) {
+          try { bytes = await rootBundle.load(k); break; } catch (_) {}
+        }
+      }
+      if (bytes == null) {
+        for (final path in ['assets/audio/athan/${muadhinVoice}_athan.mp3','audio/athan/${muadhinVoice}_athan.mp3']) {
+          try { bytes = await rootBundle.load(path); break; } catch (_) {}
+        }
+      }
+      if (bytes == null) {
+        throw Failure.audioPlaybackFailure(message: 'Athan asset not found for $muadhinVoice');
+      }
+      final tmp = await getTemporaryDirectory();
+      final f = File('${tmp.path}/${muadhinVoice}_athan.mp3');
+      await f.writeAsBytes(bytes.buffer.asUint8List());
+      await _audioPlayer.setSource(DeviceFileSource(f.path));
       await _audioPlayer.setVolume(volume);
       await _audioPlayer.resume();
 
@@ -530,51 +538,9 @@ class PrayerNotificationService {
   }
 
   /// Handle local notification received while app is in foreground (iOS)
-  static void _onDidReceiveLocalNotification(
-    int id,
-    String? title,
-    String? body,
-    String? payload,
-  ) {
-    // Handle iOS foreground notification
-    print('Received local notification: $title - $body');
-  }
+  // iOS foreground local notification handler not used currently
 
-  /// Handle background Firebase messages
-  static Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-    print('Handling a background message: ${message.messageId}');
-    
-    // Handle prayer time updates, Islamic event notifications, etc.
-    if (message.data['type'] == 'prayer_times_update') {
-      // Update prayer times and reschedule notifications
-    }
-  }
-
-  /// Handle foreground Firebase messages
-  void _handleForegroundMessage(RemoteMessage message) {
-    print('Received foreground message: ${message.notification?.title}');
-    
-    // Show in-app notification or update UI
-    if (message.data['type'] == 'islamic_event') {
-      // Show Islamic event notification
-    }
-  }
-
-  /// Handle Firebase message when app is opened from terminated state
-  void _handleMessageOpenedApp(RemoteMessage message) {
-    print('Message opened app: ${message.notification?.title}');
-    
-    // Navigate to relevant screen based on message type
-    final type = message.data['type'];
-    switch (type) {
-      case 'prayer_times':
-        // NavigationService.navigateTo('/prayer-times');
-        break;
-      case 'qibla':
-        // NavigationService.navigateTo('/qibla-finder');
-        break;
-    }
-  }
+  // Firebase message handlers removed
 
   /// Schedule Suhur notification for Ramadan
   Future<void> scheduleSuhurNotification(DateTime suhurTime) async {
@@ -619,49 +585,10 @@ class PrayerNotificationService {
   }
 
   /// Schedule a generic notification
-  Future<void> _scheduleNotification({
-    required int id,
-    required String title,
-    required String body,
-    required DateTime scheduledDate,
-    required AthanSettings settings,
-  }) async {
-    await _localNotifications.zonedSchedule(
-      id,
-      title,
-      body,
-      tz.TZDateTime.from(scheduledDate, tz.local),
-      _buildNotificationDetails(
-        channelId: _prayerReminderChannel,
-        importance: Importance.high,
-        sound: 'notification_sound',
-      ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      matchDateTimeComponents: DateTimeComponents.time,
-    );
-  }
+  // generic scheduler reserved for future
 
   /// Schedule a Ramadan-specific notification
-  Future<void> _scheduleRamadanNotification({
-    required int id,
-    required String title,
-    required String body,
-    required DateTime scheduledTime,
-  }) async {
-    await _localNotifications.zonedSchedule(
-      id,
-      title,
-      body,
-      tz.TZDateTime.from(scheduledTime, tz.local),
-      _buildNotificationDetails(
-        channelId: _islamicEventsChannel,
-        importance: Importance.high,
-        sound: 'ramadan_notification',
-      ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      matchDateTimeComponents: DateTimeComponents.time,
-    );
-  }
+  // ramadan scheduler reserved for future
 
   /// Dispose resources
   Future<void> dispose() async {

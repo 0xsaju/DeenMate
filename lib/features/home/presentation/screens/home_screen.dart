@@ -9,6 +9,7 @@ import '../../../prayer_times/domain/entities/prayer_times.dart'
 import '../../../prayer_times/domain/entities/prayer_tracking.dart';
 import '../../../prayer_times/presentation/providers/prayer_times_providers.dart';
 import '../../../prayer_times/domain/entities/athan_settings.dart';
+import '../../../prayer_times/presentation/providers/notification_providers.dart' show dailyNotificationSchedulerProvider;
 import '../../../prayer_times/domain/entities/prayer_calculation_settings.dart';
 
 /// Home Screen (replaces old home) — shows live prayer times, countdown, etc.
@@ -723,10 +724,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   final enabled = settings?.isPrayerEnabled('fajr') ?? true;
                   return InkWell(
                     borderRadius: BorderRadius.circular(999),
-                    onTap: () {
+                    onTap: () async {
                       ref
                           .read(athanSettingsNotifierProvider.notifier)
                           .togglePrayer('fajr');
+                      // Reschedule notifications for today after toggle
+                      try {
+                        final scheduler = ref.read(dailyNotificationSchedulerProvider);
+                        await scheduler.scheduleToday();
+                      } catch (_) {}
                     },
                     child: Container(
                       width: 44,
@@ -807,10 +813,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   final enabled = settings?.isPrayerEnabled('maghrib') ?? true;
                   return InkWell(
                     borderRadius: BorderRadius.circular(999),
-                    onTap: () {
+                    onTap: () async {
                       ref
                           .read(athanSettingsNotifierProvider.notifier)
                           .togglePrayer('maghrib');
+                      // Reschedule notifications for today after toggle
+                      try {
+                        final scheduler = ref.read(dailyNotificationSchedulerProvider);
+                        await scheduler.scheduleToday();
+                      } catch (_) {}
                     },
                     child: Container(
                       width: 44,
@@ -1045,10 +1056,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         settings?.isPrayerEnabled(prayerName) ?? true;
                     return InkWell(
                       borderRadius: BorderRadius.circular(8),
-                      onTap: () {
+                      onTap: () async {
                         ref
                             .read(athanSettingsNotifierProvider.notifier)
                             .togglePrayer(prayerName);
+                        try {
+                          final scheduler = ref.read(dailyNotificationSchedulerProvider);
+                          await scheduler.scheduleToday();
+                        } catch (_) {}
                       },
                       child: Container(
                         padding: const EdgeInsets.all(6),

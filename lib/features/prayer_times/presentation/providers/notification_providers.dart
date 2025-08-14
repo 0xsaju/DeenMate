@@ -6,6 +6,8 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/utils/islamic_utils.dart';
 import '../../data/services/prayer_notification_service.dart';
+import 'package:timezone/data/latest_all.dart' as tzdata;
+import 'package:timezone/timezone.dart' as tz;
 import '../../domain/entities/athan_settings.dart';
 import '../../domain/entities/prayer_times.dart';
 import '../../domain/repositories/prayer_times_repository.dart';
@@ -25,6 +27,11 @@ final notificationServiceProvider = Provider<PrayerNotificationService>((ref) {
 final notificationInitProvider = FutureProvider<bool>((ref) async {
   final service = ref.read(notificationServiceProvider);
   try {
+    // Ensure timezone database is ready for exact schedules
+    try {
+      tzdata.initializeTimeZones();
+      tz.setLocalLocation(tz.getLocation('UTC'));
+    } catch (_) {}
     await service.initialize();
     return true;
   } catch (e) {
@@ -36,7 +43,6 @@ final notificationInitProvider = FutureProvider<bool>((ref) async {
 final athanSettingsProvider = StateNotifierProvider<AthanSettingsNotifier, AsyncValue<AthanSettings>>((ref) {
   return AthanSettingsNotifier(
     ref.read(prayerTimesRepositoryProvider),
-    ref.read(notificationServiceProvider),
     ref.read(dailyNotificationSchedulerProvider),
   );
 });
@@ -105,12 +111,11 @@ final ramadanNotificationProvider = StateNotifierProvider<RamadanNotificationNot
 
 class AthanSettingsNotifier extends StateNotifier<AsyncValue<AthanSettings>> {
 
-  AthanSettingsNotifier(this._repository, this._notificationService, this._scheduler) 
+  AthanSettingsNotifier(this._repository, this._scheduler) 
       : super(const AsyncValue.loading()) {
     _loadSettings();
   }
   final PrayerTimesRepository _repository;
-  final PrayerNotificationService _notificationService;
   final DailyNotificationScheduler _scheduler;
 
   Future<void> _loadSettings() async {
@@ -406,7 +411,10 @@ class AutoNotificationScheduler {
     _startAutoScheduling();
   }
   final DailyNotificationScheduler _scheduler;
+  // reserved for future hooks (kept referenced to avoid tree-shake during tests)
+  // ignore: unused_field
   final Future<PrayerTimes> _prayerTimesFuture;
+  // ignore: unused_field
   final Future<AthanSettings> _settingsFuture;
 
   Future<void> _startAutoScheduling() async {

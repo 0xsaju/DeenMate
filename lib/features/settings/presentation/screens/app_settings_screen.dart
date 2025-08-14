@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/services/notification_service.dart';
+import '../../../../core/constants/app_constants.dart';
 // Deprecated direct service import removed; use repository-backed providers instead
 import '../../../../core/theme/islamic_theme.dart';
 /// App settings screen for DeenMate
@@ -110,6 +111,12 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
           'Prayer Settings',
           'নামাজের সেটিংস',
           [
+            _buildNavTile(
+              title: 'Athan Settings',
+              subtitle: 'Reciter, volume, preview',
+              icon: Icons.volume_up,
+              route: AppRouter.athanSettings,
+            ),
             _buildSwitchTile(
               'Prayer Notifications',
               'Get notified at prayer times',
@@ -233,12 +240,37 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
     );
   }
 
+  Widget _buildNavTile({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required String route,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: IslamicTheme.islamicGreen),
+      title: Text(
+        title,
+        style: IslamicTheme.textTheme.bodyMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: IslamicTheme.textTheme.bodySmall,
+      ),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+      onTap: () => context.go(route),
+    );
+  }
+
   Widget _buildCalculationMethodTile() {
     return ListTile(
       leading: const Icon(Icons.calculate, color: IslamicTheme.islamicGreen),
       title: const Text('Prayer Calculation Method'),
       subtitle: Text(
-        AppConstants.calculationMethods[_selectedCalculationMethod] ?? 'Unknown',
+        AppConstants.calculationMethods.values.elementAt(
+          _selectedCalculationMethod.clamp(0, AppConstants.calculationMethods.length - 1),
+        ),
         style: IslamicTheme.textTheme.bodySmall?.copyWith(
           color: IslamicTheme.textSecondary,
         ),
@@ -378,7 +410,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: AppConstants.calculationMethods.entries.map((entry) {
+            children: AppConstants.calculationMethods.values.toList().asMap().entries.map((entry) {
               return RadioListTile<int>(
                 title: Text(
                   entry.value,
@@ -499,8 +531,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
       _selectedCalculationMethod = method;
     });
     
-    // Update prayer times with new method
-    context.read<RealPrayerTimesProvider>().changeCalculationMethod(method);
+    // TODO: Wire calculation method change via repository-backed providers
     
     await _saveSettings();
   }

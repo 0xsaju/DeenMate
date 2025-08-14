@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/prayer_times/presentation/screens/athan_settings_screen.dart';
+import '../../features/settings/presentation/screens/app_settings_screen.dart';
 import '../../features/prayer_times/presentation/screens/calculation_method_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/qibla/presentation/screens/qibla_compass_screen.dart';
@@ -77,15 +78,11 @@ class AppRouter {
         ),
       ),
 
-      // Settings (placeholder)
+      // Settings
       GoRoute(
         path: settings,
         name: 'settings',
-        builder: (context, state) => const PlaceholderScreen(
-          title: 'Settings',
-          icon: Icons.settings,
-          description: 'Configure app preferences',
-        ),
+        builder: (context, state) => const AppSettingsScreen(),
       ),
 
       // Athan Settings

@@ -1,4 +1,8 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/services.dart' show rootBundle, ByteData;
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/error/failures.dart';
@@ -72,9 +76,43 @@ class AthanAudioNotifier extends StateNotifier<AthanAudioState> {
       // Stop any currently playing audio
       await _audioPlayer.stop();
 
-      // Play the selected Athan
-      final assetPath = 'audio/athan/${muadhinVoice}_athan.mp3';
-      await _audioPlayer.play(AssetSource(assetPath));
+      // Robust asset load: resolve from manifest first
+      final manifestJson = await rootBundle.loadString('AssetManifest.json');
+      final Map<String, dynamic> manifest = jsonDecode(manifestJson) as Map<String, dynamic>;
+      final wantedSuffix = '/${muadhinVoice}_athan.mp3';
+      final manifestMatches = manifest.keys.where((k) => k.endsWith(wantedSuffix)).toList();
+      ByteData? bytes;
+      if (manifestMatches.isNotEmpty) {
+        for (final k in manifestMatches) {
+          try {
+            bytes = await rootBundle.load(k);
+            break;
+          } catch (_) {}
+        }
+      }
+      // Fallback candidates
+      if (bytes == null) {
+        final candidates = <String>[
+          'assets/audio/athan/${muadhinVoice}_athan.mp3',
+          'audio/athan/${muadhinVoice}_athan.mp3',
+        ];
+        for (final path in candidates) {
+          try {
+            bytes = await rootBundle.load(path);
+            break;
+          } catch (_) {}
+        }
+      }
+      if (bytes == null) {
+        throw Failure.audioPlaybackFailure(
+          message:
+              'Athan asset not found for "$muadhinVoice". Expected at assets/audio/athan/${muadhinVoice}_athan.mp3',
+        );
+      }
+      final tempDir = await getTemporaryDirectory();
+      final file = File('${tempDir.path}/${muadhinVoice}_athan.mp3');
+      await file.writeAsBytes(bytes.buffer.asUint8List());
+      await _audioPlayer.play(DeviceFileSource(file.path));
 
       state = state.copyWith(isLoading: false);
     } catch (e) {

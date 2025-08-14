@@ -9,6 +9,7 @@ import 'features/onboarding/presentation/screens/onboarding_navigation_screen.da
 import 'features/onboarding/presentation/providers/onboarding_providers.dart';
 import 'core/navigation/shell_wrapper.dart';
 import 'features/prayer_times/presentation/providers/prayer_times_providers.dart';
+import 'features/prayer_times/presentation/providers/notification_providers.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,6 +38,9 @@ class DeenMateApp extends ConsumerWidget {
     // Only prefetch after onboarding (prevents early GPS prompt)
     if (hasCompletedOnboarding) {
       ref.watch(prayerLocalInitAndPrefetchProvider);
+      // Initialize notifications/Azan and schedule
+      ref.watch(notificationInitProvider);
+      ref.watch(autoNotificationSchedulerProvider);
     }
     return hasCompletedOnboarding
         ? MaterialApp.router(

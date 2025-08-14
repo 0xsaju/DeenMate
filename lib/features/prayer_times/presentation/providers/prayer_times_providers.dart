@@ -447,7 +447,8 @@ final alertBannerStateProvider = StreamProvider<AlertBannerState>((ref) async* {
         }
 
         if (currentName != null) {
-          final DateTime? endTime = _getPrayerEndTimeFor(pt, currentName);
+          final DateTime? rawEnd = _getPrayerEndTimeFor(pt, currentName);
+          final DateTime? endTime = rawEnd == null ? null : _rolloverIfBefore(rawEnd, now);
           if (endTime != null && now.isBefore(endTime)) {
             final remaining = endTime.difference(now);
             return AlertBannerState(
@@ -468,14 +469,20 @@ final alertBannerStateProvider = StreamProvider<AlertBannerState>((ref) async* {
         );
       },
       orElse: () {
-        // Fallback to cached derivation for instant countdown text
+        // Fallback to cached derivation for instant banner state
         if (cachedDetail != null) {
           final pt = cachedDetail.prayerTimes as PrayerTimes;
           final now = DateTime.now();
-          final nextName = cachedDetail.nextPrayer;
-          if (nextName != null) {
-            final nextTime = _getPrayerTimeByName(pt, nextName);
-            if (nextTime != null) {
+
+          final String? currentName = cachedDetail.currentPrayer;
+          final String? nextName = cachedDetail.nextPrayer;
+          final DateTime? nextTime =
+              nextName != null ? _getPrayerTimeByName(pt, nextName) : null;
+
+          // If within upcoming window → upcoming
+          if (nextName != null && nextTime != null) {
+            final windowStart = nextTime.subtract(_kUpcomingLeadWindow);
+            if (now.isAfter(windowStart) && now.isBefore(nextTime)) {
               final remaining = nextTime.difference(now);
               return AlertBannerState(
                 kind: AlertKind.upcoming,
@@ -485,11 +492,42 @@ final alertBannerStateProvider = StreamProvider<AlertBannerState>((ref) async* {
               );
             }
           }
+
+          // Otherwise, if we have a current prayer, show remaining
+          if (currentName != null) {
+            final DateTime? endTime = _getPrayerEndTimeFor(pt, currentName);
+            if (endTime != null && now.isBefore(endTime)) {
+              final remaining = endTime.difference(now);
+              return AlertBannerState(
+                kind: AlertKind.remaining,
+                prayerName: currentName,
+                remaining: remaining.isNegative ? Duration.zero : remaining,
+                targetTime: endTime,
+              );
+            }
+          }
+
+        // Neutral fallback when neither upcoming nor remaining can be determined
+        // Prefer showing remaining Isha until Fajr during the night as a safe default
+        final DateTime fajr = _rolloverIfBefore(pt.fajr.time, now);
+        if (now.isBefore(fajr)) {
+          final remaining = fajr.difference(now);
+          return AlertBannerState(
+            kind: AlertKind.remaining,
+            prayerName: 'Isha',
+            remaining: remaining.isNegative ? Duration.zero : remaining,
+            targetTime: fajr,
+          );
         }
         return const AlertBannerState(
-            kind: AlertKind.upcoming,
-            prayerName: null,
-            remaining: Duration.zero);
+          kind: AlertKind.upcoming,
+          prayerName: null,
+          remaining: Duration.zero,
+        );
+        }
+
+        return const AlertBannerState(
+            kind: AlertKind.upcoming, prayerName: null, remaining: Duration.zero);
       },
     );
   }
