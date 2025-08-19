@@ -7,6 +7,8 @@ import '../../../../core/services/notification_service.dart';
 import '../../../../core/constants/app_constants.dart';
 // Deprecated direct service import removed; use repository-backed providers instead
 import '../../../../core/theme/islamic_theme.dart';
+import '../../../prayer_times/presentation/screens/isha_time_demo_screen.dart';
+
 /// App settings screen for DeenMate
 class AppSettingsScreen extends StatefulWidget {
   const AppSettingsScreen({super.key});
@@ -19,9 +21,10 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
   bool _prayerNotificationsEnabled = true;
   bool _prayerRemindersEnabled = true;
   bool _dailyVersesEnabled = true;
+  bool _islamicMidnightEnabled = true; // Default to Islamic midnight
   int _selectedCalculationMethod = 2; // ISNA
   String _selectedLanguage = 'English';
-  
+
   final NotificationService _notificationService = NotificationService();
 
   @override
@@ -132,11 +135,16 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
               Icons.alarm,
             ),
             _buildCalculationMethodTile(),
+            _buildSwitchTile(
+              'Islamic Midnight Calculation',
+              'Use authentic hadith-based midnight (Sahih Muslim 612)',
+              _islamicMidnightEnabled,
+              _setIslamicMidnight,
+              Icons.nightlight_round,
+            ),
           ],
         ),
-        
         const SizedBox(height: 24),
-        
         _buildSection(
           'Islamic Content',
           'ইসলামিক কন্টেন্ট',
@@ -148,11 +156,22 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
               _setDailyVerses,
               Icons.menu_book,
             ),
+            ListTile(
+              leading: const Icon(Icons.nightlight_round,
+                  color: IslamicTheme.islamicGreen),
+              title: const Text('Isha Prayer Times Demo'),
+              subtitle: const Text('Test Islamic midnight calculation'),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const IshaTimeDemoScreen(),
+                ),
+              ),
+            ),
           ],
         ),
-        
         const SizedBox(height: 24),
-        
         _buildSection(
           'App Settings',
           'অ্যাপের সেটিংস',
@@ -162,9 +181,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
             _buildPrivacyTile(),
           ],
         ),
-        
         const SizedBox(height: 24),
-        
         _buildSection(
           'Data & Storage',
           'ডেটা ও স্টোরেজ',
@@ -173,9 +190,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
             _buildExportDataTile(),
           ],
         ),
-        
         const SizedBox(height: 40),
-        
         _buildVersionInfo(),
       ],
     );
@@ -269,7 +284,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
       title: const Text('Prayer Calculation Method'),
       subtitle: Text(
         AppConstants.calculationMethods.values.elementAt(
-          _selectedCalculationMethod.clamp(0, AppConstants.calculationMethods.length - 1),
+          _selectedCalculationMethod.clamp(
+              0, AppConstants.calculationMethods.length - 1),
         ),
         style: IslamicTheme.textTheme.bodySmall?.copyWith(
           color: IslamicTheme.textSecondary,
@@ -372,7 +388,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
     setState(() {
       _prayerNotificationsEnabled = enabled;
     });
-    
+
     if (enabled) {
       final hasPermission = await _notificationService.requestPermissions();
       if (!hasPermission) {
@@ -383,7 +399,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
         return;
       }
     }
-    
+
     await _notificationService.setPrayerRemindersEnabled(enabled);
     await _saveSettings();
   }
@@ -402,6 +418,13 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
     await _saveSettings();
   }
 
+  Future<void> _setIslamicMidnight(bool enabled) async {
+    setState(() {
+      _islamicMidnightEnabled = enabled;
+    });
+    await _saveSettings();
+  }
+
   void _showCalculationMethodDialog() {
     showDialog(
       context: context,
@@ -410,7 +433,11 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: AppConstants.calculationMethods.values.toList().asMap().entries.map((entry) {
+            children: AppConstants.calculationMethods.values
+                .toList()
+                .asMap()
+                .entries
+                .map((entry) {
               return RadioListTile<int>(
                 title: Text(
                   entry.value,
@@ -433,7 +460,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
 
   void _showLanguageDialog() {
     const languages = ['English', 'বাংলা', 'العربية'];
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -476,7 +503,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => context.pop(),
-            child: const Text('Close', style: TextStyle(color: IslamicTheme.islamicGreen)),
+            child: const Text('Close',
+                style: TextStyle(color: IslamicTheme.islamicGreen)),
           ),
         ],
       ),
@@ -500,7 +528,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => context.pop(),
-            child: const Text('Close', style: TextStyle(color: IslamicTheme.islamicGreen)),
+            child: const Text('Close',
+                style: TextStyle(color: IslamicTheme.islamicGreen)),
           ),
         ],
       ),
@@ -519,7 +548,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => context.pop(),
-            child: const Text('OK', style: TextStyle(color: IslamicTheme.islamicGreen)),
+            child: const Text('OK',
+                style: TextStyle(color: IslamicTheme.islamicGreen)),
           ),
         ],
       ),
@@ -530,9 +560,9 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
     setState(() {
       _selectedCalculationMethod = method;
     });
-    
+
     // TODO: Wire calculation method change via repository-backed providers
-    
+
     await _saveSettings();
   }
 
@@ -541,7 +571,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
       _selectedLanguage = language;
     });
     await _saveSettings();
-    
+
     // TODO: Implement language change
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -556,7 +586,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Clear Cache'),
-        content: const Text('This will clear cached prayer times and other temporary data. Continue?'),
+        content: const Text(
+            'This will clear cached prayer times and other temporary data. Continue?'),
         actions: [
           TextButton(
             onPressed: () => context.pop(false),
@@ -569,7 +600,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
         ],
       ),
     );
-    
+
     if (confirmed == true) {
       // Clear cache logic here
       ScaffoldMessenger.of(context).showSnackBar(
@@ -594,9 +625,11 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
     try {
       final prefs = await SharedPreferences.getInstance();
       setState(() {
-        _prayerNotificationsEnabled = prefs.getBool('prayer_notifications') ?? true;
+        _prayerNotificationsEnabled =
+            prefs.getBool('prayer_notifications') ?? true;
         _prayerRemindersEnabled = prefs.getBool('prayer_reminders') ?? true;
         _dailyVersesEnabled = prefs.getBool('daily_verses') ?? true;
+        _islamicMidnightEnabled = prefs.getBool('islamic_midnight') ?? true;
         _selectedCalculationMethod = prefs.getInt('calculation_method') ?? 2;
         _selectedLanguage = prefs.getString('language') ?? 'English';
       });
@@ -611,6 +644,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
       await prefs.setBool('prayer_notifications', _prayerNotificationsEnabled);
       await prefs.setBool('prayer_reminders', _prayerRemindersEnabled);
       await prefs.setBool('daily_verses', _dailyVersesEnabled);
+      await prefs.setBool('islamic_midnight', _islamicMidnightEnabled);
       await prefs.setInt('calculation_method', _selectedCalculationMethod);
       await prefs.setString('language', _selectedLanguage);
     } catch (e) {

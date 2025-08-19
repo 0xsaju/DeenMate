@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../../../core/theme/app_colors.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import '../../../prayer_times/domain/entities/prayer_times.dart'
+import 'package:deen_mate/core/theme/app_colors.dart';
+import 'package:deen_mate/features/prayer_times/presentation/providers/prayer_times_providers.dart';
+import 'package:deen_mate/features/prayer_times/data/services/calculation_method_service.dart';
+import 'package:deen_mate/features/prayer_times/domain/entities/calculation_method.dart';
+import 'package:deen_mate/features/prayer_times/presentation/providers/notification_providers.dart'
+    show dailyNotificationSchedulerProvider;
+import 'package:deen_mate/features/prayer_times/domain/entities/prayer_calculation_settings.dart';
+import 'package:deen_mate/features/prayer_times/domain/entities/athan_settings.dart';
+import 'package:deen_mate/features/prayer_times/domain/entities/prayer_times.dart'
     as prayer_entities;
-import '../../../prayer_times/domain/entities/prayer_tracking.dart';
-import '../../../prayer_times/presentation/providers/prayer_times_providers.dart';
-import '../../../prayer_times/domain/entities/athan_settings.dart';
-import '../../../prayer_times/presentation/providers/notification_providers.dart' show dailyNotificationSchedulerProvider;
-import '../../../prayer_times/domain/entities/prayer_calculation_settings.dart';
+import 'package:deen_mate/features/prayer_times/domain/entities/prayer_tracking.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Home Screen (replaces old home) — shows live prayer times, countdown, etc.
 class HomeScreen extends ConsumerStatefulWidget {
@@ -24,6 +27,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     with TickerProviderStateMixin {
   AppColors get _colors =>
       Theme.of(context).extension<AppColors>() ?? AppColors.light;
+  CalculationMethodService get _methodService =>
+      CalculationMethodService.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -361,7 +366,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             child: currentAndNextPrayerAsync.when(
               data: (d) {
                 final pt = d.prayerTimes as prayer_entities.PrayerTimes;
-                final currentName = d.currentPrayer ?? '—';
+                final currentName = d.currentPrayer;
+
+                // Handle "No Active Prayer" state
+                if (currentName == null) {
+                  return _buildPrayerCard(
+                    title: 'No Active Prayer',
+                    prayerName: '—',
+                    time: '—',
+                    endTime: null,
+                    isCurrent: true,
+                    backgroundColor:
+                        Theme.of(context).extension<AppColors>()?.card ??
+                            Colors.white,
+                    silhouetteColor: const Color(0xFFCC6E3C),
+                  );
+                }
+
                 final currentTime =
                     _formatTime(_getPrayerTimeByName(pt, currentName), use24h);
                 final endTime = _formatTime(
@@ -530,52 +551,48 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     : [const Color(0xFFE6F2E7), const Color(0xFFF0F7EF)],
               ),
             ),
-            child: Stack(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // Skyline removed per request
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                          fontSize: 16 * scale,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF7F8C8D)),
-                    ),
-                    SizedBox(height: gapTop),
-                    Text(
-                      prayerName,
-                      style: TextStyle(
-                          fontSize: nameSize,
-                          fontWeight: FontWeight.w600,
-                          color:
-                              isCurrent ? _colors.accent : _colors.textPrimary),
-                    ),
-                    SizedBox(height: gapSmall),
-                    _buildTimeWithMeridiem(
-                      time,
-                      mainSize: 32 * scale,
-                      meridiemSize: 15 * scale,
-                    ),
-                    if (endTime != null) ...[
-                      SizedBox(height: gapTiny),
-                      _buildSecondaryInfo('End time - $endTime',
-                          fontSize: subtitleSize),
-                    ],
-                    if (azanTime != null) ...[
-                      SizedBox(height: (gapTiny - 1).clamp(0, 6).toDouble()),
-                      _buildSecondaryInfo('Azan - $azanTime',
-                          fontSize: subtitleSize),
-                    ],
-                    if (jamaatTime != null) ...[
-                      SizedBox(height: (gapTiny - 1).clamp(0, 6).toDouble()),
-                      _buildSecondaryInfo("Jama'at - $jamaatTime",
-                          fontSize: subtitleSize),
-                    ],
-                  ],
+                Text(
+                  title,
+                  style: TextStyle(
+                      fontSize: 16 * scale,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF7F8C8D)),
+                  overflow: TextOverflow.ellipsis,
                 ),
+                SizedBox(height: gapTop),
+                Text(
+                  prayerName,
+                  style: TextStyle(
+                      fontSize: nameSize,
+                      fontWeight: FontWeight.w600,
+                      color: isCurrent ? _colors.accent : _colors.textPrimary),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: gapSmall),
+                _buildTimeWithMeridiem(
+                  time,
+                  mainSize: 32 * scale,
+                  meridiemSize: 15 * scale,
+                ),
+                if (endTime != null) ...[
+                  SizedBox(height: gapTiny),
+                  _buildSecondaryInfo('End time - $endTime',
+                      fontSize: subtitleSize),
+                ],
+                if (azanTime != null) ...[
+                  SizedBox(height: (gapTiny - 1).clamp(0, 6).toDouble()),
+                  _buildSecondaryInfo('Azan - $azanTime',
+                      fontSize: subtitleSize),
+                ],
+                if (jamaatTime != null) ...[
+                  SizedBox(height: (gapTiny - 1).clamp(0, 6).toDouble()),
+                  _buildSecondaryInfo("Jama'at - $jamaatTime",
+                      fontSize: subtitleSize),
+                ],
               ],
             ),
           );
@@ -694,9 +711,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ),
           ],
         ),
+        overflow: TextOverflow.ellipsis,
       );
     }
-    return Text(text, style: TextStyle(fontSize: fontSize, color: labelColor));
+    return Text(
+      text,
+      style: TextStyle(fontSize: fontSize, color: labelColor),
+      overflow: TextOverflow.ellipsis,
+    );
   }
 
   Widget _buildSuhoorIftaarSection(
@@ -730,7 +752,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           .togglePrayer('fajr');
                       // Reschedule notifications for today after toggle
                       try {
-                        final scheduler = ref.read(dailyNotificationSchedulerProvider);
+                        final scheduler =
+                            ref.read(dailyNotificationSchedulerProvider);
                         await scheduler.scheduleToday();
                       } catch (_) {}
                     },
@@ -819,7 +842,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           .togglePrayer('maghrib');
                       // Reschedule notifications for today after toggle
                       try {
-                        final scheduler = ref.read(dailyNotificationSchedulerProvider);
+                        final scheduler =
+                            ref.read(dailyNotificationSchedulerProvider);
                         await scheduler.scheduleToday();
                       } catch (_) {}
                     },
@@ -864,11 +888,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             child: Consumer(builder: (context, ref, _) {
               final settingsAsync = ref.watch(prayerSettingsProvider);
               final ptAsync = ref.watch(currentPrayerTimesProvider);
-              final isOffline = ptAsync.maybeWhen(
-                data: (p) =>
-                    (p.metadata['source']?.toString().toLowerCase() ?? '')
-                        .contains('offline'),
-                orElse: () => false,
+              // Compute compact last-updated label and tooltip
+              String? lastUpdatedLabel;
+              String? lastUpdatedTooltip;
+              ptAsync.maybeWhen(
+                data: (p) {
+                  final dt = p.lastUpdated ?? p.date;
+                  final now = DateTime.now();
+                  final diff = now.difference(dt);
+                  if (diff.inMinutes < 1) {
+                    lastUpdatedLabel = 'now';
+                  } else if (diff.inHours < 1) {
+                    lastUpdatedLabel = '${diff.inMinutes}m';
+                  } else if (diff.inHours < 24) {
+                    final h = diff.inHours;
+                    final m = diff.inMinutes.remainder(60);
+                    lastUpdatedLabel = m > 0 ? '${h}h ${m}m' : '${h}h';
+                  } else {
+                    lastUpdatedLabel =
+                        DateFormat('MMM d, h:mm a').format(dt).toLowerCase();
+                  }
+                  lastUpdatedTooltip = 'Last updated: ' +
+                      DateFormat('MMM d, h:mm a').format(dt).toLowerCase();
+                  return null;
+                },
+                orElse: () => null,
               );
 
               return Row(
@@ -876,11 +920,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   Expanded(
                     child: settingsAsync.when(
                       data: (s) {
-                        final method = s.calculationMethod.toUpperCase();
-                        final school =
-                            s.madhab == Madhab.hanafi ? 'Hanafi' : 'Shafi';
+                        // Show full method display name
+                        final methodService =
+                            ref.read(calculationMethodServiceProvider);
+                        final methodEnum =
+                            methodService.getMethodById(s.calculationMethod) ??
+                                CalculationMethod.karachi;
+                        final methodDisplay = methodEnum.displayName;
                         return Text(
-                          '$method · $school · timings from AlAdhan',
+                          '$methodDisplay',
                           style: const TextStyle(
                               fontSize: 12, color: Color(0xFF7F8C8D)),
                           overflow: TextOverflow.ellipsis,
@@ -894,19 +942,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               fontSize: 12, color: Color(0xFF7F8C8D))),
                     ),
                   ),
-                  if (isOffline) ...[
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFB00020).withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: const Text(
-                        'Offline',
-                        style:
-                            TextStyle(fontSize: 11, color: Color(0xFFB00020)),
+                  if (lastUpdatedLabel != null) ...[
+                    const SizedBox(width: 6),
+                    Tooltip(
+                      message: lastUpdatedTooltip ?? '',
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2C3E50).withOpacity(0.06),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          'Updated: ' + lastUpdatedLabel!,
+                          style: const TextStyle(
+                              fontSize: 8, color: Color(0xFF2C3E50)),
+                        ),
                       ),
                     ),
                   ],
@@ -1061,7 +1112,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             .read(athanSettingsNotifierProvider.notifier)
                             .togglePrayer(prayerName);
                         try {
-                          final scheduler = ref.read(dailyNotificationSchedulerProvider);
+                          final scheduler =
+                              ref.read(dailyNotificationSchedulerProvider);
                           await scheduler.scheduleToday();
                         } catch (_) {}
                       },
@@ -1330,7 +1382,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       case 'maghrib':
         return pt.isha.time.subtract(gap);
       case 'isha':
-        return pt.fajr.time.subtract(gap);
+        // Isha ends at Islamic midnight, not at Fajr
+        return pt.midnight.time;
     }
     return null;
   }

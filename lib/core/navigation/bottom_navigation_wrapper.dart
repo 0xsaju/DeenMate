@@ -26,10 +26,13 @@ class BottomNavigationWrapper extends StatefulWidget {
 class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: widget.child,
-      bottomNavigationBar:
-          _shouldShowBottomNav() ? _buildBottomNavigation() : null,
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        body: widget.child,
+        bottomNavigationBar:
+            _shouldShowBottomNav() ? _buildBottomNavigation() : null,
+      ),
     );
   }
 
@@ -155,5 +158,42 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
         context.go('/more');
         break;
     }
+  }
+
+  Future<bool> _onWillPop() async {
+    final go = GoRouter.of(context);
+    // If we can pop a deeper route, pop and do not exit
+    if (go.canPop()) {
+      go.pop();
+      return false;
+    }
+
+    // If not on Home tab, navigate to Home instead of exiting
+    final isOnHome = widget.currentLocation == AppRouter.home ||
+        widget.currentLocation == AppRouter.prayerTimes;
+    if (!isOnHome) {
+      context.go(AppRouter.home);
+      return false;
+    }
+
+    // We are on Home and cannot pop -> confirm exit
+    final shouldExit = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Exit DeenMate'),
+        content: const Text('Are you sure you want to exit the app?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Exit'),
+          ),
+        ],
+      ),
+    );
+    return shouldExit ?? false;
   }
 }

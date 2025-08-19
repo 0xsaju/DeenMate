@@ -21,11 +21,13 @@ import '../../domain/entities/prayer_times.dart';
 class PrayerNotificationService {
   factory PrayerNotificationService() => _instance;
   PrayerNotificationService._internal();
-  static final PrayerNotificationService _instance = PrayerNotificationService._internal();
+  static final PrayerNotificationService _instance =
+      PrayerNotificationService._internal();
 
-  final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
   final AudioPlayer _audioPlayer = AudioPlayer();
-  
+
   bool _isInitialized = false;
   bool _isAthanPlaying = false;
 
@@ -49,7 +51,7 @@ class PrayerNotificationService {
       await _initializeLocalNotifications();
       // Firebase Cloud Messaging not required for local Azan scheduling
       await _requestPermissions();
-      
+
       _isInitialized = true;
     } catch (e) {
       throw Failure.notificationScheduleFailure(
@@ -61,8 +63,9 @@ class PrayerNotificationService {
   /// Initialize local notifications
   Future<void> _initializeLocalNotifications() async {
     // Android initialization
-    const androidInitialization = AndroidInitializationSettings('@mipmap/ic_launcher');
-    
+    const androidInitialization =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
     // iOS initialization
     const iosInitialization = DarwinInitializationSettings();
 
@@ -94,7 +97,7 @@ class PrayerNotificationService {
         'Prayer Reminders',
         description: 'Notifications for prayer time reminders',
         importance: Importance.high,
-        sound: RawResourceAndroidNotificationSound('athan_short'),
+        playSound: true, // Use default system sound
       ),
     );
 
@@ -149,8 +152,10 @@ class PrayerNotificationService {
   ) async {
     await _ensureInitialized();
 
-    // Cancel existing notifications for the day
-    await cancelDailyNotifications(prayerTimes.date);
+    // Cancel existing notifications for the day to avoid duplicates
+    try {
+      await cancelDailyNotifications(prayerTimes.date);
+    } catch (_) {}
 
     if (!athanSettings.isEnabled) return;
 
@@ -165,9 +170,10 @@ class PrayerNotificationService {
     for (var i = 0; i < prayers.length; i++) {
       final prayer = prayers[i];
       final prayerName = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'][i];
-      
+
       // Check if this prayer is enabled in settings
-      if (athanSettings.prayerSpecificSettings?[prayerName.toLowerCase()] == false) {
+      if (athanSettings.prayerSpecificSettings?[prayerName.toLowerCase()] ==
+          false) {
         continue;
       }
 
@@ -197,8 +203,9 @@ class PrayerNotificationService {
 
     // Schedule reminder notification (before prayer time)
     if (settings.reminderMinutes > 0) {
-      final reminderTime = prayer.time.subtract(Duration(minutes: settings.reminderMinutes));
-      
+      final reminderTime =
+          prayer.time.subtract(Duration(minutes: settings.reminderMinutes));
+
       if (reminderTime.isAfter(DateTime.now())) {
         await _localNotifications.zonedSchedule(
           notificationId,
@@ -209,7 +216,7 @@ class PrayerNotificationService {
             channelId: _prayerReminderChannel,
             importance: Importance.high,
             priority: Priority.high,
-            sound: 'prayer_reminder',
+            sound: null, // Use default system sound
           ),
           androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
           payload: 'prayer_reminder:$prayerName:${date.toIso8601String()}',
@@ -233,12 +240,10 @@ class PrayerNotificationService {
             const AndroidNotificationAction(
               'MARK_COMPLETED',
               'Mark as Prayed',
-              icon: DrawableResourceAndroidBitmap('@drawable/ic_check'),
             ),
             const AndroidNotificationAction(
               'SNOOZE_5',
               'Remind in 5 min',
-              icon: DrawableResourceAndroidBitmap('@drawable/ic_snooze'),
             ),
           ],
         ),
@@ -251,7 +256,8 @@ class PrayerNotificationService {
   /// Schedule Qiyam (late night prayer) reminder
   Future<void> _scheduleQiyamReminder(PrayerTimes prayerTimes) async {
     // Calculate last third of the night
-    final nightDuration = prayerTimes.fajr.time.difference(prayerTimes.isha.time);
+    final nightDuration =
+        prayerTimes.fajr.time.difference(prayerTimes.isha.time);
     final lastThirdStart = prayerTimes.isha.time.add(
       Duration(milliseconds: (nightDuration.inMilliseconds * 2 / 3).round()),
     );
@@ -265,7 +271,7 @@ class PrayerNotificationService {
         _buildNotificationDetails(
           channelId: _islamicEventsChannel,
           importance: Importance.defaultImportance,
-          sound: 'qiyam_reminder',
+          sound: null, // Use default system sound
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         payload: 'qiyam:${prayerTimes.date.toIso8601String()}',
@@ -274,7 +280,8 @@ class PrayerNotificationService {
   }
 
   /// Schedule Jumu'ah (Friday prayer) reminder
-  Future<void> scheduleJumuahReminder(DateTime fridayDate, TimeOfDay jumuahTime) async {
+  Future<void> scheduleJumuahReminder(
+      DateTime fridayDate, TimeOfDay jumuahTime) async {
     await _ensureInitialized();
 
     final jumuahDateTime = DateTime(
@@ -297,7 +304,7 @@ class PrayerNotificationService {
         _buildNotificationDetails(
           channelId: _islamicEventsChannel,
           importance: Importance.high,
-          sound: 'jumuah_reminder',
+          sound: null, // Use default system sound
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         payload: 'jumuah:${fridayDate.toIso8601String()}',
@@ -306,7 +313,8 @@ class PrayerNotificationService {
   }
 
   /// Schedule Islamic event notifications
-  Future<void> scheduleIslamicEventNotifications(List<IslamicEvent> events) async {
+  Future<void> scheduleIslamicEventNotifications(
+      List<IslamicEvent> events) async {
     await _ensureInitialized();
 
     for (final event in events) {
@@ -319,10 +327,11 @@ class PrayerNotificationService {
           _buildNotificationDetails(
             channelId: _islamicEventsChannel,
             importance: Importance.defaultImportance,
-            sound: 'islamic_event',
+            sound: null, // Use default system sound
           ),
           androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-          payload: 'islamic_event:${event.name}:${event.date.toIso8601String()}',
+          payload:
+              'islamic_event:${event.name}:${event.date.toIso8601String()}',
         );
       }
     }
@@ -334,25 +343,37 @@ class PrayerNotificationService {
 
     try {
       _isAthanPlaying = true;
-      
+
       // Load asset via manifest resolution and play from temp file (robust on all platforms)
       final manifestJson = await rootBundle.loadString('AssetManifest.json');
-      final Map<String, dynamic> manifest = jsonDecode(manifestJson) as Map<String, dynamic>;
+      final Map<String, dynamic> manifest =
+          jsonDecode(manifestJson) as Map<String, dynamic>;
       final wantedSuffix = '/${muadhinVoice}_athan.mp3';
-      final matches = manifest.keys.where((k) => k.endsWith(wantedSuffix)).toList();
+      final matches =
+          manifest.keys.where((k) => k.endsWith(wantedSuffix)).toList();
       ByteData? bytes;
       if (matches.isNotEmpty) {
         for (final k in matches) {
-          try { bytes = await rootBundle.load(k); break; } catch (_) {}
+          try {
+            bytes = await rootBundle.load(k);
+            break;
+          } catch (_) {}
         }
       }
       if (bytes == null) {
-        for (final path in ['assets/audio/athan/${muadhinVoice}_athan.mp3','audio/athan/${muadhinVoice}_athan.mp3']) {
-          try { bytes = await rootBundle.load(path); break; } catch (_) {}
+        for (final path in [
+          'assets/audio/athan/${muadhinVoice}_athan.mp3',
+          'audio/athan/${muadhinVoice}_athan.mp3'
+        ]) {
+          try {
+            bytes = await rootBundle.load(path);
+            break;
+          } catch (_) {}
         }
       }
       if (bytes == null) {
-        throw Failure.audioPlaybackFailure(message: 'Athan asset not found for $muadhinVoice');
+        throw Failure.audioPlaybackFailure(
+            message: 'Athan asset not found for $muadhinVoice');
       }
       final tmp = await getTemporaryDirectory();
       final f = File('${tmp.path}/${muadhinVoice}_athan.mp3');
@@ -367,7 +388,6 @@ class PrayerNotificationService {
           _isAthanPlaying = false;
         }
       });
-
     } catch (e) {
       _isAthanPlaying = false;
       throw Failure.audioPlaybackFailure(
@@ -427,10 +447,11 @@ class PrayerNotificationService {
         importance: importance,
         priority: priority,
         playSound: playSound,
-        sound: sound != null ? RawResourceAndroidNotificationSound(sound) : null,
+        sound:
+            sound != null ? RawResourceAndroidNotificationSound(sound) : null,
         vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
         icon: '@drawable/ic_notification',
-        largeIcon: const DrawableResourceAndroidBitmap('@drawable/ic_launcher_large'),
+        largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
         actions: actions,
         styleInformation: const BigTextStyleInformation(''),
         when: DateTime.now().millisecondsSinceEpoch,
@@ -455,13 +476,18 @@ class PrayerNotificationService {
   /// Get prayer message with Islamic context
   String _getPrayerMessage(String prayerName) {
     final messages = {
-      'Fajr': "It's time for Fajr prayer. Begin your day with remembrance of Allah.",
-      'Dhuhr': "It's time for Dhuhr prayer. Take a break and connect with Allah.",
-      'Asr': "It's time for Asr prayer. The afternoon prayer brings peace to the soul.",
-      'Maghrib': "It's time for Maghrib prayer. As the sun sets, remember Allah's blessings.",
-      'Isha': "It's time for Isha prayer. End your day in gratitude and worship.",
+      'Fajr':
+          "It's time for Fajr prayer. Begin your day with remembrance of Allah.",
+      'Dhuhr':
+          "It's time for Dhuhr prayer. Take a break and connect with Allah.",
+      'Asr':
+          "It's time for Asr prayer. The afternoon prayer brings peace to the soul.",
+      'Maghrib':
+          "It's time for Maghrib prayer. As the sun sets, remember Allah's blessings.",
+      'Isha':
+          "It's time for Isha prayer. End your day in gratitude and worship.",
     };
-    
+
     return messages[prayerName] ?? "It's time for $prayerName prayer.";
   }
 
@@ -555,7 +581,7 @@ class PrayerNotificationService {
         _buildNotificationDetails(
           channelId: _islamicEventsChannel,
           importance: Importance.high,
-          sound: 'suhur_reminder',
+          sound: null, // Use default system sound
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         payload: 'suhur:${suhurTime.toIso8601String()}',
@@ -576,7 +602,7 @@ class PrayerNotificationService {
         _buildNotificationDetails(
           channelId: _islamicEventsChannel,
           importance: Importance.high,
-          sound: 'iftar_reminder',
+          sound: null, // Use default system sound
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         payload: 'iftar:${iftarTime.toIso8601String()}',
@@ -598,7 +624,6 @@ class PrayerNotificationService {
 
 /// Islamic Event class for scheduling special notifications
 class IslamicEvent {
-
   const IslamicEvent({
     required this.name,
     required this.description,

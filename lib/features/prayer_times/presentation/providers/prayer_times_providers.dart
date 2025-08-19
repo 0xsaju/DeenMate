@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/providers/network_providers.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 // import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -165,8 +167,8 @@ final prayerSettingsProvider =
   return PrayerCalculationSettings(
     calculationMethod: method,
     madhab: PrayerTimesSettingsNotifier._madhabFromStringStatic(madhhabString),
-    // Regional convention: Asr/Isha often shown one minute earlier
-    adjustments: const {'asr': -1, 'isha': -1},
+    // No adjustments - use exact API times
+    adjustments: const {},
   );
 });
 
@@ -199,7 +201,8 @@ final currentPrayerTimesProvider = FutureProvider<PrayerTimes>((ref) async {
         calculationMethod: method,
         madhab:
             PrayerTimesSettingsNotifier._madhabFromStringStatic(madhhabString),
-        adjustments: const {'asr': -1, 'isha': -1},
+        // No adjustments - use exact API times
+        adjustments: const {},
       );
       final result = await repository.getPrayerTimes(
         date: DateTime.now(),
@@ -225,9 +228,32 @@ final currentPrayerTimesProvider = FutureProvider<PrayerTimes>((ref) async {
       },
     );
   } catch (e) {
-    // If any error occurs, throw the error instead of using mock data
+    // If online fetch fails, try to serve cached data immediately
     print('PrayerTimesProvider: Error getting prayer times: $e');
-    throw e;
+    final repo = ref.read(prayerTimesRepositoryProvider);
+    final preferred = await repo.getPreferredLocation();
+    final preferredLoc = preferred.fold<Location?>(
+      (_) => null,
+      (loc) => loc,
+    );
+    if (preferredLoc != null) {
+      final cachedEither = await repo.getCachedPrayerTimes(
+          date: DateTime.now(), location: preferredLoc);
+      final cached =
+          cachedEither.fold<List<PrayerTimes>>((_) => const [], (list) => list);
+      if (cached.isNotEmpty) {
+        final today = DateTime.now();
+        final match = cached.firstWhere(
+          (pt) =>
+              pt.date.year == today.year &&
+              pt.date.month == today.month &&
+              pt.date.day == today.day,
+          orElse: () => cached.first,
+        );
+        return match;
+      }
+    }
+    rethrow;
   }
 });
 
@@ -241,7 +267,13 @@ final cachedCurrentPrayerTimesProvider =
       (_) => null,
       (loc) => loc,
     );
-    if (preferredLoc == null) return null;
+    if (preferredLoc == null) {
+      // Fallback: return most recent cached day if no preferred location is set
+      final storage = ref.read(prayerTimesLocalStorageProvider);
+      await storage.initialize();
+      final mostRecent = await storage.getMostRecentPrayerTimes();
+      return mostRecent;
+    }
 
     final now = DateTime.now();
     final cachedEither =
@@ -402,7 +434,9 @@ final alertBannerStateProvider = StreamProvider<AlertBannerState>((ref) async* {
 
         final zenithHalf =
             Duration(minutes: _kZenithForbiddenWindow.inMinutes ~/ 2);
-        final DateTime zenithStart = dhuhr.subtract(zenithHalf);
+        // Extend the forbidden window check to include 2 minutes before for smooth UX
+        final DateTime zenithStart =
+            dhuhr.subtract(zenithHalf).subtract(const Duration(minutes: 2));
         final DateTime zenithEnd = dhuhr.add(zenithHalf);
 
         final DateTime sunsetStart = maghrib.subtract(_kSunsetForbiddenWindow);
@@ -415,10 +449,19 @@ final alertBannerStateProvider = StreamProvider<AlertBannerState>((ref) async* {
           );
         }
         if (now.isAfter(zenithStart) && now.isBefore(zenithEnd)) {
-          return const AlertBannerState(
-            kind: AlertKind.forbiddenZenith,
-            message: 'Salah is forbidden during solar noon (zenith)',
-          );
+          // Check if we're in the pre-forbidden period (buffer zone)
+          final actualZenithStart = dhuhr.subtract(zenithHalf);
+          if (now.isBefore(actualZenithStart)) {
+            return const AlertBannerState(
+              kind: AlertKind.forbiddenZenith,
+              message: 'Approaching prohibited prayer time around noon',
+            );
+          } else {
+            return const AlertBannerState(
+              kind: AlertKind.forbiddenZenith,
+              message: 'Salah is forbidden during solar noon (zenith)',
+            );
+          }
         }
         if (now.isAfter(sunsetStart) && now.isBefore(sunsetEnd)) {
           return const AlertBannerState(
@@ -448,7 +491,8 @@ final alertBannerStateProvider = StreamProvider<AlertBannerState>((ref) async* {
 
         if (currentName != null) {
           final DateTime? rawEnd = _getPrayerEndTimeFor(pt, currentName);
-          final DateTime? endTime = rawEnd == null ? null : _rolloverIfBefore(rawEnd, now);
+          final DateTime? endTime =
+              rawEnd == null ? null : _rolloverIfBefore(rawEnd, now);
           if (endTime != null && now.isBefore(endTime)) {
             final remaining = endTime.difference(now);
             return AlertBannerState(
@@ -458,6 +502,17 @@ final alertBannerStateProvider = StreamProvider<AlertBannerState>((ref) async* {
               targetTime: endTime,
             );
           }
+        }
+
+        // If no current prayer (No Active Prayer state), show countdown to next prayer
+        if (currentName == null && nextName != null && nextTime != null) {
+          final remaining = nextTime.difference(now);
+          return AlertBannerState(
+            kind: AlertKind.upcoming,
+            prayerName: nextName,
+            remaining: remaining.isNegative ? Duration.zero : remaining,
+            targetTime: nextTime,
+          );
         }
 
         // Outside the 15-min upcoming window and not inside a current prayer
@@ -507,27 +562,43 @@ final alertBannerStateProvider = StreamProvider<AlertBannerState>((ref) async* {
             }
           }
 
-        // Neutral fallback when neither upcoming nor remaining can be determined
-        // Prefer showing remaining Isha until Fajr during the night as a safe default
-        final DateTime fajr = _rolloverIfBefore(pt.fajr.time, now);
-        if (now.isBefore(fajr)) {
-          final remaining = fajr.difference(now);
-          return AlertBannerState(
-            kind: AlertKind.remaining,
-            prayerName: 'Isha',
-            remaining: remaining.isNegative ? Duration.zero : remaining,
-            targetTime: fajr,
+          // If no current prayer (No Active Prayer state), show countdown to next prayer
+          if (currentName == null && nextName != null && nextTime != null) {
+            final remaining = nextTime.difference(now);
+            return AlertBannerState(
+              kind: AlertKind.upcoming,
+              prayerName: nextName,
+              remaining: remaining.isNegative ? Duration.zero : remaining,
+              targetTime: nextTime,
+            );
+          }
+
+          // Neutral fallback when neither upcoming nor remaining can be determined
+          // During night hours (after Isha until Fajr), show Isha remaining until Fajr
+          final DateTime fajr = _rolloverIfBefore(pt.fajr.time, now);
+          final DateTime isha = pt.isha.time;
+
+          // Check if we're in the night period (after Isha until Fajr)
+          if (now.isAfter(isha) && now.isBefore(fajr)) {
+            final remaining = fajr.difference(now);
+            return AlertBannerState(
+              kind: AlertKind.remaining,
+              prayerName: 'Isha',
+              remaining: remaining.isNegative ? Duration.zero : remaining,
+              targetTime: fajr,
+            );
+          }
+          return const AlertBannerState(
+            kind: AlertKind.upcoming,
+            prayerName: null,
+            remaining: Duration.zero,
           );
-        }
-        return const AlertBannerState(
-          kind: AlertKind.upcoming,
-          prayerName: null,
-          remaining: Duration.zero,
-        );
         }
 
         return const AlertBannerState(
-            kind: AlertKind.upcoming, prayerName: null, remaining: Duration.zero);
+            kind: AlertKind.upcoming,
+            prayerName: null,
+            remaining: Duration.zero);
       },
     );
   }
@@ -548,9 +619,80 @@ final currentAndNextPrayerOfflineAwareProvider =
     final pt = await ref.read(currentPrayerTimesProvider.future);
     final now = DateTime.now();
 
-    // If we are before Fajr, current is Isha (from yesterday), next is Fajr
+    // Prayer times are now handled by explicit state machine logic below
+
+    // State machine logic for prayer times
+    // If we are before Fajr (edge case after midnight), show "No Active Prayer"
     if (now.isBefore(pt.fajr.time)) {
       final remaining = pt.fajr.time.difference(now);
+      return PrayerDetail(
+        currentPrayer: null, // No active prayer
+        nextPrayer: 'Fajr',
+        prayerTimes: pt,
+        timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+      );
+    }
+
+    // If now is between Fajr start and Sunrise → Current = Fajr, Next = Dhuhr
+    if (now.isAfter(pt.fajr.time) && now.isBefore(pt.sunrise.time)) {
+      final remaining = pt.dhuhr.time.difference(now);
+      return PrayerDetail(
+        currentPrayer: 'Fajr',
+        nextPrayer: 'Dhuhr',
+        prayerTimes: pt,
+        timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+      );
+    }
+
+    // If now is between Sunrise and Dhuhr start → No Active Prayer, Next = Dhuhr
+    if (now.isAfter(pt.sunrise.time) && now.isBefore(pt.dhuhr.time)) {
+      final remaining = pt.dhuhr.time.difference(now);
+      return PrayerDetail(
+        currentPrayer: null, // No active prayer
+        nextPrayer: 'Dhuhr',
+        prayerTimes: pt,
+        timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+      );
+    }
+
+    // If now is between Dhuhr start and Asr start → Current = Dhuhr, Next = Asr
+    if (now.isAfter(pt.dhuhr.time) && now.isBefore(pt.asr.time)) {
+      final remaining = pt.asr.time.difference(now);
+
+      return PrayerDetail(
+        currentPrayer: 'Dhuhr',
+        nextPrayer: 'Asr',
+        prayerTimes: pt,
+        timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+      );
+    }
+
+    // If now is between Asr start and Maghrib start → Current = Asr, Next = Maghrib
+    if (now.isAfter(pt.asr.time) && now.isBefore(pt.maghrib.time)) {
+      final remaining = pt.maghrib.time.difference(now);
+      return PrayerDetail(
+        currentPrayer: 'Asr',
+        nextPrayer: 'Maghrib',
+        prayerTimes: pt,
+        timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+      );
+    }
+
+    // If now is between Maghrib start and Isha start → Current = Maghrib, Next = Isha
+    if (now.isAfter(pt.maghrib.time) && now.isBefore(pt.isha.time)) {
+      final remaining = pt.isha.time.difference(now);
+      return PrayerDetail(
+        currentPrayer: 'Maghrib',
+        nextPrayer: 'Isha',
+        prayerTimes: pt,
+        timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+      );
+    }
+
+    // If now is between Isha start and next day's Fajr start → Current = Isha, Next = Fajr
+    if (now.isAfter(pt.isha.time)) {
+      final nextFajr = pt.fajr.time.add(const Duration(days: 1));
+      final remaining = nextFajr.difference(now);
       return PrayerDetail(
         currentPrayer: 'Isha',
         nextPrayer: 'Fajr',
@@ -559,53 +701,9 @@ final currentAndNextPrayerOfflineAwareProvider =
       );
     }
 
-    // Build ordered list with Fajr wrapped to next day for proper ordering
-    final times = <String, DateTime>{
-      'Fajr': pt.fajr.time,
-      'Dhuhr': pt.dhuhr.time,
-      'Asr': pt.asr.time,
-      'Maghrib': pt.maghrib.time,
-      'Isha': pt.isha.time,
-    };
-
-    final fajrWrapped = pt.fajr.time.isBefore(now)
-        ? pt.fajr.time.add(const Duration(days: 1))
-        : pt.fajr.time;
-    times['Fajr'] = fajrWrapped;
-
-    final ordered = times.entries.toList()
-      ..sort((a, b) => a.value.compareTo(b.value));
-
-    String current = 'Isha';
-    String next = 'Fajr';
-
-    for (var i = 0; i < ordered.length; i++) {
-      final name = ordered[i].key;
-      final time = ordered[i].value;
-      final DateTime? end =
-          i < ordered.length - 1 ? ordered[i + 1].value : null;
-      if (now.isAfter(time) && (end == null || now.isBefore(end))) {
-        current = name;
-        next = i < ordered.length - 1 ? ordered[i + 1].key : 'Fajr';
-        break;
-      }
-      if (now.isBefore(time)) {
-        current = 'Isha';
-        next = name;
-        break;
-      }
-    }
-
-    final DateTime? nextTime = _getPrayerTimeByName(pt, next);
-    final remaining =
-        nextTime != null ? nextTime.difference(now) : Duration.zero;
-
-    return PrayerDetail(
-      currentPrayer: current,
-      nextPrayer: next,
-      prayerTimes: pt,
-      timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
-    );
+    // All cases should be handled by the state machine above
+    // If we reach here, something went wrong
+    throw Exception('Prayer time logic error: no matching time range found');
   } catch (_) {
     // Fallback: derive from cached prayer times if available
     final cached = await ref.read(cachedCurrentPrayerTimesProvider.future);
@@ -613,46 +711,90 @@ final currentAndNextPrayerOfflineAwareProvider =
       rethrow;
     }
     final now = DateTime.now();
-    final times = <String, DateTime>{
-      'Fajr': cached.fajr.time,
-      'Dhuhr': cached.dhuhr.time,
-      'Asr': cached.asr.time,
-      'Maghrib': cached.maghrib.time,
-      'Isha': cached.isha.time,
-    };
-    final fajrWrapped = cached.fajr.time.isBefore(now)
-        ? cached.fajr.time.add(const Duration(days: 1))
-        : cached.fajr.time;
-    times['Fajr'] = fajrWrapped;
-    final ordered = times.entries.toList()
-      ..sort((a, b) => a.value.compareTo(b.value));
-    String current = 'Isha';
-    String next = 'Fajr';
-    for (var i = 0; i < ordered.length; i++) {
-      final name = ordered[i].key;
-      final time = ordered[i].value;
-      final DateTime? end =
-          i < ordered.length - 1 ? ordered[i + 1].value : null;
-      if (now.isAfter(time) && (end == null || now.isBefore(end))) {
-        current = name;
-        next = i < ordered.length - 1 ? ordered[i + 1].key : 'Fajr';
-        break;
-      }
-      if (now.isBefore(time)) {
-        current = 'Isha';
-        next = name;
-        break;
-      }
+
+    // State machine logic for cached prayer times (same as above)
+    // If we are before Fajr (edge case after midnight), show "No Active Prayer"
+    if (now.isBefore(cached.fajr.time)) {
+      final remaining = cached.fajr.time.difference(now);
+      return PrayerDetail(
+        currentPrayer: null, // No active prayer
+        nextPrayer: 'Fajr',
+        prayerTimes: cached,
+        timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+      );
     }
-    final DateTime? nextTime = _getPrayerTimeByName(cached, next);
-    final remaining =
-        nextTime != null ? nextTime.difference(now) : Duration.zero;
-    return PrayerDetail(
-      currentPrayer: current,
-      nextPrayer: next,
-      prayerTimes: cached,
-      timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
-    );
+
+    // If now is between Fajr start and Sunrise → Current = Fajr, Next = Dhuhr
+    if (now.isAfter(cached.fajr.time) && now.isBefore(cached.sunrise.time)) {
+      final remaining = cached.dhuhr.time.difference(now);
+      return PrayerDetail(
+        currentPrayer: 'Fajr',
+        nextPrayer: 'Dhuhr',
+        prayerTimes: cached,
+        timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+      );
+    }
+
+    // If now is between Sunrise and Dhuhr start → No Active Prayer, Next = Dhuhr
+    if (now.isAfter(cached.sunrise.time) && now.isBefore(cached.dhuhr.time)) {
+      final remaining = cached.dhuhr.time.difference(now);
+      return PrayerDetail(
+        currentPrayer: null, // No active prayer
+        nextPrayer: 'Dhuhr',
+        prayerTimes: cached,
+        timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+      );
+    }
+
+    // If now is between Dhuhr start and Asr start → Current = Dhuhr, Next = Asr
+    if (now.isAfter(cached.dhuhr.time) && now.isBefore(cached.asr.time)) {
+      final remaining = cached.asr.time.difference(now);
+      return PrayerDetail(
+        currentPrayer: 'Dhuhr',
+        nextPrayer: 'Asr',
+        prayerTimes: cached,
+        timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+      );
+    }
+
+    // If now is between Asr start and Maghrib start → Current = Asr, Next = Maghrib
+    if (now.isAfter(cached.asr.time) && now.isBefore(cached.maghrib.time)) {
+      final remaining = cached.maghrib.time.difference(now);
+      return PrayerDetail(
+        currentPrayer: 'Asr',
+        nextPrayer: 'Maghrib',
+        prayerTimes: cached,
+        timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+      );
+    }
+
+    // If now is between Maghrib start and Isha start → Current = Maghrib, Next = Isha
+    if (now.isAfter(cached.maghrib.time) && now.isBefore(cached.isha.time)) {
+      final remaining = cached.isha.time.difference(now);
+      return PrayerDetail(
+        currentPrayer: 'Maghrib',
+        nextPrayer: 'Isha',
+        prayerTimes: cached,
+        timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+      );
+    }
+
+    // If now is between Isha start and next day's Fajr start → Current = Isha, Next = Fajr
+    if (now.isAfter(cached.isha.time)) {
+      final nextFajr = cached.fajr.time.add(const Duration(days: 1));
+      final remaining = nextFajr.difference(now);
+      return PrayerDetail(
+        currentPrayer: 'Isha',
+        nextPrayer: 'Fajr',
+        prayerTimes: cached,
+        timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+      );
+    }
+
+    // All cases should be handled by the state machine above
+    // If we reach here, something went wrong
+    throw Exception(
+        'Cached prayer time logic error: no matching time range found');
   }
 });
 
@@ -973,6 +1115,25 @@ final prayerTimesMidnightRefreshProvider = Provider<void>((ref) {
   ref.onDispose(() {
     timer?.cancel();
   });
+});
+
+/// Revalidate prayer times when network becomes available
+final prayerTimesConnectivityRefreshProvider = Provider<void>((ref) {
+  ref.listen<AsyncValue<List<ConnectivityResult>>>(
+    connectivityStreamProvider,
+    (previous, next) {
+      if (!next.hasValue) return;
+      final results = next.value ?? const <ConnectivityResult>[];
+      final hasNetwork = results.any((r) =>
+          r == ConnectivityResult.wifi ||
+          r == ConnectivityResult.mobile ||
+          r == ConnectivityResult.ethernet);
+      if (hasNetwork) {
+        ref.invalidate(currentPrayerTimesProvider);
+        ref.invalidate(currentAndNextPrayerProvider);
+      }
+    },
+  );
 });
 
 // Prayer Completion State Notifier

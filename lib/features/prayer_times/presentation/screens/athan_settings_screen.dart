@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/navigation/shell_wrapper.dart' show EnhancedAppRouter;
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/islamic_utils.dart' as islamic_utils;
@@ -16,7 +18,8 @@ class AthanSettingsScreen extends ConsumerStatefulWidget {
   const AthanSettingsScreen({super.key});
 
   @override
-  ConsumerState<AthanSettingsScreen> createState() => _AthanSettingsScreenState();
+  ConsumerState<AthanSettingsScreen> createState() =>
+      _AthanSettingsScreenState();
 }
 
 class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
@@ -42,37 +45,48 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
     final athanSettingsAsync = ref.watch(athanSettingsProvider);
     final permissionsState = ref.watch(notificationPermissionsProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Athan & Notifications'),
-        backgroundColor: AppTheme.lightTheme.colorScheme.primary,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          indicatorColor: Colors.white,
-          tabs: const [
-            Tab(icon: Icon(Icons.volume_up), text: 'Athan'),
-            Tab(icon: Icon(Icons.notifications), text: 'Prayers'),
-            Tab(icon: Icon(Icons.settings), text: 'Advanced'),
-            Tab(icon: Icon(Icons.nightlight), text: 'Ramadan'),
-          ],
+    return WillPopScope(
+      onWillPop: () async {
+        // Navigate back to More screen instead of exiting the app
+        context.go(EnhancedAppRouter.more);
+        return false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Athan & Notifications'),
+          backgroundColor: AppTheme.lightTheme.colorScheme.primary,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.go(EnhancedAppRouter.more),
+          ),
+          bottom: TabBar(
+            controller: _tabController,
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white70,
+            indicatorColor: Colors.white,
+            tabs: const [
+              Tab(icon: Icon(Icons.volume_up), text: 'Athan'),
+              Tab(icon: Icon(Icons.notifications), text: 'Prayers'),
+              Tab(icon: Icon(Icons.settings), text: 'Advanced'),
+              Tab(icon: Icon(Icons.nightlight), text: 'Ramadan'),
+            ],
+          ),
         ),
-      ),
-      body: athanSettingsAsync.when(
-        data: (settings) => TabBarView(
-          controller: _tabController,
-          children: [
-            _buildAthanTab(settings),
-            _buildPrayersTab(settings),
-            _buildAdvancedTab(settings, permissionsState),
-            _buildRamadanTab(settings),
-          ],
+        body: athanSettingsAsync.when(
+          data: (settings) => TabBarView(
+            controller: _tabController,
+            children: [
+              _buildAthanTab(settings),
+              _buildPrayersTab(settings),
+              _buildAdvancedTab(settings, permissionsState),
+              _buildRamadanTab(settings),
+            ],
+          ),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stack) => _buildErrorView(error),
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => _buildErrorView(error),
       ),
     );
   }
@@ -99,7 +113,9 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
           MuadhinSelectorWidget(
             selectedVoice: settings.muadhinVoice,
             onVoiceChanged: (voice) {
-              ref.read(athanSettingsProvider.notifier).updateMuadhinVoice(voice);
+              ref
+                  .read(athanSettingsProvider.notifier)
+                  .updateMuadhinVoice(voice);
             },
           ),
           const SizedBox(height: 24),
@@ -140,6 +156,43 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
           ),
           const SizedBox(height: 16),
 
+          // Minimal inline exact-alarm prompt (shown only if needed)
+          Consumer(builder: (context, ref, _) {
+            final perms = ref.watch(notificationPermissionsProvider);
+            if (perms.exactAlarmPermission) {
+              return const SizedBox.shrink();
+            }
+            return Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2C3E50).withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.schedule,
+                      size: 18, color: Color(0xFF2C3E50)),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Text(
+                      'Precise timing recommended for Athan',
+                      style: TextStyle(fontSize: 13),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      await ref
+                          .read(notificationPermissionsProvider.notifier)
+                          .requestExactAlarmPermission();
+                    },
+                    child: const Text('Grant'),
+                  ),
+                ],
+              ),
+            );
+          }),
+          const SizedBox(height: 16),
+
           // Reminder Time Selector
           _buildReminderTimeSelector(settings),
           const SizedBox(height: 24),
@@ -155,7 +208,8 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
     );
   }
 
-  Widget _buildAdvancedTab(AthanSettings settings, NotificationPermissionsState permissions) {
+  Widget _buildAdvancedTab(
+      AthanSettings settings, NotificationPermissionsState permissions) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -245,7 +299,7 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: settings.isEnabled 
+              color: settings.isEnabled
                   ? AppTheme.lightTheme.colorScheme.primary
                   : Colors.grey.withOpacity(0.3),
               borderRadius: BorderRadius.circular(12),
@@ -266,14 +320,14 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: settings.isEnabled 
+                    color: settings.isEnabled
                         ? AppTheme.lightTheme.colorScheme.primary
                         : Colors.grey[700],
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  settings.isEnabled 
+                  settings.isEnabled
                       ? 'Notifications are enabled'
                       : 'Notifications are disabled',
                   style: TextStyle(
@@ -350,7 +404,7 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
           ),
         ),
         const SizedBox(height: 16),
-        
+
         // Duration Slider
         Row(
           children: [
@@ -375,13 +429,13 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
           label: '${settings.durationSeconds}s',
           onChanged: (value) {
             ref.read(athanSettingsProvider.notifier).updateSettings(
-              settings.copyWith(durationSeconds: value.toInt()),
-            );
+                  settings.copyWith(durationSeconds: value.toInt()),
+                );
           },
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Vibration Toggle
         SwitchListTile(
           title: const Text('Vibration'),
@@ -389,8 +443,8 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
           value: settings.vibrateEnabled,
           onChanged: (value) {
             ref.read(athanSettingsProvider.notifier).updateSettings(
-              settings.copyWith(vibrateEnabled: value),
-            );
+                  settings.copyWith(vibrateEnabled: value),
+                );
           },
           secondary: Icon(
             Icons.vibration,
@@ -446,15 +500,18 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
                   divisions: 12,
                   label: '${settings.reminderMinutes} min',
                   onChanged: (value) {
-                    ref.read(athanSettingsProvider.notifier)
+                    ref
+                        .read(athanSettingsProvider.notifier)
                         .updateReminderMinutes(value.toInt());
                   },
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.1),
+                  color:
+                      AppTheme.lightTheme.colorScheme.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -501,14 +558,15 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
           final prayerName = prayer.$1;
           final arabicName = prayer.$2;
           final icon = prayer.$3;
-          
+
           return PrayerNotificationToggle(
             prayerName: prayerName,
             arabicName: arabicName,
             icon: icon,
             isEnabled: settings.isPrayerEnabled(prayerName),
             onToggle: (enabled) {
-              ref.read(athanSettingsProvider.notifier)
+              ref
+                  .read(athanSettingsProvider.notifier)
                   .togglePrayerNotification(prayerName, enabled);
             },
           );
@@ -553,8 +611,8 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
             value: settings.autoMarkCompleted,
             onChanged: (value) {
               ref.read(athanSettingsProvider.notifier).updateSettings(
-                settings.copyWith(autoMarkCompleted: value),
-              );
+                    settings.copyWith(autoMarkCompleted: value),
+                  );
             },
             contentPadding: EdgeInsets.zero,
           ),
@@ -589,17 +647,24 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
             style: TextStyle(fontSize: 14),
           ),
           const SizedBox(height: 16),
-          
+
           // Muted days
-          const Text('Muted Days:', style: TextStyle(fontWeight: FontWeight.w500)),
+          const Text('Muted Days:',
+              style: TextStyle(fontWeight: FontWeight.w500)),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             children: [
-              'Monday', 'Tuesday', 'Wednesday', 'Thursday', 
-              'Friday', 'Saturday', 'Sunday',
+              'Monday',
+              'Tuesday',
+              'Wednesday',
+              'Thursday',
+              'Friday',
+              'Saturday',
+              'Sunday',
             ].map((day) {
-              final isMuted = settings.mutedDays?.contains(day.toLowerCase()) ?? false;
+              final isMuted =
+                  settings.mutedDays?.contains(day.toLowerCase()) ?? false;
               return FilterChip(
                 label: Text(day.substring(0, 3)),
                 selected: isMuted,
@@ -609,9 +674,9 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
               );
             }).toList(),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Add time range button
           OutlinedButton.icon(
             onPressed: () => _showTimeRangeDialog(settings),
@@ -630,8 +695,8 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
       value: settings.smartNotifications,
       onChanged: (value) {
         ref.read(athanSettingsProvider.notifier).updateSettings(
-          settings.copyWith(smartNotifications: value),
-        );
+              settings.copyWith(smartNotifications: value),
+            );
       },
       secondary: Icon(
         Icons.psychology,
@@ -647,8 +712,8 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
       value: settings.overrideDnd,
       onChanged: (value) {
         ref.read(athanSettingsProvider.notifier).updateSettings(
-          settings.copyWith(overrideDnd: value),
-        );
+              settings.copyWith(overrideDnd: value),
+            );
       },
       secondary: Icon(
         Icons.do_not_disturb_off,
@@ -664,8 +729,8 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
       value: settings.fullScreenNotification,
       onChanged: (value) {
         ref.read(athanSettingsProvider.notifier).updateSettings(
-          settings.copyWith(fullScreenNotification: value),
-        );
+              settings.copyWith(fullScreenNotification: value),
+            );
       },
       secondary: Icon(
         Icons.fullscreen,
@@ -677,18 +742,21 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
   Widget _buildRamadanStatus() {
     final isRamadan = islamic_utils.IslamicUtils.isRamadan();
     final daysRemaining = islamic_utils.IslamicUtils.getRamadanDaysRemaining();
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isRamadan
-              ? [Colors.purple.withOpacity(0.1), Colors.indigo.withOpacity(0.05)]
+              ? [
+                  Colors.purple.withOpacity(0.1),
+                  Colors.indigo.withOpacity(0.05)
+                ]
               : [Colors.grey.withOpacity(0.1), Colors.grey.withOpacity(0.05)],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isRamadan 
+          color: isRamadan
               ? Colors.purple.withOpacity(0.3)
               : Colors.grey.withOpacity(0.3),
         ),
@@ -722,8 +790,8 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  isRamadan 
-                      ? daysRemaining != null 
+                  isRamadan
+                      ? daysRemaining != null
                           ? '$daysRemaining days remaining in this blessed month'
                           : 'The blessed month of fasting'
                       : 'Ramadan settings will be active during the holy month',
@@ -742,15 +810,17 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
 
   Widget _buildRamadanToggle(AthanSettings settings) {
     final isEnabled = settings.ramadanSettings?.enabled ?? false;
-    
+
     return SwitchListTile(
       title: const Text('Ramadan Notifications'),
       subtitle: const Text('Enable special notifications for Suhur and Iftar'),
       value: isEnabled,
       onChanged: (value) {
-        final newRamadanSettings = (settings.ramadanSettings ?? 
-            const RamadanNotificationSettings()).copyWith(enabled: value);
-        ref.read(athanSettingsProvider.notifier)
+        final newRamadanSettings =
+            (settings.ramadanSettings ?? const RamadanNotificationSettings())
+                .copyWith(enabled: value);
+        ref
+            .read(athanSettingsProvider.notifier)
             .updateRamadanSettings(newRamadanSettings);
       },
       secondary: Icon(
@@ -762,7 +832,7 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
 
   Widget _buildSuhurSettings(AthanSettings settings) {
     final ramadanSettings = settings.ramadanSettings!;
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -798,7 +868,8 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
               final newSettings = ramadanSettings.copyWith(
                 suhurReminderMinutes: value.toInt(),
               );
-              ref.read(athanSettingsProvider.notifier)
+              ref
+                  .read(athanSettingsProvider.notifier)
                   .updateRamadanSettings(newSettings);
             },
           ),
@@ -809,7 +880,7 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
 
   Widget _buildIftarSettings(AthanSettings settings) {
     final ramadanSettings = settings.ramadanSettings!;
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -845,7 +916,8 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
               final newSettings = ramadanSettings.copyWith(
                 iftarReminderMinutes: value.toInt(),
               );
-              ref.read(athanSettingsProvider.notifier)
+              ref
+                  .read(athanSettingsProvider.notifier)
                   .updateRamadanSettings(newSettings);
             },
           ),
@@ -856,7 +928,7 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
 
   Widget _buildRamadanSpecialFeatures(AthanSettings settings) {
     final ramadanSettings = settings.ramadanSettings!;
-    
+
     return Column(
       children: [
         SwitchListTile(
@@ -864,8 +936,11 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
           subtitle: const Text('Use special Athan recitations during Ramadan'),
           value: ramadanSettings.specialRamadanAthan,
           onChanged: (value) {
-            final newSettings = ramadanSettings.copyWith(specialRamadanAthan: value);
-            ref.read(athanSettingsProvider.notifier).updateRamadanSettings(newSettings);
+            final newSettings =
+                ramadanSettings.copyWith(specialRamadanAthan: value);
+            ref
+                .read(athanSettingsProvider.notifier)
+                .updateRamadanSettings(newSettings);
           },
           secondary: Icon(Icons.music_note, color: Colors.purple[600]),
         ),
@@ -875,7 +950,9 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
           value: ramadanSettings.includeDuas,
           onChanged: (value) {
             final newSettings = ramadanSettings.copyWith(includeDuas: value);
-            ref.read(athanSettingsProvider.notifier).updateRamadanSettings(newSettings);
+            ref
+                .read(athanSettingsProvider.notifier)
+                .updateRamadanSettings(newSettings);
           },
           secondary: Icon(Icons.favorite, color: Colors.purple[600]),
         ),
@@ -885,7 +962,9 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
           value: ramadanSettings.trackFasting,
           onChanged: (value) {
             final newSettings = ramadanSettings.copyWith(trackFasting: value);
-            ref.read(athanSettingsProvider.notifier).updateRamadanSettings(newSettings);
+            ref
+                .read(athanSettingsProvider.notifier)
+                .updateRamadanSettings(newSettings);
           },
           secondary: Icon(Icons.check_circle, color: Colors.purple[600]),
         ),

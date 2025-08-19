@@ -37,10 +37,13 @@ class DeenMateApp extends ConsumerWidget {
     ref.listen(cachedCurrentPrayerTimesProvider, (_, __) {});
     // Only prefetch after onboarding (prevents early GPS prompt)
     if (hasCompletedOnboarding) {
+      // Ensure storage is initialized and cache prefetched at app start
       ref.watch(prayerLocalInitAndPrefetchProvider);
       // Initialize notifications/Azan and schedule
       ref.watch(notificationInitProvider);
       ref.watch(autoNotificationSchedulerProvider);
+      // Listen to connectivity to auto-refresh when back online
+      ref.watch(prayerTimesConnectivityRefreshProvider);
     }
     return hasCompletedOnboarding
         ? MaterialApp.router(
@@ -60,6 +63,33 @@ class DeenMateApp extends ConsumerWidget {
               Locale('ar'),
             ],
             routerConfig: EnhancedAppRouter.router,
+            builder: (context, child) {
+              return WillPopScope(
+                onWillPop: () async {
+                  // Show exit confirmation dialog
+                  final shouldExit = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Exit DeenMate'),
+                      content:
+                          const Text('Are you sure you want to exit the app?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(true),
+                          child: const Text('Exit'),
+                        ),
+                      ],
+                    ),
+                  );
+                  return shouldExit ?? false;
+                },
+                child: child!,
+              );
+            },
           )
         : MaterialApp(
             title: 'DeenMate - Onboarding',

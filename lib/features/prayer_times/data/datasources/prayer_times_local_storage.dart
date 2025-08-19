@@ -113,11 +113,26 @@ class PrayerTimesLocalStorage {
     await _ensureInitialized();
 
     try {
-      final key =
-          _generatePrayerTimesKey(prayerTimes.date, prayerTimes.location);
+      // Build versioned key with method and madhab (school)
+      final String methodId =
+          _sanitizeMethodId(prayerTimes.calculationMethod.toString());
+      final int schoolCode = _extractSchoolCode(prayerTimes.metadata);
+      final String key = _generatePrayerTimesKeyV2(
+        prayerTimes.date,
+        prayerTimes.location,
+        methodId: methodId,
+        schoolCode: schoolCode,
+      );
       final jsonString = json.encode(prayerTimes.toJson());
 
       await _prayerTimesBox.put(key, jsonString);
+
+      // Clean up legacy key (date+location only) to avoid cross-contamination
+      final String legacyKey =
+          _generatePrayerTimesKey(prayerTimes.date, prayerTimes.location);
+      if (_prayerTimesBox.containsKey(legacyKey)) {
+        await _prayerTimesBox.delete(legacyKey);
+      }
 
       // Update last update timestamp
       await _prefs.setString(_lastUpdateKey, DateTime.now().toIso8601String());
@@ -137,10 +152,24 @@ class PrayerTimesLocalStorage {
       final dataToSave = <String, String>{};
 
       for (final prayerTimes in prayerTimesList) {
-        final key =
-            _generatePrayerTimesKey(prayerTimes.date, prayerTimes.location);
+        final String methodId =
+            _sanitizeMethodId(prayerTimes.calculationMethod.toString());
+        final int schoolCode = _extractSchoolCode(prayerTimes.metadata);
+        final String key = _generatePrayerTimesKeyV2(
+          prayerTimes.date,
+          prayerTimes.location,
+          methodId: methodId,
+          schoolCode: schoolCode,
+        );
         final jsonString = json.encode(prayerTimes.toJson());
         dataToSave[key] = jsonString;
+
+        // Remove legacy key if present
+        final String legacyKey =
+            _generatePrayerTimesKey(prayerTimes.date, prayerTimes.location);
+        if (_prayerTimesBox.containsKey(legacyKey)) {
+          await _prayerTimesBox.delete(legacyKey);
+        }
       }
 
       await _prayerTimesBox.putAll(dataToSave);
@@ -158,12 +187,62 @@ class PrayerTimesLocalStorage {
     await _ensureInitialized();
 
     try {
-      final key = _generatePrayerTimesKey(date, location);
-      final jsonString = _prayerTimesBox.get(key);
+      // Try v2 key (date+location+method+school)
+      final settings = await getPrayerSettings();
+      if (settings != null) {
+        final String methodId = _sanitizeMethodId(settings.calculationMethod);
+        final int schoolCode = settings.madhab == Madhab.hanafi ? 1 : 0;
+        final String v2Key = _generatePrayerTimesKeyV2(
+          date,
+          location,
+          methodId: methodId,
+          schoolCode: schoolCode,
+        );
+        final String? v2Json = _prayerTimesBox.get(v2Key);
+        if (v2Json != null) {
+          final Map<String, dynamic> v2 =
+              json.decode(v2Json) as Map<String, dynamic>;
+          return PrayerTimes.fromJson(v2);
+        }
+      }
 
-      if (jsonString != null) {
-        final jsonData = json.decode(jsonString) as Map<String, dynamic>;
-        return PrayerTimes.fromJson(jsonData);
+      // Fallback to legacy key (date+location)
+      final String legacyKey = _generatePrayerTimesKey(date, location);
+      final String? legacyJson = _prayerTimesBox.get(legacyKey);
+      if (legacyJson != null) {
+        final Map<String, dynamic> data =
+            json.decode(legacyJson) as Map<String, dynamic>;
+        final PrayerTimes pt = PrayerTimes.fromJson(data);
+
+        // Validate against current settings; if matches, migrate and return.
+        if (settings != null) {
+          final String desiredMethod =
+              _sanitizeMethodId(settings.calculationMethod);
+          final int desiredSchool = settings.madhab == Madhab.hanafi ? 1 : 0;
+          final String cachedMethod =
+              _sanitizeMethodId(pt.calculationMethod.toString());
+          final int cachedSchool = _extractSchoolCode(pt.metadata);
+          final bool matches =
+              (cachedMethod == desiredMethod && cachedSchool == desiredSchool);
+          if (matches) {
+            final String newKey = _generatePrayerTimesKeyV2(
+              date,
+              location,
+              methodId: desiredMethod,
+              schoolCode: desiredSchool,
+            );
+            await _prayerTimesBox.put(newKey, legacyJson);
+            await _prayerTimesBox.delete(legacyKey);
+            return pt;
+          } else {
+            // Mismatch: remove legacy entry to prevent contamination
+            await _prayerTimesBox.delete(legacyKey);
+            return null;
+          }
+        }
+
+        // No settings available; return legacy as last resort
+        return pt;
       }
 
       return null;
@@ -171,6 +250,40 @@ class PrayerTimesLocalStorage {
       throw Failure.databaseFailure(
         operation: 'get_prayer_times',
         message: 'Failed to get prayer times: $e',
+      );
+    }
+  }
+
+  /// Get the most recent cached PrayerTimes entry across all locations/methods.
+  /// Useful as a last-resort offline fallback when preferred location is unknown.
+  Future<PrayerTimes?> getMostRecentPrayerTimes() async {
+    await _ensureInitialized();
+    try {
+      PrayerTimes? mostRecent;
+      DateTime? mostRecentDate;
+
+      for (final dynamic key in _prayerTimesBox.keys) {
+        final String? jsonStr = _prayerTimesBox.get(key);
+        if (jsonStr == null) continue;
+        try {
+          final Map<String, dynamic> data =
+              json.decode(jsonStr) as Map<String, dynamic>;
+          final pt = PrayerTimes.fromJson(data);
+          final d = DateTime(pt.date.year, pt.date.month, pt.date.day);
+          if (mostRecent == null || d.isAfter(mostRecentDate!)) {
+            mostRecent = pt;
+            mostRecentDate = d;
+          }
+        } catch (_) {
+          // Skip malformed entries
+          continue;
+        }
+      }
+
+      return mostRecent;
+    } catch (e) {
+      throw Failure.cacheFailure(
+        message: 'Failed to get most recent cached prayer times: $e',
       );
     }
   }
@@ -209,8 +322,56 @@ class PrayerTimesLocalStorage {
     await _ensureInitialized();
 
     try {
-      final key = _generatePrayerTimesKey(date, location);
-      return _prayerTimesBox.containsKey(key);
+      final settings = await getPrayerSettings();
+
+      if (settings != null) {
+        final String methodId = _sanitizeMethodId(settings.calculationMethod);
+        final int schoolCode = settings.madhab == Madhab.hanafi ? 1 : 0;
+        final String v2Key = _generatePrayerTimesKeyV2(
+          date,
+          location,
+          methodId: methodId,
+          schoolCode: schoolCode,
+        );
+        if (_prayerTimesBox.containsKey(v2Key)) return true;
+      }
+
+      // Legacy fallback with validation
+      final String legacyKey = _generatePrayerTimesKey(date, location);
+      if (_prayerTimesBox.containsKey(legacyKey)) {
+        final String? legacyJson = _prayerTimesBox.get(legacyKey);
+        if (legacyJson != null && settings != null) {
+          final Map<String, dynamic> data =
+              json.decode(legacyJson) as Map<String, dynamic>;
+          final PrayerTimes pt = PrayerTimes.fromJson(data);
+          final String desiredMethod =
+              _sanitizeMethodId(settings.calculationMethod);
+          final int desiredSchool = settings.madhab == Madhab.hanafi ? 1 : 0;
+          final String cachedMethod =
+              _sanitizeMethodId(pt.calculationMethod.toString());
+          final int cachedSchool = _extractSchoolCode(pt.metadata);
+          if (cachedMethod == desiredMethod && cachedSchool == desiredSchool) {
+            // Migrate silently
+            final String newKey = _generatePrayerTimesKeyV2(
+              date,
+              location,
+              methodId: desiredMethod,
+              schoolCode: desiredSchool,
+            );
+            await _prayerTimesBox.put(newKey, legacyJson);
+            await _prayerTimesBox.delete(legacyKey);
+            return true;
+          } else {
+            // Remove mismatched legacy
+            await _prayerTimesBox.delete(legacyKey);
+            return false;
+          }
+        }
+        // No settings: treat as available
+        return true;
+      }
+
+      return false;
     } catch (e) {
       return false;
     }
@@ -583,6 +744,36 @@ class PrayerTimesLocalStorage {
     final locationStr =
         '${location.latitude.toStringAsFixed(4)}_${location.longitude.toStringAsFixed(4)}';
     return '${dateStr}_$locationStr';
+  }
+
+  /// Generate versioned key that isolates cache per method and school
+  String _generatePrayerTimesKeyV2(
+    DateTime date,
+    Location location, {
+    required String methodId,
+    required int schoolCode,
+  }) {
+    final base = _generatePrayerTimesKey(date, location);
+    return '${base}_${methodId}_$schoolCode';
+  }
+
+  /// Normalize method id for compact keys
+  String _sanitizeMethodId(String method) {
+    final upper = method.toUpperCase();
+    // Remove non-alphanumeric chars to avoid underscore collisions
+    return upper.replaceAll(RegExp('[^A-Z0-9]'), '');
+  }
+
+  /// Extract madhab school code from metadata (0: Shafi, 1: Hanafi)
+  int _extractSchoolCode(Map<String, dynamic> metadata) {
+    final dynamic school = metadata['school'];
+    if (school is int) return school;
+    if (school is String) {
+      final parsed = int.tryParse(school);
+      if (parsed != null) return parsed;
+    }
+    // Default to Shafi if unknown
+    return 0;
   }
 
   /// Generate unique key for prayer tracking

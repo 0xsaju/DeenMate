@@ -77,7 +77,7 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
 
       return Right(prayerTimes);
     } on Failure catch (failure) {
-      // If API fails, try to return cached data even if stale
+      // If API fails, try to return cached data (preferred location/date)
       final cachedPrayerTimes =
           await _localStorage.getPrayerTimes(date, location);
       if (cachedPrayerTimes != null) {
@@ -87,6 +87,20 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
               ...cachedPrayerTimes.metadata,
               'source': 'Local Cache (Offline)',
               'warning': 'Data may be outdated due to network issues',
+            },
+          ),
+        );
+      }
+
+      // Last-resort: return most recent cached day (any location/method)
+      final mostRecent = await _localStorage.getMostRecentPrayerTimes();
+      if (mostRecent != null) {
+        return Right(
+          mostRecent.copyWith(
+            metadata: {
+              ...mostRecent.metadata,
+              'source': 'Local Cache (Most Recent)',
+              'warning': 'Showing most recent cached day due to offline mode',
             },
           ),
         );
@@ -250,12 +264,11 @@ class PrayerTimesRepositoryImpl implements PrayerTimesRepository {
       final settings = PrayerCalculationSettings(
         calculationMethod: method,
         madhab: madhab,
-        // Regional convention: Asr/Isha often shown one minute earlier
-        adjustments: const {'asr': -1, 'isha': -1},
+        // No adjustments - use exact API times
+        adjustments: const {},
       );
-      // Invalidate cache if method/school changed
-      await clearOldCache(daysToKeep: 0);
-      log('Repository: Using calculation method: $method (forced reload)');
+      // Do not clear cache here; keep offline support intact.
+      log('Repository: Using calculation method: $method');
 
       log('Repository: Calling API with location: ${resolvedLocation.latitude}, ${resolvedLocation.longitude}');
       log('Repository: Settings - Method: ${settings.calculationMethod}, Madhab: ${settings.madhab}');

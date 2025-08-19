@@ -8,6 +8,8 @@ import '../../../../core/utils/islamic_utils.dart';
 import '../../data/services/prayer_notification_service.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
+// Keep timezone local as UTC for now to avoid extra dependency issues;
+// scheduling uses tz.local (default set by Flutter engine to device zone).
 import '../../domain/entities/athan_settings.dart';
 import '../../domain/entities/prayer_times.dart';
 import '../../domain/repositories/prayer_times_repository.dart';
@@ -30,7 +32,7 @@ final notificationInitProvider = FutureProvider<bool>((ref) async {
     // Ensure timezone database is ready for exact schedules
     try {
       tzdata.initializeTimeZones();
-      tz.setLocalLocation(tz.getLocation('UTC'));
+      // Rely on default local set by engine; fallback safe
     } catch (_) {}
     await service.initialize();
     return true;
@@ -40,7 +42,9 @@ final notificationInitProvider = FutureProvider<bool>((ref) async {
 });
 
 // Athan settings provider with state management
-final athanSettingsProvider = StateNotifierProvider<AthanSettingsNotifier, AsyncValue<AthanSettings>>((ref) {
+final athanSettingsProvider =
+    StateNotifierProvider<AthanSettingsNotifier, AsyncValue<AthanSettings>>(
+        (ref) {
   return AthanSettingsNotifier(
     ref.read(prayerTimesRepositoryProvider),
     ref.read(dailyNotificationSchedulerProvider),
@@ -48,18 +52,21 @@ final athanSettingsProvider = StateNotifierProvider<AthanSettingsNotifier, Async
 });
 
 // Notification permissions provider
-final notificationPermissionsProvider = StateNotifierProvider<NotificationPermissionsNotifier, NotificationPermissionsState>((ref) {
+final notificationPermissionsProvider = StateNotifierProvider<
+    NotificationPermissionsNotifier, NotificationPermissionsState>((ref) {
   return NotificationPermissionsNotifier();
 });
 
 // Pending notifications provider
-final pendingNotificationsProvider = FutureProvider<List<PendingNotificationRequest>>((ref) async {
+final pendingNotificationsProvider =
+    FutureProvider<List<PendingNotificationRequest>>((ref) async {
   final service = ref.read(notificationServiceProvider);
   return service.getPendingNotifications();
 });
 
 // Daily notification scheduler provider
-final dailyNotificationSchedulerProvider = Provider<DailyNotificationScheduler>((ref) {
+final dailyNotificationSchedulerProvider =
+    Provider<DailyNotificationScheduler>((ref) {
   return DailyNotificationScheduler(
     ref.read(notificationServiceProvider),
     ref.read(prayerTimesRepositoryProvider),
@@ -67,12 +74,14 @@ final dailyNotificationSchedulerProvider = Provider<DailyNotificationScheduler>(
 });
 
 // Athan audio player provider
-final athanAudioProvider = StateNotifierProvider<AthanAudioNotifier, AthanAudioState>((ref) {
+final athanAudioProvider =
+    StateNotifierProvider<AthanAudioNotifier, AthanAudioState>((ref) {
   return AthanAudioNotifier(ref.read(notificationServiceProvider));
 });
 
 // Notification statistics provider
-final notificationStatsProvider = FutureProvider<NotificationStatistics>((ref) async {
+final notificationStatsProvider =
+    FutureProvider<NotificationStatistics>((ref) async {
   final pending = await ref.read(pendingNotificationsProvider.future);
   // Use repository-backed current settings for stable snapshot
   final repo = ref.read(prayerTimesRepositoryProvider);
@@ -81,7 +90,7 @@ final notificationStatsProvider = FutureProvider<NotificationStatistics>((ref) a
     (_) => const AthanSettings(isEnabled: false),
     (s) => s,
   );
-  
+
   return NotificationStatistics(
     pendingCount: pending.length,
     enabledPrayers: _countEnabledPrayers(settingsData),
@@ -91,7 +100,8 @@ final notificationStatsProvider = FutureProvider<NotificationStatistics>((ref) a
 });
 
 // Auto-scheduler provider - automatically schedules notifications daily
-final autoNotificationSchedulerProvider = Provider<AutoNotificationScheduler>((ref) {
+final autoNotificationSchedulerProvider =
+    Provider<AutoNotificationScheduler>((ref) {
   return AutoNotificationScheduler(
     ref.read(dailyNotificationSchedulerProvider),
     ref.read(currentPrayerTimesProvider.future),
@@ -100,7 +110,8 @@ final autoNotificationSchedulerProvider = Provider<AutoNotificationScheduler>((r
 });
 
 // Ramadan notification provider
-final ramadanNotificationProvider = StateNotifierProvider<RamadanNotificationNotifier, RamadanNotificationState>((ref) {
+final ramadanNotificationProvider = StateNotifierProvider<
+    RamadanNotificationNotifier, RamadanNotificationState>((ref) {
   return RamadanNotificationNotifier(
     ref.read(notificationServiceProvider),
     ref.read(athanSettingsFutureProvider.future),
@@ -110,8 +121,7 @@ final ramadanNotificationProvider = StateNotifierProvider<RamadanNotificationNot
 // State Notifiers
 
 class AthanSettingsNotifier extends StateNotifier<AsyncValue<AthanSettings>> {
-
-  AthanSettingsNotifier(this._repository, this._scheduler) 
+  AthanSettingsNotifier(this._repository, this._scheduler)
       : super(const AsyncValue.loading()) {
     _loadSettings();
   }
@@ -132,7 +142,7 @@ class AthanSettingsNotifier extends StateNotifier<AsyncValue<AthanSettings>> {
 
   Future<void> updateSettings(AthanSettings settings) async {
     state = const AsyncValue.loading();
-    
+
     try {
       final result = await _repository.saveAthanSettings(settings);
       result.fold(
@@ -149,7 +159,8 @@ class AthanSettingsNotifier extends StateNotifier<AsyncValue<AthanSettings>> {
 
   Future<void> toggleEnabled() async {
     await state.when(
-      data: (settings) => updateSettings(settings.copyWith(isEnabled: !settings.isEnabled)),
+      data: (settings) =>
+          updateSettings(settings.copyWith(isEnabled: !settings.isEnabled)),
       loading: Future.value,
       error: (_, __) => Future.value(),
     );
@@ -157,7 +168,8 @@ class AthanSettingsNotifier extends StateNotifier<AsyncValue<AthanSettings>> {
 
   Future<void> updateMuadhinVoice(String voice) async {
     await state.when(
-      data: (settings) => updateSettings(settings.copyWith(muadhinVoice: voice)),
+      data: (settings) =>
+          updateSettings(settings.copyWith(muadhinVoice: voice)),
       loading: Future.value,
       error: (_, __) => Future.value(),
     );
@@ -173,7 +185,8 @@ class AthanSettingsNotifier extends StateNotifier<AsyncValue<AthanSettings>> {
 
   Future<void> updateReminderMinutes(int minutes) async {
     await state.when(
-      data: (settings) => updateSettings(settings.copyWith(reminderMinutes: minutes)),
+      data: (settings) =>
+          updateSettings(settings.copyWith(reminderMinutes: minutes)),
       loading: Future.value,
       error: (_, __) => Future.value(),
     );
@@ -182,18 +195,22 @@ class AthanSettingsNotifier extends StateNotifier<AsyncValue<AthanSettings>> {
   Future<void> togglePrayerNotification(String prayerName, bool enabled) async {
     await state.when(
       data: (settings) {
-        final prayerSettings = Map<String, bool>.from(settings.prayerSpecificSettings ?? {});
+        final prayerSettings =
+            Map<String, bool>.from(settings.prayerSpecificSettings ?? {});
         prayerSettings[prayerName.toLowerCase()] = enabled;
-        return updateSettings(settings.copyWith(prayerSpecificSettings: prayerSettings));
+        return updateSettings(
+            settings.copyWith(prayerSpecificSettings: prayerSettings));
       },
       loading: Future.value,
       error: (_, __) => Future.value(),
     );
   }
 
-  Future<void> updateRamadanSettings(RamadanNotificationSettings ramadanSettings) async {
+  Future<void> updateRamadanSettings(
+      RamadanNotificationSettings ramadanSettings) async {
     await state.when(
-      data: (settings) => updateSettings(settings.copyWith(ramadanSettings: ramadanSettings)),
+      data: (settings) =>
+          updateSettings(settings.copyWith(ramadanSettings: ramadanSettings)),
       loading: Future.value,
       error: (_, __) => Future.value(),
     );
@@ -208,8 +225,10 @@ class AthanSettingsNotifier extends StateNotifier<AsyncValue<AthanSettings>> {
   }
 }
 
-class NotificationPermissionsNotifier extends StateNotifier<NotificationPermissionsState> {
-  NotificationPermissionsNotifier() : super(const NotificationPermissionsState()) {
+class NotificationPermissionsNotifier
+    extends StateNotifier<NotificationPermissionsState> {
+  NotificationPermissionsNotifier()
+      : super(const NotificationPermissionsState()) {
     _checkPermissions();
   }
 
@@ -224,6 +243,17 @@ class NotificationPermissionsNotifier extends StateNotifier<NotificationPermissi
       exactAlarmPermission: exactAlarmGranted,
       dndOverridePermission: dndGranted,
     );
+
+    // If permissions improved, attempt a quiet reschedule
+    if (notificationGranted && exactAlarmGranted) {
+      try {
+        // Kick off a lightweight reschedule without UI noise
+        final container = ProviderContainer();
+        final scheduler = container.read(dailyNotificationSchedulerProvider);
+        await scheduler.scheduleToday();
+        container.dispose();
+      } catch (_) {}
+    }
   }
 
   Future<bool> requestNotificationPermission() async {
@@ -255,8 +285,8 @@ class NotificationPermissionsNotifier extends StateNotifier<NotificationPermissi
 }
 
 class AthanAudioNotifier extends StateNotifier<AthanAudioState> {
-
-  AthanAudioNotifier(this._notificationService) : super(const AthanAudioState());
+  AthanAudioNotifier(this._notificationService)
+      : super(const AthanAudioState());
   final PrayerNotificationService _notificationService;
 
   Future<void> playAthan(String muadhinVoice, double volume) async {
@@ -270,7 +300,9 @@ class AthanAudioNotifier extends StateNotifier<AthanAudioState> {
     } catch (e) {
       state = state.copyWith(
         isPlaying: false,
-        error: e is Failure ? e : Failure.audioPlaybackFailure(message: e.toString()),
+        error: e is Failure
+            ? e
+            : Failure.audioPlaybackFailure(message: e.toString()),
       );
     }
   }
@@ -281,7 +313,9 @@ class AthanAudioNotifier extends StateNotifier<AthanAudioState> {
       state = state.copyWith(isPlaying: false, error: null);
     } catch (e) {
       state = state.copyWith(
-        error: e is Failure ? e : Failure.audioPlaybackFailure(message: e.toString()),
+        error: e is Failure
+            ? e
+            : Failure.audioPlaybackFailure(message: e.toString()),
       );
     }
   }
@@ -291,9 +325,9 @@ class AthanAudioNotifier extends StateNotifier<AthanAudioState> {
   }
 }
 
-class RamadanNotificationNotifier extends StateNotifier<RamadanNotificationState> {
-
-  RamadanNotificationNotifier(this._notificationService, this._settingsFuture) 
+class RamadanNotificationNotifier
+    extends StateNotifier<RamadanNotificationState> {
+  RamadanNotificationNotifier(this._notificationService, this._settingsFuture)
       : super(const RamadanNotificationState()) {
     _checkRamadanStatus();
   }
@@ -303,7 +337,7 @@ class RamadanNotificationNotifier extends StateNotifier<RamadanNotificationState
   Future<void> _checkRamadanStatus() async {
     final isRamadan = IslamicUtils.isRamadan();
     final daysRemaining = IslamicUtils.getRamadanDaysRemaining();
-    
+
     state = state.copyWith(
       isRamadan: isRamadan,
       daysRemaining: daysRemaining,
@@ -326,15 +360,15 @@ class RamadanNotificationNotifier extends StateNotifier<RamadanNotificationState
   Future<void> scheduleSuhurReminder(DateTime fajrTime) async {
     final settings = await _settingsFuture;
     final ramadanSettings = settings.ramadanSettings;
-    
+
     if (ramadanSettings?.enabled == true) {
       final suhurTime = fajrTime.subtract(
         Duration(minutes: ramadanSettings!.suhurReminderMinutes),
       );
-      
+
       // Schedule Suhur notification
       await _notificationService.scheduleSuhurNotification(suhurTime);
-      
+
       state = state.copyWith(nextSuhurTime: suhurTime);
     }
   }
@@ -342,15 +376,15 @@ class RamadanNotificationNotifier extends StateNotifier<RamadanNotificationState
   Future<void> scheduleIftarReminder(DateTime maghribTime) async {
     final settings = await _settingsFuture;
     final ramadanSettings = settings.ramadanSettings;
-    
+
     if (ramadanSettings?.enabled == true) {
       final iftarTime = maghribTime.subtract(
         Duration(minutes: ramadanSettings!.iftarReminderMinutes),
       );
-      
+
       // Schedule Iftar notification
       await _notificationService.scheduleIftarNotification(iftarTime);
-      
+
       state = state.copyWith(nextIftarTime: iftarTime);
     }
   }
@@ -359,7 +393,6 @@ class RamadanNotificationNotifier extends StateNotifier<RamadanNotificationState
 // Service Classes
 
 class DailyNotificationScheduler {
-
   DailyNotificationScheduler(this._notificationService, this._repository);
   final PrayerNotificationService _notificationService;
   final PrayerTimesRepository _repository;
@@ -378,7 +411,8 @@ class DailyNotificationScheduler {
       (settings) => settings,
     );
 
-    await _notificationService.scheduleDailyPrayerNotifications(prayerTimes, settings);
+    await _notificationService.scheduleDailyPrayerNotifications(
+        prayerTimes, settings);
   }
 
   Future<void> scheduleWeek() async {
@@ -396,19 +430,21 @@ class DailyNotificationScheduler {
     );
 
     for (final prayerTimes in weeklyPrayerTimes) {
-      await _notificationService.scheduleDailyPrayerNotifications(prayerTimes, settings);
+      await _notificationService.scheduleDailyPrayerNotifications(
+          prayerTimes, settings);
     }
   }
 }
 
 class AutoNotificationScheduler {
-
   AutoNotificationScheduler(
     this._scheduler,
     this._prayerTimesFuture,
     this._settingsFuture,
   ) {
     _startAutoScheduling();
+    // Also listen for connectivity-driven refresh to reschedule cleanly
+    // (provider lives while app session is active)
   }
   final DailyNotificationScheduler _scheduler;
   // reserved for future hooks (kept referenced to avoid tree-shake during tests)
@@ -419,10 +455,8 @@ class AutoNotificationScheduler {
 
   Future<void> _startAutoScheduling() async {
     try {
+      // Always schedule today; weekly scheduling can be heavy on some devices
       await _scheduler.scheduleToday();
-      
-      // Schedule for the next few days as well
-      await _scheduler.scheduleWeek();
     } catch (e) {
       // Handle scheduling error
       print('Failed to auto-schedule notifications: $e');
@@ -468,7 +502,8 @@ class NotificationStatistics with _$NotificationStatistics {
   const factory NotificationStatistics({
     required int pendingCount,
     required int enabledPrayers,
-    required bool isEnabled, DateTime? nextNotificationTime,
+    required bool isEnabled,
+    DateTime? nextNotificationTime,
   }) = _NotificationStatistics;
 }
 
@@ -476,14 +511,14 @@ class NotificationStatistics with _$NotificationStatistics {
 
 int _countEnabledPrayers(AthanSettings settings) {
   if (!settings.isEnabled) return 0;
-  
+
   final prayers = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
   return prayers.where((prayer) => settings.isPrayerEnabled(prayer)).length;
 }
 
 DateTime? _getNextNotificationTime(List<PendingNotificationRequest> pending) {
   if (pending.isEmpty) return null;
-  
+
   // Find the earliest notification time
   DateTime? earliest;
   for (final notification in pending) {
@@ -506,6 +541,6 @@ DateTime? _getNextNotificationTime(List<PendingNotificationRequest> pending) {
       earliest = scheduled;
     }
   }
-  
+
   return earliest;
 }

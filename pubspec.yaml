@@ -92,6 +92,7 @@ flutter:
   assets:
     - assets/fonts/
     - assets/audio/
+    - assets/audio/athan/
     - assets/images/
     - assets/images/cards/
     - assets/images/icons/
