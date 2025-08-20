@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../../../core/navigation/shell_wrapper.dart' show EnhancedAppRouter;
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/islamic_utils.dart' as islamic_utils;
 import '../../domain/entities/athan_settings.dart';
-import '../providers/notification_providers.dart';
+import '../providers/notification_providers.dart' hide athanAudioProvider;
+import '../providers/audio_providers.dart';
+import '../providers/prayer_times_providers.dart';
 import '../widgets/athan_preview_widget.dart';
 import '../widgets/muadhin_selector_widget.dart';
 import '../widgets/notification_permissions_widget.dart';
@@ -1025,6 +1028,327 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
             onPressed: () => Navigator.pop(context),
             child: const Text('Close'),
           ),
+        ],
+      ),
+    );
+  }
+
+  // Test section removed for production
+  Widget _buildTestSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.orange.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.orange.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '🧪 Test Section (Debug)',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.orange,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    try {
+                      final audioNotifier =
+                          ref.read(athanAudioProvider.notifier);
+                      await audioNotifier.previewAthan('abdulbasit');
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Athan audio test started')),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Athan test failed: $e')),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.volume_up),
+                  label: const Text('Test Athan Audio'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    try {
+                      final scheduler =
+                          ref.read(dailyNotificationSchedulerProvider);
+                      await scheduler.scheduleToday(
+                          force: true); // Force reschedule for testing
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Notifications scheduled for today')),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Scheduling failed: $e')),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.schedule),
+                  label: const Text('Schedule Now'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    try {
+                      final permissions =
+                          ref.read(notificationPermissionsProvider);
+                      final settings = ref.read(athanSettingsProvider);
+                      final prayerTimes = ref.read(currentPrayerTimesProvider);
+
+                      String info =
+                          'Permissions: ${permissions.notificationPermission}, ${permissions.exactAlarmPermission}\n';
+                      info +=
+                          'Settings enabled: ${settings.value?.isEnabled ?? 'loading'}\n';
+                      info +=
+                          'Prayer times: ${prayerTimes.value?.fajr.time ?? 'loading'}';
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content: Text(info),
+                            duration: const Duration(seconds: 5)),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Debug failed: $e')),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.info),
+                  label: const Text('Debug Info'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ElevatedButton.icon(
+            onPressed: () async {
+              try {
+                // Test immediate notification using the service's public methods
+                final service = ref.read(notificationServiceProvider);
+                await service.initialize();
+
+                // Use the existing prayer notification scheduling with a test time
+                final testPrayerTimes =
+                    await ref.read(currentPrayerTimesProvider.future);
+                final testSettingsAsync = ref.read(athanSettingsProvider);
+                final testSettings = await testSettingsAsync.when(
+                  data: (settings) => settings,
+                  loading: () => throw Exception('Settings still loading'),
+                  error: (error, stack) =>
+                      throw Exception('Settings error: $error'),
+                );
+
+                // Schedule notifications for today (this will include any future prayers)
+                await service.scheduleDailyPrayerNotifications(
+                    testPrayerTimes, testSettings);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content:
+                          Text('Prayer notifications scheduled for today')),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Test notification failed: $e')),
+                );
+              }
+            },
+            icon: const Icon(Icons.notification_add),
+            label: const Text('Schedule Prayer Notifications'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          ElevatedButton.icon(
+            onPressed: () async {
+              try {
+                // Show notification immediately instead of scheduling
+                final flutterLocalNotificationsPlugin =
+                    FlutterLocalNotificationsPlugin();
+
+                const androidDetails = AndroidNotificationDetails(
+                  'athan_notifications',
+                  'Athan (Call to Prayer)',
+                  channelDescription:
+                      'Call to prayer notifications when prayer time arrives',
+                  importance: Importance.max,
+                  priority: Priority.max,
+                  playSound: true,
+                );
+
+                const notificationDetails = NotificationDetails(
+                  android: androidDetails,
+                );
+
+                await flutterLocalNotificationsPlugin.show(
+                  9998, // Unique ID
+                  '🕌 Test Prayer (1 sec)',
+                  'This is a test prayer notification',
+                  notificationDetails,
+                );
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Test notification sent immediately!'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Test notification failed: $e')),
+                );
+              }
+            },
+            icon: const Icon(Icons.flash_on),
+            label: const Text('Test Notification (1 sec)'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          ElevatedButton.icon(
+            onPressed: () async {
+              try {
+                // Show notification immediately instead of scheduling
+                final flutterLocalNotificationsPlugin =
+                    FlutterLocalNotificationsPlugin();
+
+                const androidDetails = AndroidNotificationDetails(
+                  'athan_notifications',
+                  'Athan (Call to Prayer)',
+                  channelDescription:
+                      'Call to prayer notifications when prayer time arrives',
+                  importance: Importance.max,
+                  priority: Priority.max,
+                  playSound: true,
+                );
+
+                const notificationDetails = NotificationDetails(
+                  android: androidDetails,
+                );
+
+                await flutterLocalNotificationsPlugin.show(
+                  9997, // Unique ID
+                  '🕌 Demo Prayer (2 min)',
+                  'This is a demo prayer notification with Azan',
+                  notificationDetails,
+                );
+
+                // Also play Azan audio
+                try {
+                  final service = ref.read(notificationServiceProvider);
+                  await service.playAthan('abdulbasit', 1.0);
+                } catch (e) {
+                  print('Failed to play Azan: $e');
+                }
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content:
+                        Text('Demo notification sent! Azan should play now.'),
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Demo notification failed: $e')),
+                );
+              }
+            },
+            icon: const Icon(Icons.timer),
+            label: const Text('Demo Notification (2 min)'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.deepPurple,
+              foregroundColor: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          ElevatedButton.icon(
+            onPressed: () async {
+              try {
+                // Test immediate notification without scheduling
+                final service = ref.read(notificationServiceProvider);
+                await service.initialize();
+
+                // Show notification immediately using a simple approach
+                final flutterLocalNotificationsPlugin =
+                    FlutterLocalNotificationsPlugin();
+
+                const androidDetails = AndroidNotificationDetails(
+                  'athan_notifications',
+                  'Athan (Call to Prayer)',
+                  channelDescription:
+                      'Call to prayer notifications when prayer time arrives',
+                  importance: Importance.max,
+                  priority: Priority.max,
+                  playSound: true,
+                );
+
+                const notificationDetails = NotificationDetails(
+                  android: androidDetails,
+                );
+
+                await flutterLocalNotificationsPlugin.show(
+                  9999, // Unique ID
+                  '🕌 Immediate Test',
+                  'This is an immediate test notification',
+                  notificationDetails,
+                );
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Immediate notification sent!'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Immediate notification failed: $e')),
+                );
+              }
+            },
+            icon: const Icon(Icons.notification_important),
+            label: const Text('Immediate Notification'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.deepOrange,
+              foregroundColor: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
         ],
       ),
     );

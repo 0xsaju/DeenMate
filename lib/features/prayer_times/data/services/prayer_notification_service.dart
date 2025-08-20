@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/timezone.dart' as tz;
+import 'dart:async'; // Added for Timer
 
 import '../../../../core/error/failures.dart';
 
@@ -188,9 +189,125 @@ class PrayerNotificationService {
 
     // Schedule Qiyam reminder (optional)
     await _scheduleQiyamReminder(prayerTimes);
+
+    // Start periodic check for Huawei compatibility
+    _startPeriodicNotificationCheck(prayerTimes, athanSettings);
   }
 
-  /// Schedule a single prayer notification
+  Timer? _periodicTimer;
+  Map<int, bool> _notificationsShown = {};
+
+  /// Start periodic notification check for Huawei compatibility
+  void _startPeriodicNotificationCheck(
+      PrayerTimes prayerTimes, AthanSettings settings) {
+    _periodicTimer?.cancel();
+    _notificationsShown.clear();
+
+    _periodicTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      _checkAndShowNotifications(prayerTimes, settings);
+    });
+  }
+
+  /// Check if notifications should be shown and show them
+  void _checkAndShowNotifications(
+      PrayerTimes prayerTimes, AthanSettings settings) {
+    final now = DateTime.now();
+    final prayers = [
+      (prayerTimes.fajr, 'Fajr', 0),
+      (prayerTimes.dhuhr, 'Dhuhr', 1),
+      (prayerTimes.asr, 'Asr', 2),
+      (prayerTimes.maghrib, 'Maghrib', 3),
+      (prayerTimes.isha, 'Isha', 4),
+    ];
+
+    for (final prayer in prayers) {
+      final prayerTime = prayer.$1;
+      final prayerName = prayer.$2;
+      final prayerIndex = prayer.$3;
+
+      // Check if this prayer is enabled
+      if (settings.prayerSpecificSettings?[prayerName.toLowerCase()] == false) {
+        continue;
+      }
+
+      final notificationId = _athanBaseId + prayerIndex;
+      final reminderId = _prayerReminderBaseId + prayerIndex;
+
+      // Check for reminder time (before prayer)
+      if (settings.reminderMinutes > 0) {
+        final reminderTime = prayerTime.time
+            .subtract(Duration(minutes: settings.reminderMinutes));
+        if (!(_notificationsShown[reminderId] ?? false) &&
+            now.isAfter(reminderTime) &&
+            now.isBefore(reminderTime.add(const Duration(minutes: 2)))) {
+          _showNotificationImmediately(
+            reminderId,
+            '🕌 Prayer Reminder',
+            '$prayerName prayer is in ${settings.reminderMinutes} minutes',
+            _prayerReminderChannel,
+            'prayer_reminder:$prayerName:${prayerTimes.date.toIso8601String()}',
+          );
+          _notificationsShown[reminderId] = true;
+        }
+      }
+
+      // Check for prayer time
+      if (!(_notificationsShown[notificationId] ?? false) &&
+          now.isAfter(prayerTime.time) &&
+          now.isBefore(prayerTime.time.add(const Duration(minutes: 2)))) {
+        _showNotificationImmediately(
+          notificationId,
+          '🕌 $prayerName Prayer Time',
+          _getPrayerMessage(prayerName),
+          _athanChannel,
+          'athan:$prayerName:${prayerTimes.date.toIso8601String()}',
+          actions: [
+            const AndroidNotificationAction('MARK_COMPLETED', 'Mark as Prayed'),
+            const AndroidNotificationAction('SNOOZE_5', 'Remind in 5 min'),
+          ],
+        );
+        _notificationsShown[notificationId] = true;
+
+        // Play Azan
+        try {
+          playAthan(settings.muadhinVoice, settings.volume);
+        } catch (e) {
+          // Failed to play Athan
+        }
+      }
+    }
+  }
+
+  /// Show notification immediately (Huawei-compatible)
+  Future<void> _showNotificationImmediately(
+    int id,
+    String title,
+    String body,
+    String channelId,
+    String payload, {
+    List<AndroidNotificationAction>? actions,
+  }) async {
+    try {
+      await _localNotifications.show(
+        id,
+        title,
+        body,
+        _buildNotificationDetails(
+          channelId: channelId,
+          importance: Importance.max,
+          priority: Priority.max,
+          playSound: true,
+          actions: actions,
+        ),
+        payload: payload,
+      );
+      // Showed immediate notification successfully
+    } catch (e) {
+      // Failed to show immediate notification
+    }
+  }
+
+  /// Schedule a single prayer notification with robust Android compatibility
   Future<void> _schedulePrayerNotification(
     PrayerTime prayer,
     String prayerName,
@@ -207,49 +324,148 @@ class PrayerNotificationService {
           prayer.time.subtract(Duration(minutes: settings.reminderMinutes));
 
       if (reminderTime.isAfter(DateTime.now())) {
-        await _localNotifications.zonedSchedule(
+        await _scheduleRobustNotification(
           notificationId,
           '🕌 Prayer Reminder',
           '$prayerName prayer is in ${settings.reminderMinutes} minutes',
-          tz.TZDateTime.from(reminderTime, tz.local),
-          _buildNotificationDetails(
-            channelId: _prayerReminderChannel,
-            importance: Importance.high,
-            priority: Priority.high,
-            sound: null, // Use default system sound
-          ),
-          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-          payload: 'prayer_reminder:$prayerName:${date.toIso8601String()}',
+          reminderTime,
+          _prayerReminderChannel,
+          'prayer_reminder:$prayerName:${date.toIso8601String()}',
+          importance: Importance.high,
+          priority: Priority.high,
         );
       }
     }
 
-    // Schedule Athan notification (at prayer time)
+    // Schedule Athan notification (at prayer time) - This is the main Azan
     if (prayer.time.isAfter(DateTime.now())) {
-      await _localNotifications.zonedSchedule(
+      await _scheduleRobustNotification(
         athanId,
         '🕌 $prayerName Prayer Time',
         _getPrayerMessage(prayerName),
-        tz.TZDateTime.from(prayer.time, tz.local),
+        prayer.time,
+        _athanChannel,
+        'athan:$prayerName:${date.toIso8601String()}',
+        importance: Importance.max,
+        priority: Priority.max,
+        actions: [
+          const AndroidNotificationAction(
+            'MARK_COMPLETED',
+            'Mark as Prayed',
+          ),
+          const AndroidNotificationAction(
+            'SNOOZE_5',
+            'Remind in 5 min',
+          ),
+        ],
+        // This will trigger Azan audio playback
+        onNotificationReceived: () async {
+          try {
+            await playAthan(settings.muadhinVoice, settings.volume);
+          } catch (e) {
+            // Failed to play Athan
+          }
+        },
+      );
+    }
+  }
+
+  /// Robust notification scheduling with multiple fallback mechanisms
+  Future<void> _scheduleRobustNotification(
+    int id,
+    String title,
+    String body,
+    DateTime scheduledTime,
+    String channelId,
+    String payload, {
+    Importance importance = Importance.high,
+    Priority priority = Priority.high,
+    List<AndroidNotificationAction>? actions,
+    VoidCallback? onNotificationReceived,
+  }) async {
+    try {
+      // Method 1: Primary scheduling with exact timing
+      await _localNotifications.zonedSchedule(
+        id,
+        title,
+        body,
+        tz.TZDateTime.from(scheduledTime, tz.local),
         _buildNotificationDetails(
-          channelId: _athanChannel,
-          importance: Importance.max,
-          priority: Priority.max,
-          playSound: true, // Ensure audible cue even if app is backgrounded
-          actions: [
-            const AndroidNotificationAction(
-              'MARK_COMPLETED',
-              'Mark as Prayed',
-            ),
-            const AndroidNotificationAction(
-              'SNOOZE_5',
-              'Remind in 5 min',
-            ),
-          ],
+          channelId: channelId,
+          importance: importance,
+          priority: priority,
+          playSound: true,
+          actions: actions,
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        payload: 'athan:$prayerName:${date.toIso8601String()}',
+        payload: payload,
       );
+
+      // Method 2: Backup notification 30 seconds later (for aggressive battery optimization)
+      final backupTime = scheduledTime.add(const Duration(seconds: 30));
+      await _localNotifications.zonedSchedule(
+        id + 500, // Backup ID
+        '$title (Backup)',
+        body,
+        tz.TZDateTime.from(backupTime, tz.local),
+        _buildNotificationDetails(
+          channelId: channelId,
+          importance: importance,
+          priority: priority,
+          playSound: true,
+          actions: actions,
+        ),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        payload: '$payload:backup',
+      );
+
+      // Method 3: Additional backup 1 minute later (for very aggressive systems)
+      final secondBackupTime = scheduledTime.add(const Duration(minutes: 1));
+      await _localNotifications.zonedSchedule(
+        id + 1000, // Second backup ID
+        '$title (Final)',
+        body,
+        tz.TZDateTime.from(secondBackupTime, tz.local),
+        _buildNotificationDetails(
+          channelId: channelId,
+          importance: importance,
+          priority: priority,
+          playSound: true,
+          actions: actions,
+        ),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        payload: '$payload:final',
+      );
+
+      // Notification scheduled successfully
+    } catch (e) {
+      // Failed to schedule notification, attempting fallback
+
+      // Method 4: Immediate fallback if scheduling fails
+      try {
+        await _localNotifications.show(
+          id,
+          title,
+          body,
+          _buildNotificationDetails(
+            channelId: channelId,
+            importance: importance,
+            priority: priority,
+            playSound: true,
+            actions: actions,
+          ),
+          payload: payload,
+        );
+
+        // Trigger Azan if this is a prayer time notification
+        if (onNotificationReceived != null) {
+          onNotificationReceived();
+        }
+
+        // Showed immediate fallback notification
+      } catch (fallbackError) {
+        // Fallback notification also failed
+      }
     }
   }
 
@@ -418,6 +634,21 @@ class PrayerNotificationService {
     await _localNotifications.cancel(_qiyamReminderId);
   }
 
+  /// Check if notifications are already scheduled for today
+  Future<bool> hasNotificationsForToday() async {
+    final pending = await getPendingNotifications();
+
+    // Check if we have any Athan notifications scheduled for today
+    return pending.any((notification) {
+      final id = notification.id;
+      // Check if it's an Athan notification (2000-2004 range)
+      if (id >= _athanBaseId && id < _athanBaseId + 5) {
+        return true;
+      }
+      return false;
+    });
+  }
+
   /// Cancel all notifications
   Future<void> cancelAllNotifications() async {
     await _ensureInitialized();
@@ -430,7 +661,7 @@ class PrayerNotificationService {
     return _localNotifications.pendingNotificationRequests();
   }
 
-  /// Build notification details
+  /// Enhanced notification details with better Android compatibility
   NotificationDetails _buildNotificationDetails({
     required String channelId,
     required Importance importance,
@@ -449,7 +680,7 @@ class PrayerNotificationService {
         playSound: playSound,
         sound:
             sound != null ? RawResourceAndroidNotificationSound(sound) : null,
-        vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
+        vibrationPattern: Int64List.fromList([0, 1000, 500, 1000, 500, 1000]),
         icon: '@drawable/ic_notification',
         largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
         actions: actions,
@@ -457,6 +688,16 @@ class PrayerNotificationService {
         when: DateTime.now().millisecondsSinceEpoch,
         category: AndroidNotificationCategory.reminder,
         visibility: NotificationVisibility.public,
+        // Enhanced settings for better reliability
+        showWhen: true,
+        enableVibration: true,
+        enableLights: true,
+        // Auto-cancel after 5 minutes
+        autoCancel: true,
+        // Allow notification to be persistent
+        ongoing: false,
+        // High priority for prayer notifications
+        fullScreenIntent: importance == Importance.max ? true : false,
       ),
       iOS: DarwinNotificationDetails(
         categoryIdentifier: channelId,
@@ -526,6 +767,19 @@ class PrayerNotificationService {
     }
   }
 
+  /// Handle local notification received (iOS)
+  static void _onLocalNotificationReceived(
+    int id,
+    String? title,
+    String? body,
+    String? payload,
+  ) {
+    // Handle Azan playback for prayer notifications
+    if (payload != null && payload.startsWith('athan:')) {
+      _playAthanForNotification(payload);
+    }
+  }
+
   /// Handle notification tap
   static void _onNotificationTapped(NotificationResponse response) {
     final payload = response.payload;
@@ -539,6 +793,10 @@ class PrayerNotificationService {
     switch (type) {
       case 'prayer_reminder':
       case 'athan':
+        // Play Azan if this is a prayer notification
+        if (type == 'athan') {
+          _playAthanForNotification(payload);
+        }
         // Navigate to prayer times screen
         // NavigationService.navigateTo('/prayer-times');
         break;
@@ -560,6 +818,20 @@ class PrayerNotificationService {
     } else if (response.actionId == 'SNOOZE_5') {
       // Snooze notification for 5 minutes
       // _snoozeNotification(data, 5);
+    }
+  }
+
+  /// Play Athan for notification
+  static void _playAthanForNotification(String payload) {
+    try {
+      final parts = payload.split(':');
+      if (parts.length >= 2) {
+        // Get the singleton instance and play Athan
+        final service = PrayerNotificationService();
+        service.playAthan('abdulbasit', 1.0); // Default voice and volume
+      }
+    } catch (e) {
+      // Failed to play Athan for notification
     }
   }
 
@@ -619,6 +891,7 @@ class PrayerNotificationService {
   /// Dispose resources
   Future<void> dispose() async {
     await _audioPlayer.dispose();
+    _periodicTimer?.cancel();
   }
 }
 

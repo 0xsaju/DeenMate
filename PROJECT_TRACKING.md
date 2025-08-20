@@ -30,18 +30,13 @@
 - ✅ **Arabic Prayer Names** - Authentic Arabic names with transliterations
 
 ### 🔔 Azan Notification System
-- ✅ **Cross-platform Notifications** - Prayer time alerts for iOS, Android, Web
-- ✅ **Pre-Prayer Reminders** - Configurable reminders (5, 10, 15 minutes before)
-- ✅ **Custom Azan Audio** - Multiple traditional Azan recordings
-- ✅ **Snooze Functionality** - Delay notifications with custom intervals
-- ✅ **Do Not Disturb** - Smart scheduling around sleep hours
-- ✅ **Silent Mode Options** - Respect device silent mode settings
-- ✅ **Permission Handling** - Graceful notification permission management
-- ✅ **Multiple Muadhin Voices** - Abdul Basit, Mishary Rashid, Sudais, etc.
-- ✅ **Volume Control** - Adjustable Athan volume
-- ✅ **Vibration Settings** - Customizable vibration patterns
-- ✅ **Full Screen Notifications** - Optional full-screen Athan display
-- ✅ **Auto-completion** - Automatically mark prayer as completed after Athan
+- ✅ Local notifications on Android/iOS (flutter_local_notifications)
+- ✅ Pre-prayer reminders (configurable minutes)
+- ✅ Muadhin voice selection (dropdown) + audio preview
+- ✅ Volume and vibration controls
+- ✅ Exact-alarm permission flow (Android 12+) via a minimal inline row in settings
+- ✅ Auto-reschedule on day change, connectivity regain, and settings change
+- ✅ Duplicate-safe scheduling (cancels day’s pending notifications before scheduling)
 
 ### 🧭 Qibla Finder
 - ✅ **GPS-based Direction** - Accurate Qibla direction from anywhere
@@ -117,9 +112,8 @@
 ## 🛠️ IN PROGRESS FEATURES
 
 ### 🌙 Sawm (Fasting) Tracker
-- 🔄 **Ramadan Calendar** - Islamic calendar with fasting dates
-- 🔄 **Fasting Tracker** - Mark fasts as completed
-- 🔄 **Suhur/Iftar Notifications** - Meal time reminders
+- 🔄 Ramadan calendar & fasting tracker
+- 🔄 Suhur/Iftar reminder toggles in Ramadan settings
 - 🔄 **Missed Fast Counter** - Track missed fasts
 - 🔄 **Fidyah Calculator** - Calculate compensation for missed fasts
 - 🔄 **Community Challenges** - Ramadan fasting challenges

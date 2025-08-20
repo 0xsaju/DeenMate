@@ -15,7 +15,7 @@ DeenMate is a production-ready Islamic utility super-app built with Flutter 3.x 
 
 ### ✨ Features
 
-- **🕐 Prayer Times** - Accurate prayer times with notifications and Azan
+- **🕐 Prayer Times** - Accurate times with clean, reliable Azan notifications
 - **🧭 Qibla Finder** - GPS-based direction to Kaaba with compass
 - **💰 Zakat Calculator** - Comprehensive Zakat calculation with multiple asset types
 - **📖 Islamic Content** - Daily Quran verses, Hadith, and Duas
@@ -133,18 +133,11 @@ flutter run -d macos
 - **Arabic Prayer Names** - Authentic Arabic names with transliterations
 
 ### 🔔 Notification System
-- **Cross-platform Notifications** - Prayer time alerts for iOS, Android, Web
-- **Pre-Prayer Reminders** - Configurable reminders (5, 10, 15 minutes before)
-- **Custom Azan Audio** - Multiple traditional Azan recordings
-- **Snooze Functionality** - Delay notifications with custom intervals
-- **Do Not Disturb** - Smart scheduling around sleep hours
-- **Silent Mode Options** - Respect device silent mode settings
-- **Permission Handling** - Graceful notification permission management
-- **Multiple Muadhin Voices** - Abdul Basit, Mishary Rashid, Sudais, etc.
-- **Volume Control** - Adjustable Athan volume
-- **Vibration Settings** - Customizable vibration patterns
-- **Full Screen Notifications** - Optional full-screen Athan display
-- **Auto-completion** - Automatically mark prayer as completed after Athan
+- Local notifications (Android/iOS) with exact timing where permitted
+- Pre-prayer reminders (configurable minutes)
+- Compact Muadhin voice selector and audio preview
+- Minimal inline permission prompt for exact alarms (Android 12+)
+- Auto-reschedule on day change, connectivity regain, and settings change
 
 ## 🧭 Qibla Finder Features
 

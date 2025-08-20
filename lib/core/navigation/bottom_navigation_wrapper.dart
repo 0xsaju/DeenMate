@@ -59,15 +59,13 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
           items: [
             BottomNavItem(
               label: S.t(context, 'home', 'Home'),
-              selectedColor: AppTheme.lightTheme.colorScheme.primary,
+              selectedColor: const Color(0xFF5D4037),
               iconBuilder: (selected) => SvgPicture.asset(
                 'assets/images/icons/home_app_logo.svg',
                 width: 26,
                 height: 26,
-                colorFilter: ColorFilter.mode(
-                  selected
-                      ? AppTheme.lightTheme.colorScheme.primary
-                      : const Color(0xFF5D4037),
+                colorFilter: const ColorFilter.mode(
+                  Color(0xFF5D4037),
                   BlendMode.srcIn,
                 ),
               ),
@@ -94,13 +92,11 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
             ),
             BottomNavItem(
               label: S.t(context, 'more', 'More'),
-              selectedColor: AppTheme.lightTheme.colorScheme.primary,
+              selectedColor: const Color(0xFF5D4037),
               iconBuilder: (selected) => Icon(
                 Icons.more_horiz,
                 size: 26,
-                color: selected
-                    ? AppTheme.lightTheme.colorScheme.primary
-                    : const Color(0xFF5D4037),
+                color: const Color(0xFF5D4037),
               ),
             ),
           ],
@@ -115,6 +111,8 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
         return 0;
       case '/islamic-content':
         return 1;
+      case '/quran':
+        return 1;
       case AppRouter.prayerTimes:
         // Treat prayer-times as Home for selection since it renders HomeScreen
         return 0;
@@ -124,6 +122,10 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
         // Settings, profile, etc. go to "More" tab
         if (_isMoreTabRoute(widget.currentLocation)) {
           return 3;
+        }
+        // If any nested Quran route
+        if (widget.currentLocation.startsWith('/quran')) {
+          return 1;
         }
         return 0; // Default to home
     }
@@ -148,7 +150,7 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
         context.go(AppRouter.home);
         break;
       case 1:
-        context.go('/islamic-content');
+        context.go(AppRouter.quranHome);
         break;
       case 2:
         context.go(AppRouter.qiblaFinder);

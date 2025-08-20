@@ -397,7 +397,12 @@ class DailyNotificationScheduler {
   final PrayerNotificationService _notificationService;
   final PrayerTimesRepository _repository;
 
-  Future<void> scheduleToday() async {
+  Future<void> scheduleToday({bool force = false}) async {
+    // Check if notifications are already scheduled (avoid duplicate scheduling)
+    if (!force && await _notificationService.hasNotificationsForToday()) {
+      return; // Skip if already scheduled
+    }
+
     final prayerTimesResult = await _repository.getCurrentPrayerTimes();
     final settingsResult = await _repository.getAthanSettings();
 
@@ -459,7 +464,7 @@ class AutoNotificationScheduler {
       await _scheduler.scheduleToday();
     } catch (e) {
       // Handle scheduling error
-      print('Failed to auto-schedule notifications: $e');
+      // Failed to auto-schedule notifications
     }
   }
 

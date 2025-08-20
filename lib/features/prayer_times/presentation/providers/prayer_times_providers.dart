@@ -278,19 +278,23 @@ final cachedCurrentPrayerTimesProvider =
     final now = DateTime.now();
     final cachedEither =
         await repo.getCachedPrayerTimes(date: now, location: preferredLoc);
-    return cachedEither.fold<PrayerTimes?>(
+    final storage = ref.read(prayerTimesLocalStorageProvider);
+    await storage.initialize();
+    final listOrNull = cachedEither.fold<List<PrayerTimes>?>(
       (_) => null,
-      (list) {
-        for (final pt in list) {
-          if (pt.date.year == now.year &&
-              pt.date.month == now.month &&
-              pt.date.day == now.day) {
-            return pt;
-          }
-        }
-        return null;
-      },
+      (list) => list,
     );
+    if (listOrNull != null) {
+      for (final pt in listOrNull) {
+        if (pt.date.year == now.year &&
+            pt.date.month == now.month &&
+            pt.date.day == now.day) {
+          return pt;
+        }
+      }
+    }
+    // If today's not cached, fall back to most recent cached day
+    return await storage.getMostRecentPrayerTimes();
   } catch (_) {
     return null;
   }

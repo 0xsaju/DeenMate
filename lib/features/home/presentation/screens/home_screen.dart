@@ -985,11 +985,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       ),
       child: prayerTimesAsync.when(
         data: (prayerTimes) => _buildPrayerTimesListView(prayerTimes, use24h),
-        loading: () => const Center(
-            child: Padding(
-                padding: EdgeInsets.all(20),
-                child: CircularProgressIndicator(color: Color(0xFFFF6B35)))),
-        error: (error, stack) => const SizedBox.shrink(),
+        loading: () => _buildPrayerTimesSkeleton(),
+        error: (error, stack) => _buildPrayerTimesSkeleton(),
       ),
     );
   }
@@ -1148,6 +1145,70 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ],
         );
       }).toList(),
+    );
+  }
+
+  // Non-blocking placeholder list to avoid spinners during app open
+  Widget _buildPrayerTimesSkeleton() {
+    final rows = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
+    return Column(
+      children: List.generate(rows.length * 2 - 1, (i) {
+        if (i.isOdd) {
+          return Container(
+            height: 2,
+            color: Theme.of(context).extension<AppColors>()?.divider ??
+                const Color(0xFFD6CBB3),
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+          );
+        }
+        final idx = i ~/ 2;
+        final name = rows[idx];
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+          child: Row(
+            children: [
+              Container(
+                width: 24,
+                height: 24,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF7F8C8D).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  name,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF2C3E50),
+                  ),
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  _buildSmallTimeWithMeridiem('—'),
+                  const SizedBox(height: 2),
+                  _buildSecondaryInfo('End - —', fontSize: 10),
+                ],
+              ),
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF7F8C8D).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.notifications_none,
+                    color: Color(0xFF7F8C8D), size: 16),
+              ),
+            ],
+          ),
+        );
+      }),
     );
   }
 

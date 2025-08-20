@@ -4,10 +4,12 @@ import 'package:go_router/go_router.dart';
 import '../../features/prayer_times/presentation/screens/athan_settings_screen.dart';
 import '../../features/settings/presentation/screens/app_settings_screen.dart';
 import '../../features/prayer_times/presentation/screens/calculation_method_screen.dart';
-import '../../features/prayer_times/presentation/screens/isha_time_demo_screen.dart';
+// Isha demo screen removed from routing
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/qibla/presentation/screens/qibla_compass_screen.dart';
 import '../../features/home/presentation/screens/zakat_calculator_screen.dart';
+import '../../features/quran/presentation/screens/quran_home_screen.dart';
+import '../../features/quran/presentation/screens/quran_reader_screen.dart';
 
 /// Application routing configuration using GoRouter
 /// Provides type-safe navigation with Islamic app structure
@@ -21,14 +23,15 @@ class AppRouter {
   static const String settings = '/settings';
   static const String athanSettings = '/athan-settings';
   static const String calculationMethod = '/calculation-method';
-  static const String ishaTimeDemo = '/isha-time-demo';
+  // Removed: static const String ishaTimeDemo
   static const String profile = '/profile';
   static const String history = '/history';
   static const String reports = '/reports';
+  static const String quranHome = '/quran';
 
   static final GoRouter _router = GoRouter(
     initialLocation: home,
-    debugLogDiagnostics: true,
+    // debugLogDiagnostics left false for clean builds
     routes: [
       // Home route now points to HomeScreen (prayer experience)
       GoRoute(
@@ -56,6 +59,21 @@ class AppRouter {
         path: qiblaFinder,
         name: 'qibla-finder',
         builder: (context, state) => const QiblaCompassScreen(),
+      ),
+
+      // Quran Home (list)
+      GoRoute(
+        path: quranHome,
+        name: 'quran-home',
+        builder: (context, state) => const QuranHomeScreen(),
+      ),
+
+      GoRoute(
+        path: '/quran/surah/:id',
+        name: 'quran-reader',
+        builder: (context, state) => QuranReaderScreen(
+          chapterId: int.parse(state.pathParameters['id']!),
+        ),
       ),
 
       // Sawm Tracker (placeholder)

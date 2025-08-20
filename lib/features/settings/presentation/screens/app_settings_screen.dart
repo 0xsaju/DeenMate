@@ -3,11 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/routing/app_router.dart';
-import '../../../../core/services/notification_service.dart';
+// Legacy notification service removed; notifications are managed via
+// prayer notification providers and repository-backed services.
 import '../../../../core/constants/app_constants.dart';
 // Deprecated direct service import removed; use repository-backed providers instead
 import '../../../../core/theme/islamic_theme.dart';
-import '../../../prayer_times/presentation/screens/isha_time_demo_screen.dart';
+// Demo screen removed per product decision to avoid extra widgets on Home
 
 /// App settings screen for DeenMate
 class AppSettingsScreen extends StatefulWidget {
@@ -25,7 +26,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
   int _selectedCalculationMethod = 2; // ISNA
   String _selectedLanguage = 'English';
 
-  final NotificationService _notificationService = NotificationService();
+  // Notifications are managed via providers; no direct service instance here.
 
   @override
   void initState() {
@@ -156,19 +157,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
               _setDailyVerses,
               Icons.menu_book,
             ),
-            ListTile(
-              leading: const Icon(Icons.nightlight_round,
-                  color: IslamicTheme.islamicGreen),
-              title: const Text('Isha Prayer Times Demo'),
-              subtitle: const Text('Test Islamic midnight calculation'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const IshaTimeDemoScreen(),
-                ),
-              ),
-            ),
+            // Isha demo entry removed to keep settings clean
           ],
         ),
         const SizedBox(height: 24),
@@ -389,18 +378,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
       _prayerNotificationsEnabled = enabled;
     });
 
-    if (enabled) {
-      final hasPermission = await _notificationService.requestPermissions();
-      if (!hasPermission) {
-        _showPermissionDialog();
-        setState(() {
-          _prayerNotificationsEnabled = false;
-        });
-        return;
-      }
-    }
-
-    await _notificationService.setPrayerRemindersEnabled(enabled);
+    // Permissions and scheduling are handled in Athan Settings via providers.
     await _saveSettings();
   }
 

@@ -8,6 +8,8 @@ import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/qibla/presentation/screens/qibla_compass_screen.dart';
 import '../../features/home/presentation/screens/zakat_calculator_screen.dart';
 import '../../features/islamic_content/presentation/screens/islamic_content_screen.dart';
+import '../../features/quran/presentation/screens/quran_home_screen.dart';
+import '../../features/quran/presentation/screens/quran_reader_screen.dart';
 import '../routing/app_router.dart';
 import '../widgets/themed_widgets.dart';
 import 'bottom_navigation_wrapper.dart';
@@ -58,7 +60,7 @@ class EnhancedAppRouter {
 
   static final GoRouter router = GoRouter(
     initialLocation: home,
-    debugLogDiagnostics: true,
+    // debug diagnostics disabled for production-like UX
     routes: [
       // Shell route with bottom navigation
       ShellRoute(
@@ -106,6 +108,21 @@ class EnhancedAppRouter {
             path: '/islamic-content',
             name: 'islamic-content',
             builder: (context, state) => const IslamicContentScreen(),
+          ),
+
+          // Quran Home
+          GoRoute(
+            path: '/quran',
+            name: 'quran-home',
+            builder: (context, state) => const QuranHomeScreen(),
+          ),
+
+          GoRoute(
+            path: '/quran/surah/:id',
+            name: 'quran-reader',
+            builder: (context, state) => QuranReaderScreen(
+              chapterId: int.parse(state.pathParameters['id']!),
+            ),
           ),
 
           // Secondary routes
