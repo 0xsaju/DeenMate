@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
-import '../../../../core/theme/app_theme.dart';
 import '../../data/services/calculation_method_service.dart';
 import '../../domain/entities/calculation_method.dart';
 import '../../domain/entities/location.dart';
@@ -57,7 +55,7 @@ class _CalculationMethodScreenState extends ConsumerState<CalculationMethodScree
     return Scaffold(
       appBar: AppBar(
         title: const Text('Prayer Calculation Methods'),
-        backgroundColor: AppTheme.lightTheme.colorScheme.primary,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -102,7 +100,7 @@ class _CalculationMethodScreenState extends ConsumerState<CalculationMethodScree
               Icon(
                 Icons.error_outline,
                 size: 64,
-                color: AppTheme.lightTheme.colorScheme.error,
+                color: Colors.red,
               ),
               const SizedBox(height: 16),
               Text(
@@ -130,7 +128,7 @@ class _CalculationMethodScreenState extends ConsumerState<CalculationMethodScree
               onPressed: _applySelectedMethod,
               icon: const Icon(Icons.check),
               label: const Text('Apply Method'),
-              backgroundColor: AppTheme.lightTheme.colorScheme.primary,
+              backgroundColor: Colors.green,
             ),
     );
   }
@@ -153,7 +151,7 @@ class _CalculationMethodScreenState extends ConsumerState<CalculationMethodScree
                     children: [
                       Icon(
                         Icons.location_on,
-                        color: AppTheme.lightTheme.colorScheme.primary,
+                        color: Colors.green,
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -176,7 +174,7 @@ class _CalculationMethodScreenState extends ConsumerState<CalculationMethodScree
             'Recommended Methods',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
-              color: AppTheme.lightTheme.colorScheme.primary,
+              color: Colors.green,
             ),
           ),
           const SizedBox(height: 8),
@@ -218,7 +216,7 @@ class _CalculationMethodScreenState extends ConsumerState<CalculationMethodScree
             'All Available Methods',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
-              color: AppTheme.lightTheme.colorScheme.primary,
+              color: Colors.green,
             ),
           ),
           const SizedBox(height: 8),
@@ -257,7 +255,7 @@ class _CalculationMethodScreenState extends ConsumerState<CalculationMethodScree
             'Custom Method',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
-              color: AppTheme.lightTheme.colorScheme.primary,
+              color: Colors.green,
             ),
           ),
           const SizedBox(height: 8),
@@ -347,7 +345,7 @@ class _CalculationMethodScreenState extends ConsumerState<CalculationMethodScree
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Applied "${method.name}" calculation method'),
-            backgroundColor: AppTheme.lightTheme.colorScheme.primary,
+            backgroundColor: Colors.green,
             action: SnackBarAction(
               label: 'View',
               textColor: Colors.white,

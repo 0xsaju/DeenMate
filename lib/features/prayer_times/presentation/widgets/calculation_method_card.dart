@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-
-import '../../../../core/theme/app_theme.dart';
 import '../../data/services/calculation_method_service.dart';
 import '../../domain/entities/calculation_method.dart';
 import '../../domain/entities/location.dart';
@@ -33,7 +31,7 @@ class CalculationMethodCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         side: isSelected
             ? BorderSide(
-                color: AppTheme.lightTheme.colorScheme.primary,
+                color: Colors.green,
                 width: 2,
               )
             : BorderSide.none,
@@ -59,7 +57,7 @@ class CalculationMethodCard extends StatelessWidget {
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: isSelected
-                                ? AppTheme.lightTheme.colorScheme.primary
+                                ? Colors.green
                                 : null,
                           ),
                         ),
@@ -85,7 +83,7 @@ class CalculationMethodCard extends StatelessWidget {
                       if (isRecommended || comparison['isRecommended'] == true)
                         _buildBadge(
                           'RECOMMENDED',
-                          AppTheme.lightTheme.colorScheme.primary,
+                          Colors.green,
                           Colors.white,
                         ),
                       if (comparison['regionalMatch'] == true)
@@ -186,7 +184,7 @@ class CalculationMethodCard extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 8),
                           decoration: BoxDecoration(
-                            color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.1),
+                            color: Colors.green.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Row(
@@ -195,13 +193,13 @@ class CalculationMethodCard extends StatelessWidget {
                               Icon(
                                 Icons.check_circle,
                                 size: 16,
-                                color: AppTheme.lightTheme.colorScheme.primary,
+                                color: Colors.green,
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 'Selected',
                                 style: TextStyle(
-                                  color: AppTheme.lightTheme.colorScheme.primary,
+                                  color: Colors.green,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),

@@ -82,7 +82,7 @@ class AuthTokenNotifier extends Notifier<AuthTokenState> {
     while (true) {
       try {
         final t = await _fetchToken();
-        state = AuthTokenState(token: t.item1, expiresAt: t.item2);
+        state = AuthTokenState(token: t.$1, expiresAt: t.$2);
         _refreshing!.complete();
         _refreshing = null;
         return;

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/prayer_statistics.dart';
 import '../providers/prayer_times_providers.dart';
 
@@ -21,14 +20,14 @@ class PrayerTrackingWidget extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.lightTheme.colorScheme.surface,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.2),
+          color: Colors.green.withOpacity(0.2),
         ),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.08),
+            color: Colors.green.withOpacity(0.08),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -52,12 +51,12 @@ class PrayerTrackingWidget extends ConsumerWidget {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.1),
+            color: Colors.green.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
             Icons.analytics,
-            color: AppTheme.lightTheme.colorScheme.primary,
+            color: Colors.green,
             size: 20,
           ),
         ),
@@ -119,7 +118,7 @@ class PrayerTrackingWidget extends ConsumerWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.1),
+            color: Colors.green.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -262,7 +261,7 @@ class PrayerTrackingWidget extends ConsumerWidget {
       height: 120,
       child: Center(
         child: CircularProgressIndicator(
-          color: AppTheme.lightTheme.colorScheme.primary,
+          color: Colors.green,
         ),
       ),
     );

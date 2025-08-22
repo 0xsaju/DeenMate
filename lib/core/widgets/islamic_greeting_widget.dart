@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
 
 /// Islamic Greeting Widget
 /// Displays time-appropriate Islamic greetings in Arabic, English, and Bengali
@@ -24,7 +23,7 @@ class IslamicGreetingWidget extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              AppTheme.lightTheme.colorScheme.primary.withOpacity(0.1),
+              Colors.green.withOpacity(0.1),
               Colors.white,
             ],
           ),
@@ -78,7 +77,7 @@ class IslamicGreetingWidget extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.1),
+                color: Colors.green.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
@@ -87,7 +86,7 @@ class IslamicGreetingWidget extends StatelessWidget {
                   Icon(
                     greeting.icon,
                     size: 16,
-                    color: AppTheme.lightTheme.colorScheme.primary,
+                    color: Colors.green,
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -95,7 +94,7 @@ class IslamicGreetingWidget extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: AppTheme.lightTheme.colorScheme.primary,
+                      color: Colors.green,
                     ),
                   ),
                 ],

@@ -3,8 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
-import '../../../../core/theme/app_theme.dart';
 import '../providers/prayer_times_providers.dart';
 
 /// Widget showing Qibla direction with compass visualization
@@ -12,7 +10,8 @@ class QiblaDirectionWidget extends ConsumerStatefulWidget {
   const QiblaDirectionWidget({super.key});
 
   @override
-  ConsumerState<QiblaDirectionWidget> createState() => _QiblaDirectionWidgetState();
+  ConsumerState<QiblaDirectionWidget> createState() =>
+      _QiblaDirectionWidgetState();
 }
 
 class _QiblaDirectionWidgetState extends ConsumerState<QiblaDirectionWidget>
@@ -41,10 +40,12 @@ class _QiblaDirectionWidgetState extends ConsumerState<QiblaDirectionWidget>
     _pulseAnimation = Tween<double>(
       begin: 1,
       end: 1.1,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ),);
+    ).animate(
+      CurvedAnimation(
+        parent: _pulseController,
+        curve: Curves.easeInOut,
+      ),
+    );
 
     _pulseController.repeat(reverse: true);
   }
@@ -64,14 +65,14 @@ class _QiblaDirectionWidgetState extends ConsumerState<QiblaDirectionWidget>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.lightTheme.colorScheme.surface,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.2),
+          color: Colors.green.withOpacity(0.2),
         ),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.08),
+            color: Colors.green.withOpacity(0.08),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -89,7 +90,8 @@ class _QiblaDirectionWidgetState extends ConsumerState<QiblaDirectionWidget>
           ),
           const SizedBox(height: 12),
           locationAsync.when(
-            data: (location) => _buildLocationInfo(location.city, location.country),
+            data: (location) =>
+                _buildLocationInfo(location.city, location.country),
             loading: () => const SizedBox.shrink(),
             error: (error, stack) => const SizedBox.shrink(),
           ),
@@ -104,12 +106,12 @@ class _QiblaDirectionWidgetState extends ConsumerState<QiblaDirectionWidget>
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.1),
+            color: Colors.green.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
             Icons.explore,
-            color: AppTheme.lightTheme.colorScheme.primary,
+            color: Colors.green,
             size: 20,
           ),
         ),
@@ -128,12 +130,12 @@ class _QiblaDirectionWidgetState extends ConsumerState<QiblaDirectionWidget>
           child: Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.1),
+              color: Colors.green.withOpacity(0.1),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Icon(
               Icons.open_in_new,
-              color: AppTheme.lightTheme.colorScheme.primary,
+              color: Colors.green,
               size: 14,
             ),
           ),
@@ -158,14 +160,14 @@ class _QiblaDirectionWidgetState extends ConsumerState<QiblaDirectionWidget>
                 height: 100,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.1),
+                  color: Colors.green.withOpacity(0.1),
                   border: Border.all(
-                    color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.3),
+                    color: Colors.green.withOpacity(0.3),
                     width: 2,
                   ),
                 ),
               ),
-              
+
               // Cardinal directions
               ...List.generate(4, (index) {
                 final angle = index * 90.0;
@@ -181,14 +183,14 @@ class _QiblaDirectionWidgetState extends ConsumerState<QiblaDirectionWidget>
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.lightTheme.colorScheme.primary,
+                          color: Colors.green,
                         ),
                       ),
                     ),
                   ),
                 );
               }),
-              
+
               // Qibla arrow
               AnimatedBuilder(
                 animation: _pulseAnimation,
@@ -208,27 +210,27 @@ class _QiblaDirectionWidgetState extends ConsumerState<QiblaDirectionWidget>
                   );
                 },
               ),
-              
+
               // Center dot
               Container(
                 width: 8,
                 height: 8,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppTheme.lightTheme.colorScheme.primary,
+                  color: Colors.green,
                 ),
               ),
             ],
           ),
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Direction info
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.1),
+            color: Colors.green.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -236,7 +238,7 @@ class _QiblaDirectionWidgetState extends ConsumerState<QiblaDirectionWidget>
             children: [
               Icon(
                 Icons.mosque,
-                color: AppTheme.lightTheme.colorScheme.primary,
+                color: Colors.green,
                 size: 16,
               ),
               const SizedBox(width: 8),
@@ -245,7 +247,7 @@ class _QiblaDirectionWidgetState extends ConsumerState<QiblaDirectionWidget>
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: AppTheme.lightTheme.colorScheme.primary,
+                  color: Colors.green,
                 ),
               ),
             ],
@@ -260,7 +262,7 @@ class _QiblaDirectionWidgetState extends ConsumerState<QiblaDirectionWidget>
       height: 120,
       child: Center(
         child: CircularProgressIndicator(
-          color: AppTheme.lightTheme.colorScheme.primary,
+          color: Colors.green,
         ),
       ),
     );
@@ -339,11 +341,11 @@ class QiblaArrowPainter extends CustomPainter {
       ..strokeWidth = 2;
 
     final path = Path();
-    
+
     // Draw arrow pointing upward (North)
     final centerX = size.width / 2;
     final centerY = size.height / 2;
-    
+
     // Arrow head
     path.moveTo(centerX, centerY - 25);
     path.lineTo(centerX - 8, centerY - 10);
@@ -356,7 +358,7 @@ class QiblaArrowPainter extends CustomPainter {
 
     canvas.drawPath(path, paint);
     canvas.drawPath(path, strokePaint);
-    
+
     // Add a small Kaaba symbol
     final rect = Rect.fromCenter(
       center: Offset(centerX, centerY - 18),

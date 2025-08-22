@@ -73,6 +73,7 @@ class _OnboardingNavigationScreenState
     super.initState();
     // Reset onboarding state when entering onboarding flow
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       ref.read(onboardingProvider.notifier).resetOnboarding();
     });
   }

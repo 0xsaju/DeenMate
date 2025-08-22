@@ -7,7 +7,6 @@ import '../../features/prayer_times/domain/entities/prayer_tracking.dart';
 import '../../features/prayer_times/presentation/providers/prayer_times_providers.dart';
 import '../../core/utils/islamic_utils.dart' as islamic_utils;
 import '../localization/bengali_strings.dart';
-import '../theme/app_theme.dart';
 
 /// Connected Prayer Countdown Widget that uses real prayer times data
 /// This replaces the mock version with actual Riverpod provider integration
@@ -333,7 +332,7 @@ class _ConnectedPrayerCountdownWidgetState extends ConsumerState<ConnectedPrayer
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              AppTheme.lightTheme.colorScheme.primary.withOpacity(0.3),
+              Colors.green.withOpacity(0.3),
               Colors.grey.withOpacity(0.1),
             ],
           ),
@@ -343,13 +342,13 @@ class _ConnectedPrayerCountdownWidgetState extends ConsumerState<ConnectedPrayer
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               CircularProgressIndicator(
-                color: AppTheme.lightTheme.colorScheme.primary,
+                color: Colors.green,
               ),
               const SizedBox(height: 16),
               Text(
                 '${'loading'.bn}...',
                 style: TextStyle(
-                  color: AppTheme.lightTheme.colorScheme.primary,
+                  color: Colors.green,
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
@@ -497,7 +496,7 @@ class _ConnectedPrayerCountdownWidgetState extends ConsumerState<ConnectedPrayer
       englishName: englishNames[currentPrayer.currentPrayer] ?? 'Prayer',
       arabicName: arabicNames[currentPrayer.currentPrayer] ?? '',
       bengaliName: bengaliNames[currentPrayer.currentPrayer] ?? '',
-      color: prayerColors[currentPrayer.currentPrayer] ?? AppTheme.lightTheme.colorScheme.primary,
+      color: prayerColors[currentPrayer.currentPrayer] ?? Colors.green,
       icon: prayerIcons[currentPrayer.currentPrayer] ?? Icons.access_time,
     );
   }

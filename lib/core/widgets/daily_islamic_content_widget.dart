@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
 
 /// Daily Islamic Content Widget
 /// Displays Quran verses, Hadith, and Duas like the reference Bengali apps
@@ -15,7 +14,7 @@ class DailyIslamicContentWidget extends StatelessWidget {
           'Daily Islamic Content | দৈনিক ইসলামিক কন্টেন্ট',
           style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
-            color: AppTheme.lightTheme.colorScheme.primary,
+            color: Colors.green,
           ),
         ),
         const SizedBox(height: 16),

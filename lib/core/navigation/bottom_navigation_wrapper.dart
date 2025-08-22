@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../routing/app_router.dart';
-import '../theme/app_theme.dart';
 import '../localization/strings.dart';
 import '../../features/home/presentation/widgets/islamic_bottom_navigation.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -47,7 +46,7 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
   }
 
   Widget _buildBottomNavigation() {
-    // Custom bottom nav to match the reference exactly (UI only)
+    final theme = Theme.of(context);
     final bottomInset = MediaQuery.of(context).padding.bottom;
     return SafeArea(
       top: false,
@@ -59,44 +58,52 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
           items: [
             BottomNavItem(
               label: S.t(context, 'home', 'Home'),
-              selectedColor: const Color(0xFF5D4037),
+              selectedColor: theme.colorScheme.primary,
               iconBuilder: (selected) => SvgPicture.asset(
                 'assets/images/icons/home_app_logo.svg',
                 width: 26,
                 height: 26,
-                colorFilter: const ColorFilter.mode(
-                  Color(0xFF5D4037),
+                colorFilter: ColorFilter.mode(
+                  selected
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.onSurfaceVariant,
                   BlendMode.srcIn,
                 ),
               ),
             ),
             BottomNavItem(
               label: S.t(context, 'quran', 'Quran'),
-              selectedColor: const Color(0xFF5D4037),
+              selectedColor: theme.colorScheme.primary,
               iconBuilder: (selected) => Icon(
                 selected
                     ? Icons.auto_stories_rounded
                     : Icons.auto_stories_outlined,
                 size: 26,
-                color: const Color(0xFF5D4037),
+                color: selected
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurfaceVariant,
               ),
             ),
             BottomNavItem(
               label: S.t(context, 'hadith', 'Hadith'),
-              selectedColor: const Color(0xFF5D4037),
+              selectedColor: theme.colorScheme.primary,
               iconBuilder: (selected) => Icon(
                 selected ? Icons.menu_book_rounded : Icons.menu_book_outlined,
                 size: 26,
-                color: const Color(0xFF5D4037),
+                color: selected
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurfaceVariant,
               ),
             ),
             BottomNavItem(
               label: S.t(context, 'more', 'More'),
-              selectedColor: const Color(0xFF5D4037),
+              selectedColor: theme.colorScheme.primary,
               iconBuilder: (selected) => Icon(
                 Icons.more_horiz,
                 size: 26,
-                color: const Color(0xFF5D4037),
+                color: selected
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurfaceVariant,
               ),
             ),
           ],
@@ -127,6 +134,10 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
         if (widget.currentLocation.startsWith('/quran')) {
           return 1;
         }
+        // If any nested Hadith route
+        if (widget.currentLocation.startsWith('/hadith')) {
+          return 2;
+        }
         return 0; // Default to home
     }
   }
@@ -153,7 +164,8 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
         context.go(AppRouter.quranHome);
         break;
       case 2:
-        context.go(AppRouter.qiblaFinder);
+        // Navigate to Hadith/Islamic content
+        context.go('/islamic-content');
         break;
       case 3:
         // Navigate to the "More" screen

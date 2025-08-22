@@ -10,6 +10,8 @@ import '../../features/home/presentation/screens/zakat_calculator_screen.dart';
 import '../../features/islamic_content/presentation/screens/islamic_content_screen.dart';
 import '../../features/quran/presentation/screens/quran_home_screen.dart';
 import '../../features/quran/presentation/screens/quran_reader_screen.dart';
+import '../../features/inheritance/presentation/screens/inheritance_calculator_screen.dart';
+import '../../features/inheritance/presentation/screens/shariah_clarification_screen.dart';
 import '../routing/app_router.dart';
 import '../widgets/themed_widgets.dart';
 import 'bottom_navigation_wrapper.dart';
@@ -57,6 +59,8 @@ class EnhancedAppRouter {
   static const String profile = '/profile';
   static const String history = '/history';
   static const String reports = '/reports';
+  static const String inheritanceCalculator = '/inheritance-calculator';
+  static const String shariahClarification = '/shariah-clarification';
 
   static final GoRouter router = GoRouter(
     initialLocation: home,
@@ -122,6 +126,14 @@ class EnhancedAppRouter {
             name: 'quran-reader',
             builder: (context, state) => QuranReaderScreen(
               chapterId: int.parse(state.pathParameters['id']!),
+            ),
+          ),
+          GoRoute(
+            path: '/quran/surah/:id/verse/:verseKey',
+            name: 'quran-reader-verse',
+            builder: (context, state) => QuranReaderScreen(
+              chapterId: int.parse(state.pathParameters['id']!),
+              targetVerseKey: state.pathParameters['verseKey']!,
             ),
           ),
 
@@ -195,6 +207,18 @@ class EnhancedAppRouter {
         path: calculationMethod,
         name: 'calculation-method',
         builder: (context, state) => const CalculationMethodScreen(),
+      ),
+
+      // Inheritance (accessible without bottom nav as a full-flow tool)
+      GoRoute(
+        path: inheritanceCalculator,
+        name: 'inheritance-calculator',
+        builder: (context, state) => const InheritanceCalculatorScreen(),
+      ),
+      GoRoute(
+        path: shariahClarification,
+        name: 'shariah-clarification',
+        builder: (context, state) => const ShariahClarificationScreen(),
       ),
     ],
     errorBuilder: (context, state) => ErrorScreen(error: state.error),

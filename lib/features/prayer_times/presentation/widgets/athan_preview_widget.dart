@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../providers/audio_providers.dart';
 
 /// Widget for previewing Athan audio
@@ -21,13 +20,13 @@ class AthanPreviewWidget extends ConsumerWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppTheme.lightTheme.colorScheme.secondary.withOpacity(0.1),
-            AppTheme.lightTheme.colorScheme.secondary.withOpacity(0.05),
+            Colors.blue.withOpacity(0.1),
+            Colors.blue.withOpacity(0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppTheme.lightTheme.colorScheme.secondary.withOpacity(0.3),
+          color: Colors.blue.withOpacity(0.3),
         ),
       ),
       child: Column(
@@ -37,7 +36,7 @@ class AthanPreviewWidget extends ConsumerWidget {
             children: [
               Icon(
                 Icons.play_circle_outline,
-                color: AppTheme.lightTheme.colorScheme.secondary,
+                color: Colors.blue,
                 size: 20,
               ),
               const SizedBox(width: 8),
@@ -75,7 +74,7 @@ class AthanPreviewWidget extends ConsumerWidget {
                 const SizedBox(width: 16),
                 Icon(
                   Icons.volume_up,
-                  color: AppTheme.lightTheme.colorScheme.secondary,
+                  color: Colors.blue,
                   size: 20,
                 ),
                 const SizedBox(width: 8),
@@ -83,7 +82,7 @@ class AthanPreviewWidget extends ConsumerWidget {
                   '${(volume * 100).toInt()}%',
                   style: TextStyle(
                     fontWeight: FontWeight.w500,
-                    color: AppTheme.lightTheme.colorScheme.secondary,
+                    color: Colors.blue,
                   ),
                 ),
               ],
@@ -138,7 +137,7 @@ class AthanPreviewWidget extends ConsumerWidget {
       icon: const Icon(Icons.play_arrow),
       label: const Text('Preview'),
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppTheme.lightTheme.colorScheme.secondary,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       ),
@@ -174,7 +173,7 @@ class AthanPreviewWidget extends ConsumerWidget {
         children: [
           Icon(
             Icons.info_outline,
-            color: AppTheme.lightTheme.colorScheme.secondary,
+            color: Colors.blue,
             size: 16,
           ),
           const SizedBox(width: 8),

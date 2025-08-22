@@ -3,6 +3,7 @@ import 'package:flutter/services.dart' show rootBundle, ByteData;
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:async';
 
 import '../../../../core/error/failures.dart';
 
@@ -45,6 +46,7 @@ class AthanAudioNotifier extends StateNotifier<AthanAudioState> {
   }
 
   final AudioPlayer _audioPlayer = AudioPlayer();
+  Timer? _previewStopTimer;
 
   void _setupAudioPlayer() {
     // Listen to player state changes
@@ -73,6 +75,7 @@ class AthanAudioNotifier extends StateNotifier<AthanAudioState> {
 
       // Stop any currently playing audio
       await _audioPlayer.stop();
+      _previewStopTimer?.cancel();
 
       // Simple direct path approach
       final audioPath = 'assets/audio/athan/${muadhinVoice}_athan.mp3';
@@ -109,7 +112,24 @@ class AthanAudioNotifier extends StateNotifier<AthanAudioState> {
       final tempDir = await getTemporaryDirectory();
       final file = File('${tempDir.path}/${muadhinVoice}_athan.mp3');
       await file.writeAsBytes(bytes.buffer.asUint8List());
-      await _audioPlayer.play(DeviceFileSource(file.path));
+
+      // Ensure no looping and set a comfortable preview volume
+      await _audioPlayer.setReleaseMode(ReleaseMode.stop);
+
+      // Play preview and auto-stop after 10 seconds
+      await _audioPlayer.play(
+        DeviceFileSource(file.path),
+        volume: 0.6,
+      );
+
+      _previewStopTimer = Timer(const Duration(seconds: 10), () async {
+        try {
+          await _audioPlayer.stop();
+        } catch (_) {}
+        if (mounted) {
+          state = state.copyWith(isPlaying: false, isLoading: false);
+        }
+      });
 
       state = state.copyWith(isLoading: false);
     } catch (e) {
@@ -125,6 +145,7 @@ class AthanAudioNotifier extends StateNotifier<AthanAudioState> {
   /// Stop Athan playback
   Future<void> stopAthan() async {
     try {
+      _previewStopTimer?.cancel();
       await _audioPlayer.stop();
       state = state.copyWith(
         isPlaying: false,
@@ -167,6 +188,7 @@ class AthanAudioNotifier extends StateNotifier<AthanAudioState> {
 
   @override
   void dispose() {
+    _previewStopTimer?.cancel();
     _audioPlayer.dispose();
     super.dispose();
   }

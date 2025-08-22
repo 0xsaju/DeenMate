@@ -3,14 +3,19 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../../../../core/storage/hive_boxes.dart' as boxes;
 import '../api/chapters_api.dart';
 import '../api/verses_api.dart';
+import '../api/resources_api.dart';
 import '../cache/cache_keys.dart';
 import '../dto/chapter_dto.dart';
 import '../dto/verses_page_dto.dart';
+import '../dto/translation_resource_dto.dart';
+import '../dto/recitation_resource_dto.dart';
 
 class QuranRepository {
-  QuranRepository(this._chaptersApi, this._versesApi, this._hive);
+  QuranRepository(
+      this._chaptersApi, this._versesApi, this._resourcesApi, this._hive);
   final ChaptersApi _chaptersApi;
   final VersesApi _versesApi;
+  final ResourcesApi _resourcesApi;
   final HiveInterface _hive;
 
   Future<List<ChapterDto>> getChapters({bool refresh = true}) async {
@@ -161,6 +166,40 @@ class QuranRepository {
     );
   }
 
+  Future<List<RecitationResourceDto>> getRecitations(
+      {bool refresh = true}) async {
+    final box = await _hive.openBox(boxes.Boxes.resources);
+    final key = 'recitations';
+    final cached = box.get(key);
+    if (cached is List) {
+      if (refresh) _refreshRecitations(box);
+      return cached
+          .cast<Map>()
+          .map((e) =>
+              RecitationResourceDto.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+    }
+    if (cached is String) {
+      final list = (jsonDecode(cached) as List)
+          .map((e) =>
+              RecitationResourceDto.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+      if (refresh) _refreshRecitations(box);
+      return list;
+    }
+    final fresh = await _resourcesApi.getRecitations();
+    await box.put(key, fresh.map((e) => {'id': e.id, 'name': e.name}).toList());
+    return fresh;
+  }
+
+  Future<void> _refreshRecitations(Box box) async {
+    try {
+      final fresh = await _resourcesApi.getRecitations();
+      await box.put('recitations',
+          fresh.map((e) => {'id': e.id, 'name': e.name}).toList());
+    } catch (_) {}
+  }
+
   Future<VersesPageDto> _fetchAndCache(
     int chapterId,
     List<int> translationIds,
@@ -203,5 +242,65 @@ class QuranRepository {
       );
       await box.put(key, fresh.toJson());
     } catch (_) {}
+  }
+
+  /// Get available translation resources
+  Future<List<TranslationResourceDto>> getTranslationResources(
+      {bool refresh = true}) async {
+    final box = await _hive.openBox(boxes.Boxes.resources);
+    final cached = box.get('translation_resources');
+
+    if (cached != null && !refresh) {
+      if (cached is List) {
+        return cached
+            .cast<Map>()
+            .map((e) =>
+                TranslationResourceDto.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+      }
+      if (cached is String) {
+        final list = (jsonDecode(cached) as List)
+            .map((e) =>
+                TranslationResourceDto.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+        return list;
+      }
+    }
+
+    final fresh = await _resourcesApi.getTranslationResources();
+    await box.put(
+        'translation_resources', fresh.map((e) => e.toJson()).toList());
+    return fresh;
+  }
+
+  /// Get translation resources by language
+  Future<List<TranslationResourceDto>> getTranslationResourcesByLanguage(
+      String language,
+      {bool refresh = true}) async {
+    final key = 'translation_resources_$language';
+    final box = await _hive.openBox(boxes.Boxes.resources);
+    final cached = box.get(key);
+
+    if (cached != null && !refresh) {
+      if (cached is List) {
+        return cached
+            .cast<Map>()
+            .map((e) =>
+                TranslationResourceDto.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+      }
+      if (cached is String) {
+        final list = (jsonDecode(cached) as List)
+            .map((e) =>
+                TranslationResourceDto.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+        return list;
+      }
+    }
+
+    final fresh =
+        await _resourcesApi.getTranslationResourcesByLanguage(language);
+    await box.put(key, fresh.map((e) => e.toJson()).toList());
+    return fresh;
   }
 }

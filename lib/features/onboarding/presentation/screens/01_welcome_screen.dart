@@ -1,186 +1,224 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
-
-import '../widgets/islamic_decorative_elements.dart';
-import '../widgets/islamic_gradient_background.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Welcome screen for the onboarding flow
-/// Displays Islamic greeting and app introduction
-class WelcomeScreen extends StatelessWidget {
+/// Displays Islamic greeting and app introduction with modern Material 3 design
+class WelcomeScreen extends ConsumerWidget {
   final VoidCallback? onNext;
 
   const WelcomeScreen({super.key, this.onNext});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      body: IslamicGradientBackground(
-        child: SafeArea(
-          child: Column(
-            children: [
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Decorative elements
-                    IslamicDecorativeElements.buildGeometricPattern(
-                      size: 120,
-                      color: const Color(0xFF4CAF50),
-                    ),
-                    
-                    const SizedBox(height: 40),
-                    
-                    // Arabic greeting
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Text(
-                        'السلام عليكم ورحمة الله وبركاته',
-                        style: GoogleFonts.amiri(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF8B4513),
-                          height: 1.5,
+      backgroundColor: theme.colorScheme.surface,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // App Logo/Icon
+                  Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: theme.colorScheme.primary.withOpacity(0.1),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
                         ),
-                        textAlign: TextAlign.center,
-                      ),
+                      ],
                     ),
-                    
-                    const SizedBox(height: 20),
-                    
-                    // English welcome message
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 40),
-                      child: Text(
-                        'Welcome to your new\nspiritual companion',
-                        style: GoogleFonts.notoSans(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w400,
-                          color: const Color(0xFF4A4A4A),
-                          height: 1.4,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
+                    child: Icon(
+                      Icons.mosque,
+                      size: 64,
+                      color: theme.colorScheme.onPrimaryContainer,
                     ),
-                    
-                    const SizedBox(height: 60),
-                    
-                    // Bottom decoration
-                    _buildBottomDecoration(),
-                  ],
-                ),
-              ),
-              
-              // Continue button
-              Padding(
-                padding: const EdgeInsets.all(30),
-                child: Column(
-                  children: [
-                    _buildContinueButton(context),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Tap to continue',
-                      style: GoogleFonts.notoSans(
-                        fontSize: 14,
-                        color: const Color(0xFF8B4513).withOpacity(0.7),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+                  ),
 
-  Widget _buildDecorativeDivider() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          width: 50,
-          height: 1,
-          color: const Color(0xFFC19A6B).withOpacity(0.4),
-        ),
-        const SizedBox(width: 16),
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: const Color(0xFF8B4513).withOpacity(0.7),
-            shape: BoxShape.circle,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Container(
-          width: 50,
-          height: 1,
-          color: const Color(0xFFC19A6B).withOpacity(0.4),
-        ),
-      ],
-    );
-  }
+                  const SizedBox(height: 48),
 
-  Widget _buildContinueButton(BuildContext context) {
-    return GestureDetector(
-      onTap: () => onNext?.call(),
-      child: Container(
-        width: 60,
-        height: 60,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF2E7D32), Color(0xFF4CAF50)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(2, 4),
+                  // Arabic greeting
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    child: Text(
+                      'السلام عليكم ورحمة الله وبركاته',
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        fontFamily: 'Uthmani',
+                        fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.onSurface,
+                        height: 1.8,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // English welcome message
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 48),
+                    child: Text(
+                      'Welcome to DeenMate',
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 48),
+                    child: Text(
+                      'Your spiritual companion for prayer times, Quran reading, and Islamic guidance',
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                        height: 1.5,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+
+                  const SizedBox(height: 64),
+
+                  // Feature highlights
+                  _buildFeatureHighlights(theme),
+
+                  const SizedBox(height: 48),
+
+                  // Bottom decoration
+                  _buildBottomDecoration(theme),
+                ],
+              ),
+            ),
+
+            // Continue button
+            Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                children: [
+                  _buildContinueButton(context, theme),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Tap to continue',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
-        child: Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.white.withOpacity(0.3),
+      ),
+    );
+  }
+
+  Widget _buildFeatureHighlights(ThemeData theme) {
+    final features = [
+      {'icon': Icons.access_time, 'text': 'Accurate Prayer Times'},
+      {'icon': Icons.menu_book, 'text': 'Complete Quran Reading'},
+      {'icon': Icons.explore, 'text': 'Qibla Direction'},
+      {'icon': Icons.notifications, 'text': 'Azan Notifications'},
+    ];
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Column(
+        children: features
+            .map((feature) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.secondaryContainer,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          feature['icon'] as IconData,
+                          size: 20,
+                          color: theme.colorScheme.onSecondaryContainer,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          feature['text'] as String,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onSurface,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ))
+            .toList(),
+      ),
+    );
+  }
+
+  Widget _buildContinueButton(BuildContext context, ThemeData theme) {
+    return GestureDetector(
+      onTap: () => onNext?.call(),
+      child: Container(
+        width: 64,
+        height: 64,
+        decoration: BoxDecoration(
+          color: theme.colorScheme.primary,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: theme.colorScheme.primary.withOpacity(0.3),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
             ),
-          ),
-          child: const Icon(
-            Icons.arrow_forward,
-            color: Colors.white,
-            size: 24,
-          ),
+          ],
+        ),
+        child: Icon(
+          Icons.arrow_forward,
+          color: theme.colorScheme.onPrimary,
+          size: 28,
         ),
       ),
     );
   }
 
-  Widget _buildBottomDecoration() {
+  Widget _buildBottomDecoration(ThemeData theme) {
     return Column(
       children: [
-        // Curved line
-        CustomPaint(
-          size: const Size(100, 20),
-          painter: CurvedLinePainter(),
+        // Decorative line
+        Container(
+          width: 60,
+          height: 2,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.outline.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(1),
+          ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 16),
         // Decorative dots
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildDecorativeDot(const Color(0xFFC19A6B)),
-            const SizedBox(width: 20),
-            _buildDecorativeDot(const Color(0xFF2E7D32), size: 6),
-            const SizedBox(width: 20),
-            _buildDecorativeDot(const Color(0xFFC19A6B)),
+            _buildDecorativeDot(theme.colorScheme.primary),
+            const SizedBox(width: 8),
+            _buildDecorativeDot(theme.colorScheme.primary, size: 6),
+            const SizedBox(width: 8),
+            _buildDecorativeDot(theme.colorScheme.primary),
           ],
         ),
       ],
@@ -197,35 +235,4 @@ class WelcomeScreen extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Custom painter for curved line decoration
-class CurvedLinePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFFD4B996).withOpacity(0.4)
-      ..strokeWidth = 1
-      ..style = PaintingStyle.stroke;
-
-    final path = Path();
-    path.moveTo(0, size.height / 2);
-    path.quadraticBezierTo(
-      size.width / 4,
-      size.height / 2 - 10,
-      size.width / 2,
-      size.height / 2,
-    );
-    path.quadraticBezierTo(
-      size.width * 3 / 4,
-      size.height / 2 + 10,
-      size.width,
-      size.height / 2,
-    );
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

@@ -8,13 +8,11 @@ part of 'verses_page_dto.dart';
 
 VersesPageDto _$VersesPageDtoFromJson(Map<String, dynamic> json) =>
     VersesPageDto(
-      verses: (json['verses'] as List<dynamic>?)
-              ?.map(
-                  (e) => VerseDto.fromJson(Map<String, dynamic>.from(e as Map)))
-              .toList() ??
-          const <VerseDto>[],
-      pagination: PaginationDto.fromJson(
-          Map<String, dynamic>.from(json['pagination'] as Map)),
+      verses: (json['verses'] as List<dynamic>)
+          .map((e) => VerseDto.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      pagination:
+          PaginationDto.fromJson(json['pagination'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$VersesPageDtoToJson(VersesPageDto instance) =>

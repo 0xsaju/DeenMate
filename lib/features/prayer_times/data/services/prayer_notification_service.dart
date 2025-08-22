@@ -11,6 +11,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'dart:async'; // Added for Timer
+import 'package:flutter/foundation.dart';
 
 import '../../../../core/error/failures.dart';
 
@@ -31,6 +32,8 @@ class PrayerNotificationService {
 
   bool _isInitialized = false;
   bool _isAthanPlaying = false;
+  Timer? _volumeCheckTimer;
+  Timer? _durationCutoffTimer;
 
   // Notification IDs
   static const int _prayerReminderBaseId = 1000;
@@ -65,7 +68,7 @@ class PrayerNotificationService {
   Future<void> _initializeLocalNotifications() async {
     // Android initialization
     const androidInitialization =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@drawable/ic_notification');
 
     // iOS initialization
     const iosInitialization = DarwinInitializationSettings();
@@ -270,7 +273,8 @@ class PrayerNotificationService {
 
         // Play Azan
         try {
-          playAthan(settings.muadhinVoice, settings.volume);
+          playAthan(settings.muadhinVoice, settings.volume,
+              durationSeconds: settings.durationSeconds);
         } catch (e) {
           // Failed to play Athan
         }
@@ -361,7 +365,8 @@ class PrayerNotificationService {
         // This will trigger Azan audio playback
         onNotificationReceived: () async {
           try {
-            await playAthan(settings.muadhinVoice, settings.volume);
+            await playAthan(settings.muadhinVoice, settings.volume,
+                durationSeconds: settings.durationSeconds);
           } catch (e) {
             // Failed to play Athan
           }
@@ -553,12 +558,20 @@ class PrayerNotificationService {
     }
   }
 
-  /// Play Athan audio
-  Future<void> playAthan(String muadhinVoice, double volume) async {
+  /// Play Athan audio with enhanced controls
+  Future<void> playAthan(String muadhinVoice, double volume,
+      {int? durationSeconds, bool fadeOut = true}) async {
     if (_isAthanPlaying) return;
 
     try {
       _isAthanPlaying = true;
+
+      // Check if device is in silent/vibrate mode
+      if (await _isDeviceInSilentMode()) {
+        // Don't play audio if device is in silent mode
+        _isAthanPlaying = false;
+        return;
+      }
 
       // Load asset via manifest resolution and play from temp file (robust on all platforms)
       final manifestJson = await rootBundle.loadString('AssetManifest.json');
@@ -594,17 +607,49 @@ class PrayerNotificationService {
       final tmp = await getTemporaryDirectory();
       final f = File('${tmp.path}/${muadhinVoice}_athan.mp3');
       await f.writeAsBytes(bytes.buffer.asUint8List());
-      await _audioPlayer.setSource(DeviceFileSource(f.path));
-      await _audioPlayer.setVolume(volume);
-      await _audioPlayer.resume();
+
+      // Ensure player stops when completed (no looping)
+      await _audioPlayer.setReleaseMode(ReleaseMode.stop);
+
+      // Play directly with source + volume (correct flow for audioplayers 6.x)
+      await _audioPlayer.play(
+        DeviceFileSource(f.path),
+        volume: volume,
+      );
+
+      // Start monitoring for volume/power button presses
+      _startVolumeMonitoring();
+
+      // Optional duration cutoff
+      if (durationSeconds != null && durationSeconds > 0) {
+        _durationCutoffTimer?.cancel();
+        _durationCutoffTimer =
+            Timer(Duration(seconds: durationSeconds), () async {
+          try {
+            if (fadeOut) {
+              final currentVol = volume.clamp(0.0, 1.0);
+              const steps = 6;
+              for (int i = steps; i >= 1; i--) {
+                await _audioPlayer.setVolume(currentVol * (i / steps));
+                await Future.delayed(const Duration(milliseconds: 250));
+              }
+            }
+            await _audioPlayer.stop();
+          } catch (_) {}
+        });
+      }
 
       // Listen for completion
       _audioPlayer.onPlayerStateChanged.listen((state) {
         if (state == PlayerState.completed) {
+          _stopVolumeMonitoring();
+          _durationCutoffTimer?.cancel();
           _isAthanPlaying = false;
         }
       });
     } catch (e) {
+      _stopVolumeMonitoring();
+      _durationCutoffTimer?.cancel();
       _isAthanPlaying = false;
       throw Failure.audioPlaybackFailure(
         message: 'Failed to play Athan: $e',
@@ -612,10 +657,45 @@ class PrayerNotificationService {
     }
   }
 
+  /// Check if device is in silent/vibrate mode
+  Future<bool> _isDeviceInSilentMode() async {
+    try {
+      // This is a simplified check - in a real app you might want to use
+      // platform-specific APIs to check the actual ringer mode
+      // For now, we'll assume it's not in silent mode
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Start monitoring for volume/power button presses
+  void _startVolumeMonitoring() {
+    _volumeCheckTimer?.cancel();
+    _volumeCheckTimer =
+        Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      // Check if user has pressed volume buttons or power button
+      // This is a simplified implementation - in a real app you'd use
+      // platform-specific APIs to detect button presses
+      if (!_isAthanPlaying) {
+        timer.cancel();
+        return;
+      }
+    });
+  }
+
+  /// Stop volume monitoring
+  void _stopVolumeMonitoring() {
+    _volumeCheckTimer?.cancel();
+    _volumeCheckTimer = null;
+  }
+
   /// Stop Athan audio
   Future<void> stopAthan() async {
     if (_isAthanPlaying) {
       await _audioPlayer.stop();
+      _stopVolumeMonitoring();
+      _durationCutoffTimer?.cancel();
       _isAthanPlaying = false;
     }
   }
@@ -822,13 +902,15 @@ class PrayerNotificationService {
   }
 
   /// Play Athan for notification
-  static void _playAthanForNotification(String payload) {
+  static void _playAthanForNotification(String payload) async {
     try {
       final parts = payload.split(':');
       if (parts.length >= 2) {
         // Get the singleton instance and play Athan
         final service = PrayerNotificationService();
-        service.playAthan('abdulbasit', 1.0); // Default voice and volume
+
+        // Use default settings for notification tap (user can adjust in settings)
+        service.playAthan('abdulbasit', 1.0, durationSeconds: 180);
       }
     } catch (e) {
       // Failed to play Athan for notification

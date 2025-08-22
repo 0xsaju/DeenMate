@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-import 'core/theme/app_theme.dart';
 import 'core/state/prayer_settings_state.dart';
+import 'core/state/app_lifecycle_manager.dart';
+import 'core/theme/theme_provider.dart';
 import 'features/onboarding/presentation/screens/onboarding_navigation_screen.dart';
 import 'features/onboarding/presentation/providers/onboarding_providers.dart';
 import 'core/navigation/shell_wrapper.dart';
@@ -44,13 +45,16 @@ class DeenMateApp extends ConsumerWidget {
       ref.watch(autoNotificationSchedulerProvider);
       // Listen to connectivity to auto-refresh when back online
       ref.watch(prayerTimesConnectivityRefreshProvider);
+      // Schedule daily prayer time refreshes (4 times per day)
+      ref.watch(prayerTimesScheduledRefreshProvider);
+      // Refresh when prayer settings change
+      ref.watch(prayerTimesSettingsRefreshProvider);
     }
     return hasCompletedOnboarding
         ? MaterialApp.router(
             title: 'DeenMate',
             debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
+            theme: ref.watch(themeDataProvider),
             themeMode: ThemeMode.system,
             localizationsDelegates: const [
               GlobalMaterialLocalizations.delegate,
@@ -64,38 +68,39 @@ class DeenMateApp extends ConsumerWidget {
             ],
             routerConfig: EnhancedAppRouter.router,
             builder: (context, child) {
-              return WillPopScope(
-                onWillPop: () async {
-                  // Show exit confirmation dialog
-                  final shouldExit = await showDialog<bool>(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Exit DeenMate'),
-                      content:
-                          const Text('Are you sure you want to exit the app?'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(false),
-                          child: const Text('Cancel'),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(true),
-                          child: const Text('Exit'),
-                        ),
-                      ],
-                    ),
-                  );
-                  return shouldExit ?? false;
-                },
-                child: child!,
+              return AppLifecycleManager(
+                child: WillPopScope(
+                  onWillPop: () async {
+                    // Show exit confirmation dialog
+                    final shouldExit = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Exit DeenMate'),
+                        content: const Text(
+                            'Are you sure you want to exit the app?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: const Text('Exit'),
+                          ),
+                        ],
+                      ),
+                    );
+                    return shouldExit ?? false;
+                  },
+                  child: child!,
+                ),
               );
             },
           )
         : MaterialApp(
             title: 'DeenMate - Onboarding',
             debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
+            theme: ref.watch(themeDataProvider),
             themeMode: ThemeMode.system,
             localizationsDelegates: const [
               GlobalMaterialLocalizations.delegate,

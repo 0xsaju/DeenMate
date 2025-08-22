@@ -6,7 +6,7 @@
 
 **Project Name:** DeenMate - Your Deen Companion  
 **Current Version:** Development Phase  
-**Last Updated:** December 2024  
+**Last Updated:** August 2025  
 **Status:** Core features completed, additional features in development
 
 ---
@@ -36,6 +36,10 @@
 - ✅ Volume and vibration controls
 - ✅ Exact-alarm permission flow (Android 12+) via a minimal inline row in settings
 - ✅ Auto-reschedule on day change, connectivity regain, and settings change
+- ✅ Robust scheduling with exactAllowWhileIdle + backup schedules (30s/1m)
+- ✅ Periodic foreground checker (Huawei-friendly) that triggers notifications + Athan if the OS kills alarms
+- ✅ Athan playback on notification trigger; unified Android notification icon
+- ✅ Daily schedule always refreshed at app open to guarantee alive timers
 - ✅ Duplicate-safe scheduling (cancels day’s pending notifications before scheduling)
 
 ### 🧭 Qibla Finder
@@ -92,6 +96,8 @@
 - ✅ **Responsive Design** - Mobile, tablet, web ready
 - ✅ **Accessibility Features** - Screen reader support
 - ✅ **Theme System** - Light/Dark/System with Islamic aesthetics
+- ✅ **Material 3 Migration (core)** - New ColorScheme-driven themes (Light/Sepia/Dark)
+- ✅ **Theme Switcher** - Riverpod-managed with Hive persistence
 - ✅ **Cultural Integration** - Bengali Islamic terminology and context
 
 ### 🏗️ Technical Infrastructure
@@ -106,6 +112,17 @@
 - ✅ **Code Generation** - Freezed, JSON serialization
 - ✅ **Performance Optimization** - Lazy loading, caching
 - ✅ **Cross-platform** - iOS, Android, Web compatibility
+
+### 📚 Quran Reader (Phase 1)
+- ✅ Surah list with quick search (type-ahead by Arabic/English name)
+- ✅ Reader with infinite scroll and 80% prefetch
+- ✅ Clean translations (HTML/footnote stripping)
+- ✅ Per-ayah audio (streamed), play/pause, auto-advance to next ayah
+- ✅ Mini player bar (pause/resume/stop)
+- ✅ Last-read persistence and “Continue reading” card on Quran Home
+- ✅ Per-ayah bookmarks stored in Hive
+- ✅ Cache-first (SWR) with offline fallback; resilient empty/error states
+- ✅ Material 3 typography/colors applied to Quran pages
 
 ---
 
@@ -131,6 +148,12 @@
 - 🔄 **Witness Management** - Digital witness signatures
 
 ### 📱 Advanced Features
+- ### 📚 Quran — Phase 2 (Learning)
+- 🔄 Notes/reflections per ayah (export/share)
+- 🔄 Collections (bookmark folders, pins)
+- 🔄 Multi-translation picker and Tafsir toggle
+- 🔄 Word-by-word popover (basic morphology/gloss)
+- 🔄 Reading goals/streaks and gentle reminders
 - 🔄 **Widget System** - Home screen widgets for prayer times
 - 🔄 **Apple Watch Support** - Watch app for prayer reminders
 - 🔄 **WearOS Support** - Android wear integration
@@ -194,14 +217,14 @@
 - 📋 **Weather-based Adjustments** - Cloudy day Asr calculations
 
 ### 📚 Quran & Islamic Learning
-- 📋 **Complete Quran** - Full Quran with translations
-- 📋 **Audio Recitations** - Multiple reciters (Abdul Basit, Sudais, etc.)
-- 📋 **Offline Downloads** - Download Quran for offline reading
+- 📋 **Complete Quran** - Full Quran with translations (Reader done; expand translations)
+- 📋 **Audio Recitations** - Multiple reciters (basic per-ayah audio done; add reciter catalog)
+- 📋 **Offline Downloads** - Download Quran text/audio for offline
 - 📋 **Tajweed Rules** - Color-coded tajweed learning
-- 📋 **Verse Bookmarking** - Save favorite verses
+- 📋 **Verse Bookmarking** - Save favorite verses (done basic; add collections)
 - 📋 **Memorization Tools** - Hifz mode with progress tracking
 - 📋 **Tafsir Integration** - Islamic commentary and explanations
-- 📋 **Search Functionality** - Search Quran by keyword or topic
+- 📋 **Search Functionality** - Search Quran by keyword or topic (planned)
 
 ### 🎯 User Engagement & Gamification
 - 📋 **Daily Check-in** - Daily Islamic practice tracking
@@ -277,13 +300,15 @@
 ## 🎯 Next Milestones
 
 ### Phase 1: Core Features (Completed ✅)
-- Prayer Times with notifications
+- Prayer Times with notifications (robust scheduler + Athan)
 - Qibla Finder with compass
 - Zakat Calculator with live prices
 - Islamic Content system
-- Islamic design system
+- Islamic design system (Material 3 base)
+- Quran Reader Phase 1 (Reader + Audio + Last‑read + Bookmarks)
 
 ### Phase 2: Essential Features (In Progress 🔄)
+- Quran Phase 2 (Learning: notes, tafsir, word-by-word, goals)
 - Sawm Tracker for Ramadan
 - Islamic Will Generator
 - Advanced notification features

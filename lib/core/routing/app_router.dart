@@ -10,6 +10,7 @@ import '../../features/qibla/presentation/screens/qibla_compass_screen.dart';
 import '../../features/home/presentation/screens/zakat_calculator_screen.dart';
 import '../../features/quran/presentation/screens/quran_home_screen.dart';
 import '../../features/quran/presentation/screens/quran_reader_screen.dart';
+import '../../features/inheritance/presentation/screens/shariah_clarification_screen.dart';
 
 /// Application routing configuration using GoRouter
 /// Provides type-safe navigation with Islamic app structure
@@ -28,6 +29,8 @@ class AppRouter {
   static const String history = '/history';
   static const String reports = '/reports';
   static const String quranHome = '/quran';
+  static const String inheritanceCalculator = '/inheritance-calculator';
+  static const String shariahClarification = '/shariah-clarification';
 
   static final GoRouter _router = GoRouter(
     initialLocation: home,
@@ -73,6 +76,14 @@ class AppRouter {
         name: 'quran-reader',
         builder: (context, state) => QuranReaderScreen(
           chapterId: int.parse(state.pathParameters['id']!),
+        ),
+      ),
+      GoRoute(
+        path: '/quran/surah/:id/verse/:verseKey',
+        name: 'quran-reader-verse',
+        builder: (context, state) => QuranReaderScreen(
+          chapterId: int.parse(state.pathParameters['id']!),
+          targetVerseKey: state.pathParameters['verseKey']!,
         ),
       ),
 
@@ -150,6 +161,24 @@ class AppRouter {
           icon: Icons.assessment,
           description: 'Generate and view reports',
         ),
+      ),
+
+      // Inheritance Calculator
+      GoRoute(
+        path: inheritanceCalculator,
+        name: 'inheritance-calculator',
+        builder: (context, state) => const PlaceholderScreen(
+          title: 'Inheritance Calculator',
+          icon: Icons.calculate,
+          description: 'Islamic inheritance calculator',
+        ),
+      ),
+
+      // Shariah Clarification
+      GoRoute(
+        path: shariahClarification,
+        name: 'shariah-clarification',
+        builder: (context, state) => const ShariahClarificationScreen(),
       ),
     ],
     errorBuilder: (context, state) => ErrorScreen(error: state.error),

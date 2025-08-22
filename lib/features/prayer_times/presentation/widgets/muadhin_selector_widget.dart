@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/athan_settings.dart';
 
 /// Widget for selecting Muadhin voice for Athan using a dropdown
@@ -15,7 +14,7 @@ class MuadhinSelectorWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.lightTheme;
+    final theme = Theme.of(context);
     final selectedVoiceEnum = MuadhinVoice.values.firstWhere(
       (voice) => voice.audioFileName == selectedVoice,
       orElse: () => MuadhinVoice.default_,

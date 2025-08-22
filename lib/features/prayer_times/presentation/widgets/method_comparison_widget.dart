@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-
-import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/calculation_method.dart';
 
 /// Simple class to represent method differences
@@ -47,7 +45,7 @@ class MethodComparisonWidget extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.lightTheme.colorScheme.primary,
+              color: Colors.green,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(16),
                 topRight: Radius.circular(16),
@@ -248,8 +246,8 @@ class MethodComparisonWidget extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppTheme.lightTheme.colorScheme.primary.withValues(alpha: 0.1),
-            AppTheme.lightTheme.colorScheme.secondary.withValues(alpha: 0.1),
+            Colors.green.withValues(alpha: 0.1),
+            Colors.blue.withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(12),
@@ -258,7 +256,7 @@ class MethodComparisonWidget extends StatelessWidget {
         children: [
           Icon(
             Icons.schedule,
-            color: AppTheme.lightTheme.colorScheme.primary,
+            color: Colors.green,
             size: 32,
           ),
           const SizedBox(width: 16),

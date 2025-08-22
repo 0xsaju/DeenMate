@@ -75,6 +75,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.13.1
 
   # Code Generation
   build_runner: ^2.4.11
@@ -88,7 +89,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  
   assets:
     - assets/fonts/
     - assets/audio/
@@ -99,6 +99,13 @@ flutter:
     # - assets/islamic_patterns/
     # Uncomment if using JSON translations per README
     # - assets/translations/
+  
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "logo.png"
+  adaptive_icon_background: "#1E8C79"
+  adaptive_icon_foreground: "logo.png"
   
   fonts:
     # Arabic & Islamic Fonts

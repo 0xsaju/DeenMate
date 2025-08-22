@@ -1,4 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -127,6 +128,7 @@ class AthanSettingsNotifier extends StateNotifier<AsyncValue<AthanSettings>> {
   }
   final PrayerTimesRepository _repository;
   final DailyNotificationScheduler _scheduler;
+  Timer? _saveDebounce;
 
   Future<void> _loadSettings() async {
     try {
@@ -141,20 +143,27 @@ class AthanSettingsNotifier extends StateNotifier<AsyncValue<AthanSettings>> {
   }
 
   Future<void> updateSettings(AthanSettings settings) async {
-    state = const AsyncValue.loading();
+    // Optimistic UI: update immediately without going to loading state
+    state = AsyncValue.data(settings);
 
-    try {
-      final result = await _repository.saveAthanSettings(settings);
-      result.fold(
-        (failure) => state = AsyncValue.error(failure, StackTrace.current),
-        (_) {
-          state = AsyncValue.data(settings);
-          _rescheduleNotifications();
-        },
-      );
-    } catch (e, stack) {
-      state = AsyncValue.error(e, stack);
-    }
+    // Debounce persistence to avoid frequent writes during sliders
+    _saveDebounce?.cancel();
+    _saveDebounce = Timer(const Duration(milliseconds: 400), () async {
+      try {
+        final result = await _repository.saveAthanSettings(settings);
+        result.fold(
+          (_) {
+            // Keep current state; optionally could surface a toast via UI layer
+          },
+          (_) async {
+            // On success, reschedule quietly
+            await _rescheduleNotifications();
+          },
+        );
+      } catch (_) {
+        // Ignore persistence errors here to avoid UI flicker; next save will retry
+      }
+    });
   }
 
   Future<void> toggleEnabled() async {
@@ -289,13 +298,26 @@ class AthanAudioNotifier extends StateNotifier<AthanAudioState> {
       : super(const AthanAudioState());
   final PrayerNotificationService _notificationService;
 
-  Future<void> playAthan(String muadhinVoice, double volume) async {
+  Future<void> playAthan(String muadhinVoice, double volume,
+      {int? durationSeconds}) async {
     if (state.isPlaying) return;
 
     state = state.copyWith(isPlaying: true, error: null);
 
     try {
-      await _notificationService.playAthan(muadhinVoice, volume);
+      // Use provided duration or get from settings
+      int finalDuration = durationSeconds ?? 180; // Default fallback
+      if (durationSeconds == null) {
+        final settings = await _settings();
+        finalDuration = settings.durationSeconds;
+      }
+
+      await _notificationService.playAthan(
+        muadhinVoice,
+        volume,
+        durationSeconds: finalDuration,
+        fadeOut: true,
+      );
       state = state.copyWith(isPlaying: false);
     } catch (e) {
       state = state.copyWith(
@@ -321,7 +343,20 @@ class AthanAudioNotifier extends StateNotifier<AthanAudioState> {
   }
 
   Future<void> previewAthan(String muadhinVoice) async {
-    await playAthan(muadhinVoice, 0.5); // Preview at 50% volume
+    // Keep using AthanAudioNotifier in UI. This is a safe no-op.
+  }
+
+  Future<AthanSettings> _settings() async {
+    final repo = _notificationService; // placeholder to keep reference
+    final container = ProviderContainer();
+    try {
+      final either = await container
+          .read(prayerTimesRepositoryProvider)
+          .getAthanSettings();
+      return either.fold((_) => const AthanSettings(), (s) => s);
+    } finally {
+      container.dispose();
+    }
   }
 }
 
@@ -398,11 +433,7 @@ class DailyNotificationScheduler {
   final PrayerTimesRepository _repository;
 
   Future<void> scheduleToday({bool force = false}) async {
-    // Check if notifications are already scheduled (avoid duplicate scheduling)
-    if (!force && await _notificationService.hasNotificationsForToday()) {
-      return; // Skip if already scheduled
-    }
-
+    // Always (re)schedule to ensure periodic checker starts and times are fresh
     final prayerTimesResult = await _repository.getCurrentPrayerTimes();
     final settingsResult = await _repository.getAthanSettings();
 

@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_theme.dart';
 // import '../screens/prayer_times_screen.dart';
 
 /// Beautiful Prayer Time Card with Islamic Design
 /// Displays individual prayer time with completion status and Islamic styling
 class PrayerTimeCard extends StatefulWidget {
-
   const PrayerTimeCard({
-    required this.prayerName, required this.prayerTime, required this.isCompleted, required this.onCompletionToggle, super.key,
+    required this.prayerName,
+    required this.prayerTime,
+    required this.isCompleted,
+    required this.onCompletionToggle,
+    super.key,
   });
   final String prayerName;
   final String prayerTime;
@@ -40,26 +42,32 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
     _checkAnimation = Tween<double>(
       begin: 0,
       end: 1,
-    ).animate(CurvedAnimation(
-      parent: _completionController,
-      curve: Curves.elasticOut,
-    ),);
+    ).animate(
+      CurvedAnimation(
+        parent: _completionController,
+        curve: Curves.elasticOut,
+      ),
+    );
 
     _colorAnimation = ColorTween(
       begin: Colors.transparent,
-      end: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.1),
-    ).animate(CurvedAnimation(
-      parent: _completionController,
-      curve: Curves.easeInOut,
-    ),);
+      end: Colors.green.withOpacity(0.1),
+    ).animate(
+      CurvedAnimation(
+        parent: _completionController,
+        curve: Curves.easeInOut,
+      ),
+    );
 
     _scaleAnimation = Tween<double>(
       begin: 1,
       end: 0.95,
-    ).animate(CurvedAnimation(
-      parent: _completionController,
-      curve: Curves.easeInOut,
-    ),);
+    ).animate(
+      CurvedAnimation(
+        parent: _completionController,
+        curve: Curves.easeInOut,
+      ),
+    );
 
     if (widget.isCompleted) {
       _completionController.forward();
@@ -102,14 +110,14 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isCurrentPrayer
-                    ? AppTheme.lightTheme.colorScheme.primary
-                    : AppTheme.lightTheme.colorScheme.primary.withOpacity(0.2),
+                    ? Colors.green
+                    : Colors.green.withOpacity(0.2),
                 width: isCurrentPrayer ? 2 : 1,
               ),
               boxShadow: [
                 if (isCurrentPrayer)
                   BoxShadow(
-                    color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.2),
+                    color: Colors.green.withOpacity(0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -138,14 +146,12 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
       width: 56,
       height: 56,
       decoration: BoxDecoration(
-        color: isCurrentPrayer
-            ? AppTheme.lightTheme.colorScheme.primary
-            : AppTheme.lightTheme.colorScheme.primary.withOpacity(0.1),
+        color: isCurrentPrayer ? Colors.green : Colors.green.withOpacity(0.1),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           if (isCurrentPrayer)
             BoxShadow(
-              color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.3),
+              color: Colors.green.withOpacity(0.3),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -153,9 +159,7 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
       ),
       child: Icon(
         Icons.access_time,
-        color: isCurrentPrayer
-            ? Colors.white
-            : AppTheme.lightTheme.colorScheme.primary,
+        color: isCurrentPrayer ? Colors.white : Colors.green,
         size: 28,
       ),
     );
@@ -172,9 +176,7 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: isCurrentPrayer
-                    ? AppTheme.lightTheme.colorScheme.primary
-                    : Colors.black87,
+                color: isCurrentPrayer ? Colors.green : Colors.black87,
               ),
             ),
             const SizedBox(width: 8),
@@ -184,9 +186,7 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
                 fontFamily: 'NotoSansArabic',
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
-                color: isCurrentPrayer
-                    ? AppTheme.lightTheme.colorScheme.primary
-                    : Colors.grey[600],
+                color: isCurrentPrayer ? Colors.green : Colors.grey[600],
               ),
             ),
           ],
@@ -196,7 +196,7 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.1),
+              color: Colors.green.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -204,7 +204,7 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color: AppTheme.lightTheme.colorScheme.primary,
+                color: Colors.green,
               ),
             ),
           )
@@ -232,7 +232,8 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
             fontFeatures: [FontFeature.tabularFigures()],
           ),
         ),
-        if (false) ...[ // Removed adjustment check for now
+        if (false) ...[
+          // Removed adjustment check for now
           const SizedBox(height: 2),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -264,12 +265,10 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
         width: 32,
         height: 32,
         decoration: BoxDecoration(
-          color: widget.isCompleted
-              ? AppTheme.lightTheme.colorScheme.primary
-              : Colors.transparent,
+          color: widget.isCompleted ? Colors.green : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: AppTheme.lightTheme.colorScheme.primary,
+            color: Colors.green,
             width: 2,
           ),
         ),
@@ -290,11 +289,12 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
   bool _isCurrentPrayer() {
     final now = DateTime.now();
     final prayerTime = DateTime.now(); // Simplified for now
-    
+
     // Check if this prayer is happening now or coming up next
     // This is a simplified logic - in a real app, you'd use the current prayer provider
     final timeDifference = prayerTime.difference(now).inMinutes;
-    return timeDifference >= -30 && timeDifference <= 120; // 30 min ago to 2 hours ahead
+    return timeDifference >= -30 &&
+        timeDifference <= 120; // 30 min ago to 2 hours ahead
   }
 
   String? _getTimeUntilPrayer() {

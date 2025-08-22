@@ -1,4 +1,4 @@
-import 'package:deen_mate/core/theme/app_theme.dart';
+
 import 'package:deen_mate/features/prayer_times/domain/entities/prayer_tracking.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -80,13 +80,13 @@ class _NextPrayerCountdownState extends ConsumerState<NextPrayerCountdown>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppTheme.lightTheme.colorScheme.secondary.withOpacity(0.1),
-            AppTheme.lightTheme.colorScheme.secondary.withOpacity(0.05),
+            Colors.blue.withOpacity(0.1),
+            Colors.blue.withOpacity(0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppTheme.lightTheme.colorScheme.secondary.withOpacity(0.3),
+          color: Colors.blue.withOpacity(0.3),
         ),
       ),
       child: Column(
@@ -126,7 +126,7 @@ class _NextPrayerCountdownState extends ConsumerState<NextPrayerCountdown>
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.lightTheme.colorScheme.secondary,
+                color: Colors.blue,
               ),
             ),
           ],
@@ -139,12 +139,12 @@ class _NextPrayerCountdownState extends ConsumerState<NextPrayerCountdown>
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppTheme.lightTheme.colorScheme.secondary.withOpacity(0.2),
+                  color: Colors.blue.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   _getNextPrayerIcon(),
-                  color: AppTheme.lightTheme.colorScheme.secondary,
+                  color: Colors.blue,
                   size: 24,
                 ),
               ),
@@ -182,10 +182,10 @@ class _NextPrayerCountdownState extends ConsumerState<NextPrayerCountdown>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: AppTheme.lightTheme.colorScheme.secondary.withOpacity(0.1),
+            color: Colors.blue.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: AppTheme.lightTheme.colorScheme.secondary.withOpacity(0.3),
+              color: Colors.blue.withOpacity(0.3),
             ),
           ),
           child: Text(
@@ -193,7 +193,7 @@ class _NextPrayerCountdownState extends ConsumerState<NextPrayerCountdown>
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: AppTheme.lightTheme.colorScheme.secondary,
+              color: Colors.blue,
               fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),
@@ -219,7 +219,7 @@ class _NextPrayerCountdownState extends ConsumerState<NextPrayerCountdown>
         style: TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.bold,
-          color: AppTheme.lightTheme.colorScheme.secondary,
+          color: Colors.blue,
         ),
       ),
     );
@@ -260,7 +260,7 @@ class _NextPrayerCountdownState extends ConsumerState<NextPrayerCountdown>
       height: 80,
       child: Center(
         child: CircularProgressIndicator(
-          color: AppTheme.lightTheme.colorScheme.secondary,
+          color: Colors.blue,
         ),
       ),
     );
@@ -311,9 +311,9 @@ class _NextPrayerCountdownState extends ConsumerState<NextPrayerCountdown>
           builder: (context, child) {
             return LinearProgressIndicator(
               value: _calculateProgress() * _progressAnimation.value,
-              backgroundColor: AppTheme.lightTheme.colorScheme.secondary.withOpacity(0.2),
+              backgroundColor: Colors.blue.withOpacity(0.2),
               valueColor: AlwaysStoppedAnimation<Color>(
-                AppTheme.lightTheme.colorScheme.secondary,
+                Colors.blue,
               ),
               minHeight: 6,
             );

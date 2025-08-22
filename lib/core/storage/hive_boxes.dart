@@ -6,4 +6,6 @@ class Boxes {
   static const lastRead = 'quran_last_read';
   static const downloads = 'quran_downloads';
   static const search = 'quran_search_cache';
+  static const resources = 'quran_resources';
+  static const notes = 'quran_notes';
 }

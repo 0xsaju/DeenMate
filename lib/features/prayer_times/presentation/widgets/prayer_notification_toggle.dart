@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_theme.dart';
 
 /// Widget for toggling individual prayer notifications
 class PrayerNotificationToggle extends StatefulWidget {
@@ -40,8 +39,8 @@ class _PrayerNotificationToggleState extends State<PrayerNotificationToggle>
     ),);
 
     _colorAnimation = ColorTween(
-      begin: AppTheme.lightTheme.colorScheme.surface,
-      end: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.1),
+      begin: Colors.white,
+      end: Colors.green.withOpacity(0.1),
     ).animate(CurvedAnimation(
       parent: _animationController,
       curve: Curves.easeInOut,
@@ -86,14 +85,14 @@ class _PrayerNotificationToggleState extends State<PrayerNotificationToggle>
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: widget.isEnabled
-                      ? AppTheme.lightTheme.colorScheme.primary.withOpacity(0.5)
+                      ? Colors.green.withOpacity(0.5)
                       : Colors.grey.withOpacity(0.3),
                   width: widget.isEnabled ? 2 : 1,
                 ),
                 boxShadow: widget.isEnabled
                     ? [
                         BoxShadow(
-                          color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.1),
+                          color: Colors.green.withOpacity(0.1),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -108,7 +107,7 @@ class _PrayerNotificationToggleState extends State<PrayerNotificationToggle>
                     height: 48,
                     decoration: BoxDecoration(
                       color: widget.isEnabled
-                          ? AppTheme.lightTheme.colorScheme.primary
+                          ? Colors.green
                           : Colors.grey.withOpacity(0.3),
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -131,7 +130,7 @@ class _PrayerNotificationToggleState extends State<PrayerNotificationToggle>
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: widget.isEnabled
-                                ? AppTheme.lightTheme.colorScheme.primary
+                                ? Colors.green
                                 : Colors.grey[700],
                           ),
                         ),
@@ -142,7 +141,7 @@ class _PrayerNotificationToggleState extends State<PrayerNotificationToggle>
                             fontFamily: 'NotoSansArabic',
                             fontSize: 14,
                             color: widget.isEnabled
-                                ? AppTheme.lightTheme.colorScheme.primary.withOpacity(0.8)
+                                ? Colors.green.withOpacity(0.8)
                                 : Colors.grey[600],
                             height: 1.4,
                           ),
@@ -161,7 +160,7 @@ class _PrayerNotificationToggleState extends State<PrayerNotificationToggle>
                           widget.onToggle(value);
                           _toggleAnimation();
                         },
-                        activeColor: AppTheme.lightTheme.colorScheme.primary,
+                        activeColor: Colors.green,
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                       const SizedBox(height: 4),

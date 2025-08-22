@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_theme.dart';
 
 /// Widget for controlling Athan volume with visual feedback
 class VolumeSliderWidget extends StatefulWidget {
@@ -48,10 +47,10 @@ class _VolumeSliderWidgetState extends State<VolumeSliderWidget>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.lightTheme.colorScheme.surface,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.2),
+          color: Colors.green.withOpacity(0.2),
         ),
       ),
       child: Column(
@@ -61,7 +60,7 @@ class _VolumeSliderWidgetState extends State<VolumeSliderWidget>
             children: [
               Icon(
                 Icons.volume_up,
-                color: AppTheme.lightTheme.colorScheme.primary,
+                color: Colors.green,
                 size: 20,
               ),
               const SizedBox(width: 8),
@@ -76,7 +75,7 @@ class _VolumeSliderWidgetState extends State<VolumeSliderWidget>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.1),
+                  color: Colors.green.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text(
@@ -84,7 +83,7 @@ class _VolumeSliderWidgetState extends State<VolumeSliderWidget>
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.lightTheme.colorScheme.primary,
+                    color: Colors.green,
                   ),
                 ),
               ),
@@ -104,7 +103,7 @@ class _VolumeSliderWidgetState extends State<VolumeSliderWidget>
                     child: Icon(
                       widget.volume == 0 ? Icons.volume_off : Icons.volume_down,
                       color: widget.volume > 0
-                          ? AppTheme.lightTheme.colorScheme.primary
+                          ? Colors.green
                           : Colors.grey,
                       size: 20,
                     ),
@@ -121,10 +120,10 @@ class _VolumeSliderWidgetState extends State<VolumeSliderWidget>
                     trackHeight: 6,
                     thumbShape: _CustomThumbShape(),
                     overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
-                    activeTrackColor: AppTheme.lightTheme.colorScheme.primary,
-                    inactiveTrackColor: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.3),
-                    thumbColor: AppTheme.lightTheme.colorScheme.primary,
-                    overlayColor: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.2),
+                    activeTrackColor: Colors.green,
+                    inactiveTrackColor: Colors.green.withOpacity(0.3),
+                    thumbColor: Colors.green,
+                    overlayColor: Colors.green.withOpacity(0.2),
                   ),
                   child: Slider(
                     value: widget.volume,
@@ -156,7 +155,7 @@ class _VolumeSliderWidgetState extends State<VolumeSliderWidget>
                     child: Icon(
                       Icons.volume_up,
                       color: widget.volume > 0.7
-                          ? AppTheme.lightTheme.colorScheme.primary
+                          ? Colors.green
                           : Colors.grey,
                       size: 20,
                     ),
@@ -229,12 +228,12 @@ class _VolumeSliderWidgetState extends State<VolumeSliderWidget>
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppTheme.lightTheme.colorScheme.primary.withOpacity(0.2)
+                  ? Colors.green.withOpacity(0.2)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: isSelected
-                    ? AppTheme.lightTheme.colorScheme.primary
+                    ? Colors.green
                     : Colors.grey.withOpacity(0.3),
               ),
             ),
@@ -245,7 +244,7 @@ class _VolumeSliderWidgetState extends State<VolumeSliderWidget>
                   icon,
                   size: 14,
                   color: isSelected
-                      ? AppTheme.lightTheme.colorScheme.primary
+                      ? Colors.green
                       : Colors.grey[600],
                 ),
                 const SizedBox(width: 4),
@@ -255,7 +254,7 @@ class _VolumeSliderWidgetState extends State<VolumeSliderWidget>
                     fontSize: 12,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                     color: isSelected
-                        ? AppTheme.lightTheme.colorScheme.primary
+                        ? Colors.green
                         : Colors.grey[600],
                   ),
                 ),
@@ -303,7 +302,7 @@ class _CustomThumbShape extends SliderComponentShape {
     
     // Outer circle
     final outerPaint = Paint()
-      ..color = sliderTheme.thumbColor ?? AppTheme.lightTheme.colorScheme.primary
+      ..color = sliderTheme.thumbColor ?? Colors.green
       ..style = PaintingStyle.fill;
     
     // Inner circle
@@ -320,7 +319,7 @@ class _CustomThumbShape extends SliderComponentShape {
     // Draw volume indicator
     if (value > 0) {
       final indicatorPaint = Paint()
-        ..color = sliderTheme.thumbColor ?? AppTheme.lightTheme.colorScheme.primary
+        ..color = sliderTheme.thumbColor ?? Colors.green
         ..style = PaintingStyle.fill;
       
       canvas.drawCircle(center, 3, indicatorPaint);

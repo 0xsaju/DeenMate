@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../localization/strings.dart';
 import '../routing/app_router.dart';
-import '../theme/app_theme.dart';
 
 /// Quick Actions Widget
 /// Provides fast access to main app features in a beautiful grid
@@ -21,7 +20,7 @@ class QuickActionsWidget extends StatelessWidget {
             S.t(context, 'quick_actions_title', 'Quick Actions | দ্রুত কার্যক্রম'),
             style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
-              color: AppTheme.lightTheme.colorScheme.primary,
+              color: Colors.green,
             ),
           );
         }),

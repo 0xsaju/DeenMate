@@ -411,8 +411,8 @@ DateTime? _getPrayerEndTimeFor(PrayerTimes pt, String currentName) {
     case 'maghrib':
       return pt.isha.time;
     case 'isha':
-      // Isha continues until Fajr
-      return pt.fajr.time;
+      // Isha ends at Islamic midnight, not at Fajr
+      return pt.midnight.time;
     default:
       return null;
   }
@@ -693,12 +693,24 @@ final currentAndNextPrayerOfflineAwareProvider =
       );
     }
 
-    // If now is between Isha start and next day's Fajr start → Current = Isha, Next = Fajr
-    if (now.isAfter(pt.isha.time)) {
+    // If now is between Isha start and Islamic midnight → Current = Isha, Next = Fajr
+    if (now.isAfter(pt.isha.time) && now.isBefore(pt.midnight.time)) {
       final nextFajr = pt.fajr.time.add(const Duration(days: 1));
       final remaining = nextFajr.difference(now);
       return PrayerDetail(
         currentPrayer: 'Isha',
+        nextPrayer: 'Fajr',
+        prayerTimes: pt,
+        timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+      );
+    }
+
+    // If now is after Islamic midnight and before next day's Fajr → No Active Prayer, Next = Fajr
+    if (now.isAfter(pt.midnight.time)) {
+      final nextFajr = pt.fajr.time.add(const Duration(days: 1));
+      final remaining = nextFajr.difference(now);
+      return PrayerDetail(
+        currentPrayer: null, // No active prayer after Islamic midnight
         nextPrayer: 'Fajr',
         prayerTimes: pt,
         timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
@@ -783,12 +795,24 @@ final currentAndNextPrayerOfflineAwareProvider =
       );
     }
 
-    // If now is between Isha start and next day's Fajr start → Current = Isha, Next = Fajr
-    if (now.isAfter(cached.isha.time)) {
+    // If now is between Isha start and Islamic midnight → Current = Isha, Next = Fajr
+    if (now.isAfter(cached.isha.time) && now.isBefore(cached.midnight.time)) {
       final nextFajr = cached.fajr.time.add(const Duration(days: 1));
       final remaining = nextFajr.difference(now);
       return PrayerDetail(
         currentPrayer: 'Isha',
+        nextPrayer: 'Fajr',
+        prayerTimes: cached,
+        timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+      );
+    }
+
+    // If now is after Islamic midnight and before next day's Fajr → No Active Prayer, Next = Fajr
+    if (now.isAfter(cached.midnight.time)) {
+      final nextFajr = cached.fajr.time.add(const Duration(days: 1));
+      final remaining = nextFajr.difference(now);
+      return PrayerDetail(
+        currentPrayer: null, // No active prayer after Islamic midnight
         nextPrayer: 'Fajr',
         prayerTimes: cached,
         timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
@@ -844,6 +868,136 @@ final cachedCurrentAndNextPrayerProvider = Provider<PrayerDetail?>((ref) {
     prayerTimes: cached,
     timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
   );
+});
+
+/// Lightweight ticker to trigger periodic rebuilds where needed
+final timeTickerProvider = StreamProvider<DateTime>((ref) async* {
+  yield DateTime.now();
+  yield* Stream.periodic(const Duration(seconds: 15), (_) {
+    final now = DateTime.now();
+    print('TimeTicker: Tick at ${now.hour}:${now.minute}:${now.second}');
+    return now;
+  });
+});
+
+/// Live current/next prayer that recomputes periodically without requiring explicit invalidation
+final currentAndNextPrayerLiveProvider =
+    StreamProvider<PrayerDetail>((ref) async* {
+  PrayerDetail _derive(PrayerTimes pt, DateTime now) {
+    // before Fajr
+    if (now.isBefore(pt.fajr.time)) {
+      final remaining = pt.fajr.time.difference(now);
+      return PrayerDetail(
+        currentPrayer: null,
+        nextPrayer: 'Fajr',
+        prayerTimes: pt,
+        timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+      );
+    }
+    // Fajr → Sunrise
+    if (now.isAfter(pt.fajr.time) && now.isBefore(pt.sunrise.time)) {
+      final remaining = pt.dhuhr.time.difference(now);
+      return PrayerDetail(
+        currentPrayer: 'Fajr',
+        nextPrayer: 'Dhuhr',
+        prayerTimes: pt,
+        timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+      );
+    }
+    // Sunrise → Dhuhr
+    if (now.isAfter(pt.sunrise.time) && now.isBefore(pt.dhuhr.time)) {
+      final remaining = pt.dhuhr.time.difference(now);
+      return PrayerDetail(
+        currentPrayer: null,
+        nextPrayer: 'Dhuhr',
+        prayerTimes: pt,
+        timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+      );
+    }
+    // Dhuhr → Asr
+    if (now.isAfter(pt.dhuhr.time) && now.isBefore(pt.asr.time)) {
+      final remaining = pt.asr.time.difference(now);
+      return PrayerDetail(
+        currentPrayer: 'Dhuhr',
+        nextPrayer: 'Asr',
+        prayerTimes: pt,
+        timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+      );
+    }
+    // Asr → Maghrib
+    if (now.isAfter(pt.asr.time) && now.isBefore(pt.maghrib.time)) {
+      final remaining = pt.maghrib.time.difference(now);
+      return PrayerDetail(
+        currentPrayer: 'Asr',
+        nextPrayer: 'Maghrib',
+        prayerTimes: pt,
+        timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+      );
+    }
+    // Maghrib → Isha
+    if (now.isAfter(pt.maghrib.time) && now.isBefore(pt.isha.time)) {
+      final remaining = pt.isha.time.difference(now);
+      return PrayerDetail(
+        currentPrayer: 'Maghrib',
+        nextPrayer: 'Isha',
+        prayerTimes: pt,
+        timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+      );
+    }
+    // Isha → Islamic midnight
+    if (now.isAfter(pt.isha.time) && now.isBefore(pt.midnight.time)) {
+      final nextFajr = pt.fajr.time.add(const Duration(days: 1));
+      final remaining = nextFajr.difference(now);
+      return PrayerDetail(
+        currentPrayer: 'Isha',
+        nextPrayer: 'Fajr',
+        prayerTimes: pt,
+        timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+      );
+    }
+    // After Islamic midnight → next Fajr
+    final nextFajr = pt.fajr.time.add(const Duration(days: 1));
+    final remaining = nextFajr.difference(now);
+    return PrayerDetail(
+      currentPrayer: null, // No active prayer after Islamic midnight
+      nextPrayer: 'Fajr',
+      prayerTimes: pt,
+      timeUntilNextPrayer: remaining.isNegative ? Duration.zero : remaining,
+    );
+  }
+
+  try {
+    final pt = await ref.read(currentPrayerTimesProvider.future);
+    // initial
+    final initial = _derive(pt, DateTime.now());
+    yield initial;
+
+    // periodic recompute
+    yield* ref.watch(timeTickerProvider.stream).map((now) {
+      final updated = _derive(pt, now);
+
+      // Log prayer state changes
+      if (updated.currentPrayer != initial.currentPrayer ||
+          updated.nextPrayer != initial.nextPrayer) {
+        print(
+            'PrayerStateChange: ${initial.currentPrayer}->${updated.currentPrayer}, ${initial.nextPrayer}->${updated.nextPrayer}');
+      }
+
+      return updated;
+    });
+  } catch (_) {
+    // fallback to cached if available
+    final cached = await ref.read(cachedCurrentPrayerTimesProvider.future);
+    if (cached != null) {
+      final initial = _derive(cached, DateTime.now());
+      yield initial;
+      yield* ref
+          .watch(timeTickerProvider.stream)
+          .map((now) => _derive(cached, now));
+    } else {
+      rethrow;
+    }
+  }
 });
 
 // Helper method to get prayer time by name
@@ -1080,12 +1234,12 @@ final nextPrayerDateTimeProvider = Provider<DateTime?>((ref) {
   );
 });
 
-// Live countdown recomputed every second using current time and next prayer
+// Live countdown recomputed every 15 seconds for prayer time switching
 final timeUntilNextPrayerProvider = StreamProvider<Duration>((ref) async* {
   // Rebuild the stream when next prayer target changes
   final nextPrayerTime = ref.watch(nextPrayerDateTimeProvider);
 
-  // Emit immediately then every second
+  // Emit immediately then every 15 seconds
   Duration computeRemaining() {
     if (nextPrayerTime == null) return Duration.zero;
     final remaining = nextPrayerTime.difference(DateTime.now());
@@ -1094,27 +1248,51 @@ final timeUntilNextPrayerProvider = StreamProvider<Duration>((ref) async* {
 
   yield computeRemaining();
 
-  yield* Stream.periodic(const Duration(seconds: 1), (_) => computeRemaining());
+  yield* Stream.periodic(
+      const Duration(seconds: 15), (_) => computeRemaining());
 });
 
-// Auto-refresh at local midnight: invalidate relevant providers
-final prayerTimesMidnightRefreshProvider = Provider<void>((ref) {
+// Auto-refresh 4 times per day for accurate prayer times
+final prayerTimesScheduledRefreshProvider = Provider<void>((ref) {
   Timer? timer;
 
-  void schedule() {
+  void scheduleNextRefresh() {
     final now = DateTime.now();
-    final nextMidnight =
-        DateTime(now.year, now.month, now.day).add(const Duration(days: 1));
-    final delay = nextMidnight.difference(now);
+
+    // Schedule refreshes at: 6 AM, 12 PM, 6 PM, 12 AM (every 6 hours)
+    final refreshHours = [6, 12, 18, 0];
+    DateTime nextRefresh = DateTime(now.year, now.month, now.day, 6);
+
+    // Find the next refresh time
+    for (final hour in refreshHours) {
+      final candidate = DateTime(now.year, now.month, now.day, hour);
+      if (candidate.isAfter(now)) {
+        nextRefresh = candidate;
+        break;
+      }
+    }
+
+    // If no refresh time found today, schedule for tomorrow 6 AM
+    if (nextRefresh.isBefore(now)) {
+      nextRefresh = DateTime(now.year, now.month, now.day + 1, 6);
+    }
+
+    final delay = nextRefresh.difference(now);
+    print(
+        'ScheduledRefresh: Next refresh at ${nextRefresh.hour}:${nextRefresh.minute} (in ${delay.inHours}h ${delay.inMinutes.remainder(60)}m)');
+
     timer = Timer(delay, () {
+      print(
+          'ScheduledRefresh: Refreshing prayer times (${DateTime.now().hour}:${DateTime.now().minute})');
       ref.invalidate(currentPrayerTimesProvider);
       ref.invalidate(currentAndNextPrayerProvider);
-      // Reschedule for the following day
-      schedule();
+      ref.invalidate(cachedCurrentPrayerTimesProvider);
+      // Schedule next refresh
+      scheduleNextRefresh();
     });
   }
 
-  schedule();
+  scheduleNextRefresh();
 
   ref.onDispose(() {
     timer?.cancel();
@@ -1132,9 +1310,54 @@ final prayerTimesConnectivityRefreshProvider = Provider<void>((ref) {
           r == ConnectivityResult.wifi ||
           r == ConnectivityResult.mobile ||
           r == ConnectivityResult.ethernet);
+
+      print(
+          'ConnectivityRefresh: Network status changed - hasNetwork: $hasNetwork');
+
       if (hasNetwork) {
+        print(
+            'ConnectivityRefresh: Network available, refreshing prayer times');
+
+        // Refresh prayer times when network becomes available
         ref.invalidate(currentPrayerTimesProvider);
         ref.invalidate(currentAndNextPrayerProvider);
+        ref.invalidate(cachedCurrentPrayerTimesProvider);
+      }
+    },
+  );
+});
+
+/// Provider to update last updated timestamp for prayer times
+final updateLastUpdatedProvider = FutureProvider<void>((ref) async {
+  try {
+    // Get current prayer times and update the lastUpdated timestamp
+    final currentTimes = await ref.read(currentPrayerTimesProvider.future);
+    final updatedTimes = currentTimes.copyWith(lastUpdated: DateTime.now());
+
+    // Update the cached data with new timestamp
+    final repo = ref.read(prayerTimesRepositoryProvider);
+    final preferred = await repo.getPreferredLocation();
+    if (preferred.isRight() && preferred.getOrElse(() => null) != null) {
+      await repo.cachePrayerTimes([updatedTimes]);
+    }
+
+    print('UpdateLastUpdated: Successfully updated last updated timestamp');
+  } catch (e) {
+    print('UpdateLastUpdated: Error updating last updated timestamp: $e');
+  }
+});
+
+/// Refresh prayer times when settings change (calculation method, madhab, etc.)
+final prayerTimesSettingsRefreshProvider = Provider<void>((ref) {
+  ref.listen<AsyncValue<PrayerCalculationSettings>>(
+    prayerSettingsProvider,
+    (previous, next) {
+      if (next.hasValue && previous?.value != next.value) {
+        print(
+            'SettingsRefresh: Prayer settings changed, refreshing prayer times');
+        ref.invalidate(currentPrayerTimesProvider);
+        ref.invalidate(currentAndNextPrayerProvider);
+        ref.invalidate(cachedCurrentPrayerTimesProvider);
       }
     },
   );

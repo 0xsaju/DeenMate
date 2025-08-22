@@ -5,8 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/islamic_utils.dart';
 
 /// Enhanced multi-asset Zakat calculator with currency support
@@ -66,7 +64,7 @@ class _ZakatCalculatorScreenState extends State<ZakatCalculatorScreen>
     _loadZakatData();
     _calculateZakat();
   }
-
+  
   @override
   void dispose() {
     _tabController.dispose();
@@ -92,14 +90,14 @@ class _ZakatCalculatorScreenState extends State<ZakatCalculatorScreen>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppTheme.lightTheme.colorScheme.primary,
-              AppTheme.lightTheme.colorScheme.primary.withOpacity(0.8),
+              Colors.green,
+              Colors.green.withOpacity(0.8),
             ],
           ),
         ),
         child: SafeArea(
-          child: Column(
-            children: [
+            child: Column(
+              children: [
               // App Bar
               _buildAppBar(),
               
@@ -129,7 +127,7 @@ class _ZakatCalculatorScreenState extends State<ZakatCalculatorScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       child: Row(
-        children: [
+      children: [
           IconButton(
             onPressed: () => context.pop(),
             icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -167,7 +165,7 @@ class _ZakatCalculatorScreenState extends State<ZakatCalculatorScreen>
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
         ),
-        labelColor: AppTheme.lightTheme.colorScheme.primary,
+        labelColor: Colors.green,
         unselectedLabelColor: Colors.white,
         tabs: const [
           Tab(text: 'Cash'),
@@ -223,9 +221,9 @@ class _ZakatCalculatorScreenState extends State<ZakatCalculatorScreen>
   Widget _buildGoldSilverTab() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
           _buildSectionHeader('Gold & Silver | সোনা ও রূপা'),
           
           const SizedBox(height: 20),
@@ -364,9 +362,9 @@ class _ZakatCalculatorScreenState extends State<ZakatCalculatorScreen>
                 _calculateZakat();
               });
             },
-          ),
-        ],
-      ),
+                      ),
+                    ],
+                  ),
     );
   }
 
@@ -378,14 +376,14 @@ class _ZakatCalculatorScreenState extends State<ZakatCalculatorScreen>
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      child: Column(
+                  child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
+                    children: [
+                      Text(
             label,
             style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
+                          color: Colors.white,
+                          fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -439,11 +437,11 @@ class _ZakatCalculatorScreenState extends State<ZakatCalculatorScreen>
             ),
           ),
           const SizedBox(height: 8),
-                      Text(
+                Text(
               'Gold: 87.48g (7.5 tola)',
               style: const TextStyle(color: Colors.white),
             ),
-            Text(
+          Text(
               'Silver: 612.36g (52.5 tola)',
               style: const TextStyle(color: Colors.white),
             ),
@@ -494,7 +492,7 @@ class _ZakatCalculatorScreenState extends State<ZakatCalculatorScreen>
   Widget _buildResultCard() {
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
+            decoration: BoxDecoration(
         color: _isZakatDue ? Colors.green.withOpacity(0.2) : Colors.orange.withOpacity(0.2),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
@@ -510,7 +508,7 @@ class _ZakatCalculatorScreenState extends State<ZakatCalculatorScreen>
             size: 48,
           ),
           const SizedBox(height: 16),
-          Text(
+                Text(
             _isZakatDue ? 'Zakat is Due | যাকাত দেয়া আবশ্যক' : 'No Zakat Due | যাকাত দেয়া আবশ্যক নয়',
             style: TextStyle(
               fontSize: 18,
@@ -571,8 +569,8 @@ class _ZakatCalculatorScreenState extends State<ZakatCalculatorScreen>
             style: TextStyle(
               color: Colors.white,
               fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+                  fontWeight: FontWeight.bold,
+              ),
           ),
           const SizedBox(height: 8),
           const Text(
@@ -595,7 +593,7 @@ class _ZakatCalculatorScreenState extends State<ZakatCalculatorScreen>
       child: Text(
         title,
         style: const TextStyle(
-          color: Colors.white,
+              color: Colors.white,
           fontSize: 18,
           fontWeight: FontWeight.bold,
         ),

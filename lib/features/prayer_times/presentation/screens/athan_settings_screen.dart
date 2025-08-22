@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../../../core/navigation/shell_wrapper.dart' show EnhancedAppRouter;
 
-import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/islamic_utils.dart' as islamic_utils;
 import '../../domain/entities/athan_settings.dart';
 import '../providers/notification_providers.dart' hide athanAudioProvider;
@@ -57,7 +56,7 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Athan & Notifications'),
-          backgroundColor: AppTheme.lightTheme.colorScheme.primary,
+          backgroundColor: Theme.of(context).colorScheme.primary,
           foregroundColor: Colors.white,
           elevation: 0,
           leading: IconButton(
@@ -87,7 +86,7 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
               _buildRamadanTab(settings),
             ],
           ),
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const SizedBox.shrink(),
           error: (error, stack) => _buildErrorView(error),
         ),
       ),
@@ -288,13 +287,13 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppTheme.lightTheme.colorScheme.primary.withOpacity(0.1),
-            AppTheme.lightTheme.colorScheme.primary.withOpacity(0.05),
+            Colors.green.withOpacity(0.1),
+            Colors.green.withOpacity(0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.3),
+          color: Colors.green.withOpacity(0.3),
         ),
       ),
       child: Row(
@@ -303,7 +302,7 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: settings.isEnabled
-                  ? AppTheme.lightTheme.colorScheme.primary
+                  ? Colors.green
                   : Colors.grey.withOpacity(0.3),
               borderRadius: BorderRadius.circular(12),
             ),
@@ -323,9 +322,7 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: settings.isEnabled
-                        ? AppTheme.lightTheme.colorScheme.primary
-                        : Colors.grey[700],
+                    color: settings.isEnabled ? Colors.green : Colors.grey[700],
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -346,7 +343,7 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
             onChanged: (value) {
               ref.read(athanSettingsProvider.notifier).toggleEnabled();
             },
-            activeColor: AppTheme.lightTheme.colorScheme.primary,
+            activeColor: Colors.green,
           ),
         ],
       ),
@@ -359,12 +356,12 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.1),
+            color: Colors.green.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
             icon,
-            color: AppTheme.lightTheme.colorScheme.primary,
+            color: Colors.green,
             size: 24,
           ),
         ),
@@ -413,7 +410,7 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
           children: [
             Icon(
               Icons.timer,
-              color: AppTheme.lightTheme.colorScheme.primary,
+              color: Colors.green,
               size: 20,
             ),
             const SizedBox(width: 12),
@@ -431,6 +428,7 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
           divisions: 27,
           label: '${settings.durationSeconds}s',
           onChanged: (value) {
+            // Optimistic update only (no rebuild jump)
             ref.read(athanSettingsProvider.notifier).updateSettings(
                   settings.copyWith(durationSeconds: value.toInt()),
                 );
@@ -451,7 +449,7 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
           },
           secondary: Icon(
             Icons.vibration,
-            color: AppTheme.lightTheme.colorScheme.primary,
+            color: Colors.green,
           ),
         ),
       ],
@@ -462,10 +460,10 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.lightTheme.colorScheme.surface,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.2),
+          color: Colors.green.withOpacity(0.2),
         ),
       ),
       child: Column(
@@ -475,7 +473,7 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
             children: [
               Icon(
                 Icons.schedule,
-                color: AppTheme.lightTheme.colorScheme.primary,
+                color: Colors.green,
                 size: 20,
               ),
               const SizedBox(width: 8),
@@ -513,15 +511,14 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color:
-                      AppTheme.lightTheme.colorScheme.primary.withOpacity(0.1),
+                  color: Colors.green.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   '${settings.reminderMinutes} min',
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.lightTheme.colorScheme.primary,
+                    color: Colors.green,
                   ),
                 ),
               ),
@@ -582,10 +579,10 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.lightTheme.colorScheme.surface,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.2),
+          color: Colors.green.withOpacity(0.2),
         ),
       ),
       child: Column(
@@ -628,10 +625,10 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.lightTheme.colorScheme.surface,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.2),
+          color: Colors.green.withOpacity(0.2),
         ),
       ),
       child: Column(
@@ -703,7 +700,7 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
       },
       secondary: Icon(
         Icons.psychology,
-        color: AppTheme.lightTheme.colorScheme.primary,
+        color: Colors.green,
       ),
     );
   }
@@ -720,7 +717,7 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
       },
       secondary: Icon(
         Icons.do_not_disturb_off,
-        color: AppTheme.lightTheme.colorScheme.primary,
+        color: Colors.green,
       ),
     );
   }
@@ -737,7 +734,7 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
       },
       secondary: Icon(
         Icons.fullscreen,
-        color: AppTheme.lightTheme.colorScheme.primary,
+        color: Colors.green,
       ),
     );
   }
@@ -828,7 +825,7 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
       },
       secondary: Icon(
         Icons.nightlight,
-        color: AppTheme.lightTheme.colorScheme.primary,
+        color: Colors.green,
       ),
     );
   }
@@ -1271,7 +1268,11 @@ class _AthanSettingsScreenState extends ConsumerState<AthanSettingsScreen>
                 // Also play Azan audio
                 try {
                   final service = ref.read(notificationServiceProvider);
-                  await service.playAthan('abdulbasit', 1.0);
+                  final currentSettings =
+                      ref.read(athanSettingsProvider).value ??
+                          const AthanSettings();
+                  await service.playAthan('abdulbasit', 1.0,
+                      durationSeconds: currentSettings.durationSeconds);
                 } catch (e) {
                   print('Failed to play Azan: $e');
                 }

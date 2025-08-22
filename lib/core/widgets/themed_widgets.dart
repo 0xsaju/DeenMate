@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
 
 /// Themed app bar for Islamic app
 class ThemedAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -69,7 +68,8 @@ class ThemedAppBar extends StatelessWidget implements PreferredSizeWidget {
 /// Themed card with Islamic styling
 class ThemedCard extends StatelessWidget {
   const ThemedCard({
-    required this.child, super.key,
+    required this.child,
+    super.key,
     this.margin,
     this.padding,
     this.elevation,
@@ -138,7 +138,9 @@ class ThemedCard extends StatelessWidget {
 /// Themed elevated button with Islamic styling
 class ThemedElevatedButton extends StatelessWidget {
   const ThemedElevatedButton({
-    required this.onPressed, required this.child, super.key,
+    required this.onPressed,
+    required this.child,
+    super.key,
     this.backgroundColor,
     this.foregroundColor,
     this.elevation,
@@ -212,7 +214,8 @@ class ThemedElevatedButton extends StatelessWidget {
             onTap: isLoading ? null : onPressed,
             borderRadius: borderRadius ?? BorderRadius.circular(12),
             child: Container(
-              padding: padding ?? const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              padding: padding ??
+                  const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               child: Center(
                 child: DefaultTextStyle(
                   style: textTheme.labelLarge?.copyWith(
@@ -320,7 +323,8 @@ class ThemedTextField extends StatelessWidget {
         suffixIcon: suffixIcon,
         filled: true,
         fillColor: fillColor ?? inputDecorationTheme.fillColor,
-        contentPadding: contentPadding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: contentPadding ??
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         border: OutlineInputBorder(
           borderRadius: borderRadius ?? BorderRadius.circular(12),
           borderSide: BorderSide(
@@ -478,7 +482,8 @@ class ThemedDivider extends StatelessWidget {
 /// Themed bottom sheet
 class ThemedBottomSheet extends StatelessWidget {
   const ThemedBottomSheet({
-    required this.child, super.key,
+    required this.child,
+    super.key,
     this.title,
     this.showHandle = true,
     this.padding,
@@ -589,12 +594,12 @@ class ThemedBottomSheet extends StatelessWidget {
 class PrayerTimeColors {
   static Color getColor(String prayer, BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return AppTheme.getPrayerColor(prayer, isDark: isDark);
+    return Colors.green;
   }
 
   static Color getBackgroundColor(String prayer, BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return AppTheme.getPrayerBackgroundColor(prayer, isDark: isDark);
+    return Colors.green.shade50;
   }
 }
 
@@ -602,6 +607,6 @@ class PrayerTimeColors {
 class FeatureColors {
   static Color getColor(String feature, BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return AppTheme.getFeatureColor(feature, isDark: isDark);
+    return Colors.blue;
   }
 }

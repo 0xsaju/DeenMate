@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -8,17 +9,19 @@ import '../../../../core/routing/app_router.dart';
 import '../../../../core/constants/app_constants.dart';
 // Deprecated direct service import removed; use repository-backed providers instead
 import '../../../../core/theme/islamic_theme.dart';
+import '../../../../core/theme/theme_switcher.dart';
+
 // Demo screen removed per product decision to avoid extra widgets on Home
 
 /// App settings screen for DeenMate
-class AppSettingsScreen extends StatefulWidget {
+class AppSettingsScreen extends ConsumerStatefulWidget {
   const AppSettingsScreen({super.key});
 
   @override
-  State<AppSettingsScreen> createState() => _AppSettingsScreenState();
+  ConsumerState<AppSettingsScreen> createState() => _AppSettingsScreenState();
 }
 
-class _AppSettingsScreenState extends State<AppSettingsScreen> {
+class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
   bool _prayerNotificationsEnabled = true;
   bool _prayerRemindersEnabled = true;
   bool _dailyVersesEnabled = true;
@@ -36,39 +39,26 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      body: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              IslamicTheme.islamicGreen,
-              IslamicTheme.islamicGreen.withOpacity(0.8),
-            ],
+      backgroundColor: theme.colorScheme.surface,
+      appBar: AppBar(
+        backgroundColor: theme.colorScheme.surface,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Text(
+          'Settings',
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.onSurface,
           ),
         ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildAppBar(),
-              Expanded(
-                child: Container(
-                  margin: const EdgeInsets.only(top: 16),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(24),
-                      topRight: Radius.circular(24),
-                    ),
-                  ),
-                  child: _buildSettingsList(),
-                ),
-              ),
-            ],
-          ),
-        ),
+        centerTitle: true,
       ),
+      body: _buildSettingsList(),
     );
   }
 
@@ -108,12 +98,12 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
   }
 
   Widget _buildSettingsList() {
+    final theme = Theme.of(context);
     return ListView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16),
       children: [
         _buildSection(
           'Prayer Settings',
-          'নামাজের সেটিংস',
           [
             _buildNavTile(
               title: 'Athan Settings',
@@ -148,7 +138,6 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
         const SizedBox(height: 24),
         _buildSection(
           'Islamic Content',
-          'ইসলামিক কন্টেন্ট',
           [
             _buildSwitchTile(
               'Daily Verses',
@@ -157,14 +146,13 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
               _setDailyVerses,
               Icons.menu_book,
             ),
-            // Isha demo entry removed to keep settings clean
           ],
         ),
         const SizedBox(height: 24),
         _buildSection(
           'App Settings',
-          'অ্যাপের সেটিংস',
           [
+            const ThemeSwitcher(),
             _buildLanguageTile(),
             _buildAboutTile(),
             _buildPrivacyTile(),
@@ -173,7 +161,6 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
         const SizedBox(height: 24),
         _buildSection(
           'Data & Storage',
-          'ডেটা ও স্টোরেজ',
           [
             _buildClearCacheTile(),
             _buildExportDataTile(),
@@ -185,30 +172,25 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
     );
   }
 
-  Widget _buildSection(String title, String subtitle, List<Widget> children) {
+  Widget _buildSection(String title, List<Widget> children) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: IslamicTheme.textTheme.headlineSmall?.copyWith(
-            color: IslamicTheme.islamicGreen,
-            fontWeight: FontWeight.bold,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          child: Text(
+            title,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface,
+            ),
           ),
         ),
-        Text(
-          subtitle,
-          style: IslamicTheme.textTheme.bodySmall?.copyWith(
-            color: IslamicTheme.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 16),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: IslamicTheme.backgroundLight,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: IslamicTheme.textHint.withOpacity(0.2)),
-          ),
+        Card(
+          elevation: 1,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Column(children: children),
         ),
       ],
@@ -222,24 +204,26 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
     Function(bool) onChanged,
     IconData icon,
   ) {
+    final theme = Theme.of(context);
     return ListTile(
-      leading: Icon(icon, color: IslamicTheme.islamicGreen),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Icon(icon, color: theme.colorScheme.primary),
       title: Text(
         title,
-        style: IslamicTheme.textTheme.bodyMedium?.copyWith(
+        style: theme.textTheme.bodyLarge?.copyWith(
           fontWeight: FontWeight.w500,
         ),
       ),
       subtitle: Text(
         subtitle,
-        style: IslamicTheme.textTheme.bodySmall?.copyWith(
-          color: IslamicTheme.textSecondary,
+        style: theme.textTheme.bodyMedium?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
         ),
       ),
       trailing: Switch(
         value: value,
         onChanged: onChanged,
-        activeColor: IslamicTheme.islamicGreen,
+        activeColor: theme.colorScheme.primary,
       ),
     );
   }
@@ -250,37 +234,56 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
     required IconData icon,
     required String route,
   }) {
+    final theme = Theme.of(context);
     return ListTile(
-      leading: Icon(icon, color: IslamicTheme.islamicGreen),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Icon(icon, color: theme.colorScheme.primary),
       title: Text(
         title,
-        style: IslamicTheme.textTheme.bodyMedium?.copyWith(
-          fontWeight: FontWeight.w600,
+        style: theme.textTheme.bodyLarge?.copyWith(
+          fontWeight: FontWeight.w500,
         ),
       ),
       subtitle: Text(
         subtitle,
-        style: IslamicTheme.textTheme.bodySmall,
+        style: theme.textTheme.bodyMedium?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
       ),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+      trailing: Icon(
+        Icons.arrow_forward_ios,
+        size: 16,
+        color: theme.colorScheme.onSurfaceVariant,
+      ),
       onTap: () => context.go(route),
     );
   }
 
   Widget _buildCalculationMethodTile() {
+    final theme = Theme.of(context);
     return ListTile(
-      leading: const Icon(Icons.calculate, color: IslamicTheme.islamicGreen),
-      title: const Text('Prayer Calculation Method'),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Icon(Icons.calculate, color: theme.colorScheme.primary),
+      title: Text(
+        'Prayer Calculation Method',
+        style: theme.textTheme.bodyLarge?.copyWith(
+          fontWeight: FontWeight.w500,
+        ),
+      ),
       subtitle: Text(
         AppConstants.calculationMethods.values.elementAt(
           _selectedCalculationMethod.clamp(
               0, AppConstants.calculationMethods.length - 1),
         ),
-        style: IslamicTheme.textTheme.bodySmall?.copyWith(
-          color: IslamicTheme.textSecondary,
+        style: theme.textTheme.bodyMedium?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
         ),
       ),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+      trailing: Icon(
+        Icons.arrow_forward_ios,
+        size: 16,
+        color: theme.colorScheme.onSurfaceVariant,
+      ),
       onTap: _showCalculationMethodDialog,
     );
   }
