@@ -117,7 +117,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               prayerTimesAsync, use24h),
                           SizedBox(
                               height:
-                                  MediaQuery.of(context).padding.bottom + 110),
+                                  MediaQuery.of(context).padding.bottom + 20),
                         ],
                       ),
                     ),
@@ -364,7 +364,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   Widget _buildPrayerCards(AsyncValue<PrayerDetail> currentAndNextPrayerAsync,
       AsyncValue<prayer_entities.PrayerTimes> prayerTimesAsync, bool use24h) {
-    const double cardHeight = 132;
+    const double cardHeight = 120;
     return Row(
       children: [
         Expanded(

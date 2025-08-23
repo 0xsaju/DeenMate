@@ -11,6 +11,9 @@ import '../../data/dto/chapter_dto.dart';
 import '../../data/dto/verses_page_dto.dart';
 import '../../data/dto/translation_resource_dto.dart';
 import '../../data/dto/recitation_resource_dto.dart';
+import '../../data/dto/tafsir_dto.dart';
+import '../../data/dto/word_analysis_dto.dart';
+import '../../data/dto/audio_download_dto.dart';
 import '../../data/dto/note_dto.dart';
 import '../../data/dto/download_dto.dart';
 
@@ -266,6 +269,69 @@ final recitationsProvider =
   return repo.getRecitations();
 });
 
+// -------------------- Tafsir Resources --------------------
+final tafsirResourcesProvider =
+    FutureProvider.autoDispose<List<TafsirResourceDto>>((ref) async {
+  final repo = ref.read(quranRepoProvider);
+  return repo.getTafsirResources();
+});
+
+final tafsirByVerseProvider = FutureProvider.family<TafsirDto, Map<String, dynamic>>((ref, params) async {
+  final repo = ref.read(quranRepoProvider);
+  return repo.getTafsirByVerse(
+    verseKey: params['verseKey'] as String,
+    resourceId: params['resourceId'] as int,
+  );
+});
+
+// -------------------- Word Analysis Resources --------------------
+final wordAnalysisResourcesProvider =
+    FutureProvider.autoDispose<List<WordAnalysisResourceDto>>((ref) async {
+  final repo = ref.read(quranRepoProvider);
+  return repo.getWordAnalysisResources();
+});
+
+final wordAnalysisByVerseProvider = FutureProvider.family<WordAnalysisDto, Map<String, dynamic>>((ref, params) async {
+  final repo = ref.read(quranRepoProvider);
+  return repo.getWordAnalysisByVerse(
+    verseKey: params['verseKey'] as String,
+    resourceId: params['resourceId'] as int,
+  );
+});
+
+// -------------------- Audio Downloads --------------------
+final audioDownloadInfoProvider = FutureProvider.family<AudioDownloadDto, Map<String, dynamic>>((ref, params) async {
+  final repo = ref.read(quranRepoProvider);
+  return repo.getAudioDownloadInfo(
+    chapterId: params['chapterId'] as int,
+    recitationId: params['recitationId'] as int,
+  );
+});
+
+final audioDownloadProgressProvider = StreamProvider.family<AudioDownloadProgressDto?, Map<String, dynamic>>((ref, params) async* {
+  // This will be updated by the download service
+  yield null;
+});
+
+final audioDownloadManagerProvider = StateNotifierProvider<AudioDownloadManager, Map<String, AudioDownloadDto>>((ref) {
+  return AudioDownloadManager(ref);
+});
+
+class AudioDownloadManager extends StateNotifier<Map<String, AudioDownloadDto>> {
+  AudioDownloadManager(this._ref) : super({});
+  final Ref _ref;
+
+  Future<void> downloadAudio(String chapterId) async {
+    // Implementation for audio download
+    // This is a placeholder - will be implemented when needed
+  }
+
+  Future<void> cancelDownload(String chapterId) async {
+    // Implementation for canceling download
+    // This is a placeholder - will be implemented when needed
+  }
+}
+
 // -------------------- Notes --------------------
 final _notesBoxProvider = FutureProvider<Box>((_) async {
   await Hive.initFlutter();
@@ -433,40 +499,64 @@ class DownloadManager {
 // -------------------- Quran Preferences --------------------
 class QuranPrefs {
   const QuranPrefs({
-    this.selectedTranslationIds = const [20],
+    this.selectedTranslationIds = const [20], // Try the original working translation ID
+    this.selectedTafsirIds = const [],
+    this.selectedWordAnalysisIds = const [],
     this.recitationId = 7,
     this.showArabic = true,
     this.showTranslation = true,
+    this.showTafsir = false,
+    this.showWordAnalysis = false,
     this.arabicFontSize = 26.0,
     this.translationFontSize = 15.0,
+    this.tafsirFontSize = 14.0,
+    this.wordAnalysisFontSize = 13.0,
     this.arabicLineHeight = 1.9,
     this.translationLineHeight = 1.6,
+    this.tafsirLineHeight = 1.5,
+    this.wordAnalysisLineHeight = 1.4,
     this.arabicFontFamily,
     this.repeatMode = 'off',
     this.autoAdvance = true,
   });
 
   final List<int> selectedTranslationIds;
+  final List<int> selectedTafsirIds;
+  final List<int> selectedWordAnalysisIds;
   final int recitationId;
   final bool showArabic;
   final bool showTranslation;
+  final bool showTafsir;
+  final bool showWordAnalysis;
   final double arabicFontSize;
   final double translationFontSize;
+  final double tafsirFontSize;
+  final double wordAnalysisFontSize;
   final double arabicLineHeight;
   final double translationLineHeight;
+  final double tafsirLineHeight;
+  final double wordAnalysisLineHeight;
   final String? arabicFontFamily;
   final String repeatMode; // off | one | all
   final bool autoAdvance;
 
   Map<String, dynamic> toMap() => {
         'selectedTranslationIds': selectedTranslationIds,
+        'selectedTafsirIds': selectedTafsirIds,
+        'selectedWordAnalysisIds': selectedWordAnalysisIds,
         'recitationId': recitationId,
         'showArabic': showArabic,
         'showTranslation': showTranslation,
+        'showTafsir': showTafsir,
+        'showWordAnalysis': showWordAnalysis,
         'arabicFontSize': arabicFontSize,
         'translationFontSize': translationFontSize,
+        'tafsirFontSize': tafsirFontSize,
+        'wordAnalysisFontSize': wordAnalysisFontSize,
         'arabicLineHeight': arabicLineHeight,
         'translationLineHeight': translationLineHeight,
+        'tafsirLineHeight': tafsirLineHeight,
+        'wordAnalysisLineHeight': wordAnalysisLineHeight,
         'arabicFontFamily': arabicFontFamily,
         'repeatMode': repeatMode,
         'autoAdvance': autoAdvance,
@@ -474,14 +564,24 @@ class QuranPrefs {
 
   static QuranPrefs fromMap(Map<String, dynamic> map) => QuranPrefs(
         selectedTranslationIds:
-            List<int>.from(map['selectedTranslationIds'] ?? [20]),
+            List<int>.from(map['selectedTranslationIds'] ?? [20]), // Original working ID
+        selectedTafsirIds:
+            List<int>.from(map['selectedTafsirIds'] ?? []),
+        selectedWordAnalysisIds:
+            List<int>.from(map['selectedWordAnalysisIds'] ?? []),
         recitationId: (map['recitationId'] ?? 7) as int,
         showArabic: (map['showArabic'] ?? true) as bool,
         showTranslation: (map['showTranslation'] ?? true) as bool,
+        showTafsir: (map['showTafsir'] ?? false) as bool,
+        showWordAnalysis: (map['showWordAnalysis'] ?? false) as bool,
         arabicFontSize: (map['arabicFontSize'] ?? 26.0).toDouble(),
         translationFontSize: (map['translationFontSize'] ?? 15.0).toDouble(),
+        tafsirFontSize: (map['tafsirFontSize'] ?? 14.0).toDouble(),
+        wordAnalysisFontSize: (map['wordAnalysisFontSize'] ?? 13.0).toDouble(),
         arabicLineHeight: (map['arabicLineHeight'] ?? 1.9).toDouble(),
         translationLineHeight: (map['translationLineHeight'] ?? 1.6).toDouble(),
+        tafsirLineHeight: (map['tafsirLineHeight'] ?? 1.5).toDouble(),
+        wordAnalysisLineHeight: (map['wordAnalysisLineHeight'] ?? 1.4).toDouble(),
         arabicFontFamily: map['arabicFontFamily'] as String?,
         repeatMode: (map['repeatMode'] ?? 'off') as String,
         autoAdvance: (map['autoAdvance'] ?? true) as bool,
@@ -507,7 +607,17 @@ class PrefsNotifier extends Notifier<QuranPrefs> {
     final box = await ref.read(_prefsBoxProvider.future);
     final raw = box.get('prefs');
     if (raw is Map) {
-      state = QuranPrefs.fromMap(Map<String, dynamic>.from(raw));
+      final map = Map<String, dynamic>.from(raw);
+      // Check if we need to migrate from old translation ID
+      final currentIds = List<int>.from(map['selectedTranslationIds'] ?? []);
+      if (currentIds.contains(131)) {
+        // Migrate from new translation ID back to working one
+        final newIds = currentIds.map((id) => id == 131 ? 20 : id).toList();
+        map['selectedTranslationIds'] = newIds;
+        // Save the migrated preferences
+        await box.put('prefs', map);
+      }
+      state = QuranPrefs.fromMap(map);
     }
   }
 
@@ -526,6 +636,21 @@ class PrefsNotifier extends Notifier<QuranPrefs> {
     );
     state = newPrefs;
     await box.put('prefs', newPrefs.toMap());
+  }
+
+  Future<void> clearCacheAndReset() async {
+    final box = await ref.read(_prefsBoxProvider.future);
+    await box.clear(); // Clear all stored preferences
+    state = const QuranPrefs(); // Reset to default with translation ID 20
+    
+    // Also clear verses cache to force fresh fetch with translation ID 20
+    try {
+      final versesBox = await Hive.openBox('verses');
+      await versesBox.clear();
+      print('DEBUG: Cleared verses cache to force fresh fetch with translation ID 20');
+    } catch (e) {
+      print('DEBUG: Error clearing verses cache: $e');
+    }
   }
 
   Future<void> updateRecitationId(int recitationId) async {

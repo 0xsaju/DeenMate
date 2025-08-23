@@ -10,10 +10,10 @@ TranslationResourceDto _$TranslationResourceDtoFromJson(
         Map<String, dynamic> json) =>
     TranslationResourceDto(
       id: (json['id'] as num).toInt(),
-      name: json['name'] as String,
-      authorName: json['author_name'] as String,
-      languageName: json['language_name'] as String,
-      slug: json['slug'] as String,
+      name: json['name'] as String?,
+      authorName: json['author_name'] as String?,
+      languageName: json['language_name'] as String?,
+      slug: json['slug'] as String?,
       direction: json['direction'] as String?,
       source: json['source'] as String?,
       comments: json['comments'] as String?,
@@ -43,8 +43,8 @@ Map<String, dynamic> _$TranslationResourceDtoToJson(
 
 TranslatedNameDto _$TranslatedNameDtoFromJson(Map<String, dynamic> json) =>
     TranslatedNameDto(
-      name: json['name'] as String,
-      languageName: json['language_name'] as String,
+      name: json['name'] as String?,
+      languageName: json['language_name'] as String?,
     );
 
 Map<String, dynamic> _$TranslatedNameDtoToJson(TranslatedNameDto instance) =>

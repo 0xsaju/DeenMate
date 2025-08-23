@@ -18,6 +18,17 @@ void main() async {
   // Initialize Hive
   await Hive.initFlutter();
 
+  // Clear Quran cache to force new translation ID
+  try {
+    final prefsBox = await Hive.openBox('quran_prefs');
+    final versesBox = await Hive.openBox('verses');
+    await prefsBox.clear();
+    await versesBox.clear();
+    print('Quran cache cleared successfully');
+  } catch (e) {
+    print('Cache clear error: $e');
+  }
+
   // Initialize prayer settings state
   await PrayerSettingsState.instance.loadSettings();
 

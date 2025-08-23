@@ -19,12 +19,12 @@ class TranslationResourceDto {
   });
 
   final int id;
-  final String name;
+  final String? name;
   @JsonKey(name: 'author_name')
-  final String authorName;
+  final String? authorName;
   @JsonKey(name: 'language_name')
-  final String languageName;
-  final String slug;
+  final String? languageName;
+  final String? slug;
   final String? direction;
   final String? source;
   final String? comments;
@@ -46,9 +46,9 @@ class TranslatedNameDto {
     required this.languageName,
   });
 
-  final String name;
+  final String? name;
   @JsonKey(name: 'language_name')
-  final String languageName;
+  final String? languageName;
 
   factory TranslatedNameDto.fromJson(Map<String, dynamic> json) =>
       _$TranslatedNameDtoFromJson(json);

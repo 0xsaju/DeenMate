@@ -9,6 +9,9 @@ import '../dto/chapter_dto.dart';
 import '../dto/verses_page_dto.dart';
 import '../dto/translation_resource_dto.dart';
 import '../dto/recitation_resource_dto.dart';
+import '../dto/tafsir_dto.dart';
+import '../dto/word_analysis_dto.dart';
+import '../dto/audio_download_dto.dart';
 
 class QuranRepository {
   QuranRepository(
@@ -302,5 +305,139 @@ class QuranRepository {
         await _resourcesApi.getTranslationResourcesByLanguage(language);
     await box.put(key, fresh.map((e) => e.toJson()).toList());
     return fresh;
+  }
+
+  /// Get available Tafsir resources
+  Future<List<TafsirResourceDto>> getTafsirResources({bool refresh = true}) async {
+    final box = await _hive.openBox(boxes.Boxes.resources);
+    final cached = box.get('tafsir_resources');
+
+    if (cached != null && !refresh) {
+      if (cached is List) {
+        return cached
+            .cast<Map>()
+            .map((e) =>
+                TafsirResourceDto.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+      }
+      if (cached is String) {
+        final list = (jsonDecode(cached) as List)
+            .map((e) =>
+                TafsirResourceDto.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+        return list;
+      }
+    }
+
+    final fresh = await _resourcesApi.getTafsirResources();
+    await box.put('tafsir_resources', fresh.map((e) => e.toJson()).toList());
+    return fresh;
+  }
+
+  /// Get Tafsir for a specific verse
+  Future<TafsirDto> getTafsirByVerse({
+    required String verseKey,
+    required int resourceId,
+    bool refresh = true,
+  }) async {
+    final key = 'tafsir_${resourceId}_$verseKey';
+    final box = await _hive.openBox(boxes.Boxes.verses);
+    final cached = box.get(key);
+
+    if (cached != null && !refresh) {
+      if (cached is Map) {
+        return TafsirDto.fromJson(Map<String, dynamic>.from(cached));
+      }
+      if (cached is String) {
+        return TafsirDto.fromJson(jsonDecode(cached));
+      }
+    }
+
+    final fresh = await _resourcesApi.getTafsirByVerse(
+      verseKey: verseKey,
+      resourceId: resourceId,
+    );
+    await box.put(key, fresh.toJson());
+    return fresh;
+  }
+
+  /// Get available word analysis resources
+  Future<List<WordAnalysisResourceDto>> getWordAnalysisResources({bool refresh = true}) async {
+    final box = await _hive.openBox(boxes.Boxes.resources);
+    final cached = box.get('word_analysis_resources');
+
+    if (cached != null && !refresh) {
+      if (cached is List) {
+        return cached
+            .cast<Map>()
+            .map((e) =>
+                WordAnalysisResourceDto.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+      }
+      if (cached is String) {
+        final list = (jsonDecode(cached) as List)
+            .map((e) =>
+                WordAnalysisResourceDto.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+        return list;
+      }
+    }
+
+    final fresh = await _resourcesApi.getWordAnalysisResources();
+    await box.put('word_analysis_resources', fresh.map((e) => e.toJson()).toList());
+    return fresh;
+  }
+
+  /// Get word-by-word analysis for a specific verse
+  Future<WordAnalysisDto> getWordAnalysisByVerse({
+    required String verseKey,
+    required int resourceId,
+    bool refresh = true,
+  }) async {
+    final key = 'word_analysis_${resourceId}_$verseKey';
+    final box = await _hive.openBox(boxes.Boxes.verses);
+    final cached = box.get(key);
+
+    if (cached != null && !refresh) {
+      if (cached is Map) {
+        return WordAnalysisDto.fromJson(Map<String, dynamic>.from(cached));
+      }
+      if (cached is String) {
+        return WordAnalysisDto.fromJson(jsonDecode(cached));
+      }
+    }
+
+    final fresh = await _resourcesApi.getWordAnalysisByVerse(
+      verseKey: verseKey,
+      resourceId: resourceId,
+    );
+    await box.put(key, fresh.toJson());
+    return fresh;
+  }
+
+  /// Get audio download info for a chapter
+  Future<AudioDownloadDto> getAudioDownloadInfo({
+    required int chapterId,
+    required int recitationId,
+  }) async {
+    return await _resourcesApi.getAudioDownloadInfo(
+      chapterId: chapterId,
+      recitationId: recitationId,
+    );
+  }
+
+  /// Download audio file for a chapter
+  Future<void> downloadAudio({
+    required int chapterId,
+    required int recitationId,
+    required String savePath,
+    Function(AudioDownloadProgressDto)? onProgress,
+  }) async {
+    await _resourcesApi.downloadAudio(
+      chapterId: chapterId,
+      recitationId: recitationId,
+      savePath: savePath,
+      onProgress: onProgress,
+    );
   }
 }

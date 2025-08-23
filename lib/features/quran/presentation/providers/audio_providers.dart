@@ -46,10 +46,8 @@ class AudioNotifier extends Notifier<AudioState> {
     state = AudioState(isPlaying: state.isPlaying, currentUrl: state.currentUrl, repeatOne: !state.repeatOne);
   }
 
-  @override
   void dispose() {
     _player.dispose();
-    super.dispose();
   }
 }
 

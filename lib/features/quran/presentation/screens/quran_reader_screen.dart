@@ -2,8 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../data/dto/verse_dto.dart';
+import '../../data/dto/translation_resource_dto.dart';
 import '../state/providers.dart';
+import '../widgets/translation_picker_widget.dart';
 import '../../../../core/theme/theme_helper.dart';
 
 class QuranReaderScreen extends ConsumerStatefulWidget {
@@ -59,6 +62,11 @@ class _QuranReaderScreenState extends ConsumerState<QuranReaderScreen>
       if (_controller.hasClients) {
         _saveCurrentVersePosition();
       }
+    });
+
+    // Clear cache to fix translation issues
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(prefsProvider.notifier).clearCacheAndReset();
     });
 
     // Remove the ref.listen call from initState as it's not allowed here
@@ -418,10 +426,11 @@ class _QuranReaderScreenState extends ConsumerState<QuranReaderScreen>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'The Criterion',
+                      c.nameArabic,
                       style: TextStyle(
                         fontSize: 16,
                         color: ThemeHelper.getTextSecondaryColor(context),
+                        fontFamily: 'Uthmani',
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -489,18 +498,25 @@ class _QuranReaderScreenState extends ConsumerState<QuranReaderScreen>
         children: [
           // Bismillah for first verse of each surah (except Al-Fatihah)
           if (verse.verseNumber == 1 && widget.chapterId > 1)
-            Container(
-              margin: const EdgeInsets.only(bottom: 16),
-              child: Text(
-                'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w600,
-                  color: ThemeHelper.getPrimaryColor(context),
-                  fontFamily: 'Uthmani',
-                ),
-                textAlign: TextAlign.center,
-              ),
+            Consumer(
+              builder: (context, ref, child) {
+                final prefs = ref.watch(prefsProvider);
+                if (!prefs.showArabic) return const SizedBox.shrink();
+                
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  child: Text(
+                    'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
+                    style: TextStyle(
+                      fontSize: prefs.arabicFontSize,
+                      fontWeight: FontWeight.w600,
+                      color: ThemeHelper.getPrimaryColor(context),
+                      fontFamily: 'Uthmani',
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                );
+              },
             ),
 
           // Verse number and controls
@@ -559,30 +575,46 @@ class _QuranReaderScreenState extends ConsumerState<QuranReaderScreen>
           const SizedBox(height: 12),
 
           // Arabic text
-          Text(
-            verse.textUthmani,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w500,
-              color: ThemeHelper.getTextPrimaryColor(context),
-              fontFamily: 'Uthmani',
-              height: 1.8,
-            ),
-            textDirection: TextDirection.rtl,
+          Consumer(
+            builder: (context, ref, child) {
+              final prefs = ref.watch(prefsProvider);
+              if (!prefs.showArabic) return const SizedBox.shrink();
+              
+              return Text(
+                verse.textUthmani,
+                style: TextStyle(
+                  fontSize: prefs.arabicFontSize,
+                  fontWeight: FontWeight.w500,
+                  color: ThemeHelper.getTextPrimaryColor(context),
+                  fontFamily: 'Uthmani',
+                  height: prefs.arabicLineHeight,
+                ),
+              );
+            },
           ),
 
           const SizedBox(height: 16),
 
-          // Translation
-          if (verse.translations.isNotEmpty)
-            Text(
-              verse.translations.first.text,
-              style: TextStyle(
-                fontSize: 16,
-                color: ThemeHelper.getTextSecondaryColor(context),
-                height: 1.6,
-              ),
-            ),
+          // Translations
+          // Debug: Check if translations exist
+          Builder(builder: (context) {
+            print('DEBUG: Verse ${verse.verseNumber} - translations.isNotEmpty: ${verse.translations.isNotEmpty}');
+            return const SizedBox.shrink();
+          }),
+          Consumer(
+            builder: (context, ref, child) {
+              final prefs = ref.watch(prefsProvider);
+              if (!prefs.showTranslation || verse.translations.isEmpty) {
+                return const SizedBox.shrink();
+              }
+              return Column(
+                children: [
+                  const SizedBox(height: 12),
+                  _buildTranslationsSection(verse),
+                ],
+              );
+            },
+          ),
         ],
       ),
     );
@@ -681,6 +713,199 @@ class _QuranReaderScreenState extends ConsumerState<QuranReaderScreen>
         .trim();
   }
 
+  Widget _buildTranslationsSection(VerseDto verse) {
+    final prefs = ref.watch(prefsProvider);
+    final resourcesAsync = ref.watch(translationResourcesProvider);
+    
+    return resourcesAsync.when(
+      data: (resources) {
+        // Debug: Print all available translations and selected IDs
+        print('DEBUG: Available translations in verse: ${verse.translations.length}');
+        print('DEBUG: Selected translation IDs: ${prefs.selectedTranslationIds}');
+        for (var translation in verse.translations) {
+          print('DEBUG: Translation resourceId: ${translation.resourceId}, text preview: ${translation.text.substring(0, translation.text.length > 30 ? 30 : translation.text.length)}...');
+        }
+        
+        // Get selected translations with fallback logic
+        var selectedTranslations = <TranslationDto>[];
+        
+        // First try to match selected translation IDs
+        if (prefs.selectedTranslationIds.isNotEmpty) {
+          selectedTranslations = verse.translations
+              .where((translation) => 
+                  prefs.selectedTranslationIds.contains(translation.resourceId))
+              .toList();
+        }
+        
+        // If no matches found, use any available translation
+        if (selectedTranslations.isEmpty && verse.translations.isNotEmpty) {
+          selectedTranslations = [verse.translations.first];
+        }
+        
+        // Debug info to see what's happening
+        print('DEBUG: Available translations: ${verse.translations.length}, Selected: ${selectedTranslations.length}');
+        print('DEBUG: Selected translation IDs: ${prefs.selectedTranslationIds}');
+        for (var translation in verse.translations) {
+          print('DEBUG: Translation resourceId: ${translation.resourceId}, text preview: ${translation.text.substring(0, translation.text.length > 30 ? 30 : translation.text.length)}...');
+        }
+        
+        if (selectedTranslations.isEmpty) {
+          return Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: ThemeHelper.getSurfaceColor(context),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: ThemeHelper.getDividerColor(context),
+                width: 1,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Translation Loading...',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: ThemeHelper.getTextSecondaryColor(context),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Available translations: ${verse.translations.length}\nSelected IDs: ${prefs.selectedTranslationIds.join(', ')}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: ThemeHelper.getTextSecondaryColor(context),
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Please wait while translations are being loaded...',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: ThemeHelper.getTextSecondaryColor(context),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: selectedTranslations.map((translation) {
+            // Find translation resource info
+            final resource = resources.firstWhere(
+              (r) => r.id == translation.resourceId,
+              orElse: () => TranslationResourceDto(
+                id: translation.resourceId,
+                name: 'Translation ${translation.resourceId}',
+                authorName: 'Unknown',
+                languageName: 'Unknown',
+                slug: 'unknown',
+              ),
+            );
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: ThemeHelper.getSurfaceColor(context),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: ThemeHelper.getDividerColor(context),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Translation header
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: ThemeHelper.getPrimaryColor(context).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          resource.languageName ?? 'Unknown',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: ThemeHelper.getPrimaryColor(context),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          resource.name ?? 'Unknown',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: ThemeHelper.getTextSecondaryColor(context),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  // Translation text
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final prefs = ref.watch(prefsProvider);
+                      return Text(
+                        _cleanTranslationText(translation.text),
+                        style: TextStyle(
+                          fontSize: prefs.translationFontSize,
+                          color: ThemeHelper.getTextPrimaryColor(context),
+                          height: prefs.translationLineHeight,
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        );
+      },
+      loading: () => Container(
+        padding: const EdgeInsets.all(12),
+        child: const Center(
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      ),
+      error: (_, __) => Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.red.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.red.withOpacity(0.3)),
+        ),
+        child: Text(
+          'Failed to load translations',
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.red,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+      ),
+    );
+  }
+
   bool _isVerseBookmarked(String verseKey) {
     final bookmarks = ref.watch(bookmarksProvider).value ?? {};
     if (_localBookmarkOn.contains(verseKey)) return true;
@@ -710,11 +935,42 @@ class _QuranReaderScreenState extends ConsumerState<QuranReaderScreen>
   }
 
   void _shareVerse(VerseDto verse) {
-    // TODO: Implement share functionality
+    final chaptersAsync = ref.read(surahListProvider);
+    chaptersAsync.whenData((chapters) {
+      final chapter = chapters.firstWhere(
+        (c) => c.id == widget.chapterId,
+        orElse: () => chapters.first,
+      );
+
+      final arabicText = verse.textUthmani;
+      final translationText = verse.translations.isNotEmpty 
+          ? _cleanTranslationText(verse.translations.first.text)
+          : '';
+
+      final shareText = '''
+$arabicText
+
+$translationText
+
+- ${chapter.nameSimple} ${verse.verseNumber} (${verse.verseKey})
+- Shared from DeenMate Islamic App
+''';
+
+      Share.share(
+        shareText,
+        subject: '${chapter.nameSimple} ${verse.verseNumber} - Quran Verse',
+      );
+    });
   }
 
   void _showVerseOptions(VerseDto verse) {
-    // TODO: Implement verse options menu
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => _VerseOptionsSheet(verse: verse),
+    );
   }
 
   void _openQuickTools(BuildContext context) {
@@ -722,7 +978,9 @@ class _QuranReaderScreenState extends ConsumerState<QuranReaderScreen>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _QuickToolsOverlay(),
+      builder: (context) => _QuickToolsOverlay(
+        onOpenTranslationPicker: () => _openTranslationPicker(context),
+      ),
     );
   }
 
@@ -733,6 +991,13 @@ class _QuranReaderScreenState extends ConsumerState<QuranReaderScreen>
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (_) => const _AudioManagerSheet(),
+    );
+  }
+
+  void _openTranslationPicker(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => const TranslationPickerWidget(),
     );
   }
 
@@ -780,6 +1045,10 @@ class _QuranReaderScreenState extends ConsumerState<QuranReaderScreen>
 }
 
 class _QuickToolsOverlay extends ConsumerWidget {
+  const _QuickToolsOverlay({required this.onOpenTranslationPicker});
+  
+  final VoidCallback onOpenTranslationPicker;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final prefs = ref.watch(prefsProvider);
@@ -818,148 +1087,223 @@ class _QuickToolsOverlay extends ConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     // Header
                     Row(
                       children: [
-                        Icon(Icons.close,
-                            color: ThemeHelper.getTextPrimaryColor(context)),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Quick Tools',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: ThemeHelper.getTextPrimaryColor(context),
-                          ),
-                        ),
-                        const Spacer(),
                         IconButton(
                           onPressed: () => Navigator.pop(context),
-                          icon: Icon(Icons.close,
-                              color: ThemeHelper.getTextPrimaryColor(context)),
+                          icon: Icon(Icons.close, color: ThemeHelper.getTextPrimaryColor(context)),
+                        ),
+                        Expanded(
+                          child: Text(
+                            'Quick Tools',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              color: ThemeHelper.getTextPrimaryColor(context),
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
 
                     // Navigation Tabs
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
-                        children: [
-                          _buildQuickTab('Sura', true, context),
-                          _buildQuickTab('Page', false, context),
-                          _buildQuickTab('Juz', false, context),
-                          _buildQuickTab('Hizb', false, context),
-                          _buildQuickTab('Ruku', false, context),
-                        ],
+                        children: ['Sura', 'Page', 'Juz', 'Hizb', 'Ruku'].map((tab) {
+                          return Container(
+                            margin: const EdgeInsets.only(right: 8),
+                            child: ElevatedButton(
+                              onPressed: () {},
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: tab == 'Sura' 
+                                    ? ThemeHelper.getPrimaryColor(context)
+                                    : Colors.transparent,
+                                foregroundColor: tab == 'Sura'
+                                    ? Colors.white
+                                    : ThemeHelper.getPrimaryColor(context),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  side: BorderSide(
+                                    color: tab == 'Sura'
+                                        ? ThemeHelper.getPrimaryColor(context)
+                                        : ThemeHelper.getDividerColor(context),
+                                  ),
+                                ),
+                              ),
+                              child: Text(tab),
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ),
                     const SizedBox(height: 24),
 
-                    // Content Section
+                    // Content Settings
                     Text(
                       'Content',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: ThemeHelper.getTextPrimaryColor(context),
                       ),
                     ),
-                    const SizedBox(height: 12),
-
+                    const SizedBox(height: 16),
+                    
                     // Arabic Toggle
                     _buildToggleRow(
                       'Arabic',
                       prefs.showArabic,
                       (value) => notifier.updateShowArabic(value),
-                      context: context,
+                      context,
                     ),
+                    
+                    // Translation Toggle
                     _buildToggleRow(
                       'Translation',
                       prefs.showTranslation,
                       (value) => notifier.updateShowTranslation(value),
-                      context: context,
+                      context,
                     ),
-                    _buildToggleRow(
-                      'Tafsir NEW',
-                      false, // TODO: Add tafsir support
-                      (value) {
-                        // TODO: Implement tafsir toggle
-                      },
-                      showNewBadge: true,
-                      context: context,
-                    ),
-                    _buildToggleRow(
-                      'Word by Word',
-                      false, // TODO: Add word by word support
-                      (value) {
-                        // TODO: Implement word by word toggle
-                      },
-                      context: context,
-                    ),
-
+                    
+                    // Translation Settings
+                    if (prefs.showTranslation) ...[
+                      const SizedBox(height: 8),
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(
+                          'Translation Settings',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: ThemeHelper.getTextSecondaryColor(context),
+                          ),
+                        ),
+                        subtitle: Text(
+                          '${prefs.selectedTranslationIds.length} selected',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: ThemeHelper.getTextSecondaryColor(context),
+                          ),
+                        ),
+                        trailing: Icon(
+                          Icons.arrow_forward_ios,
+                          size: 16,
+                          color: ThemeHelper.getTextSecondaryColor(context),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                          onOpenTranslationPicker();
+                        },
+                      ),
+                    ],
+                    
                     const SizedBox(height: 24),
 
                     // Font Settings
-                    const Text(
+                    Text(
                       'Font Settings',
                       style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF5D4037),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Font Picker
-                    const Text(
-                      'Font',
-                      style: TextStyle(
                         fontSize: 16,
-                        color: Color(0xFF666666),
+                        fontWeight: FontWeight.w600,
+                        color: ThemeHelper.getTextPrimaryColor(context),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Text(
-                          'Uthmani | KFGQPC...',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Color(0xFF333333),
-                          ),
-                        ),
-                        const Spacer(),
-                        const Icon(
-                          Icons.keyboard_arrow_right,
-                          color: Color(0xFF8D6E63),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Font Size Sliders
-                    _buildFontSizeSlider(
-                      'Arabic Font Size',
-                      prefs.arabicFontSize,
-                      18,
-                      (value) => notifier.updateArabicFontSize(value),
                     ),
                     const SizedBox(height: 16),
-                    _buildFontSizeSlider(
-                      'Translations/Tafsir Font Size',
-                      prefs.translationFontSize,
-                      24,
-                      (value) => notifier.updateTranslationFontSize(value),
+                    
+                    // Arabic Font Size
+                    _buildSliderRow(
+                      'Arabic Font Size',
+                      prefs.arabicFontSize,
+                      18.0,
+                      32.0,
+                      (value) => notifier.updateArabicFontSize(value),
+                      context,
                     ),
+                    
+                    // Translation Font Size
+                    _buildSliderRow(
+                      'Translation Font Size',
+                      prefs.translationFontSize,
+                      12.0,
+                      20.0,
+                      (value) => notifier.updateTranslationFontSize(value),
+                      context,
+                    ),
+                    
+                    const SizedBox(height: 32),
                   ],
                 ),
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildToggleRow(String label, bool value, ValueChanged<bool> onChanged, BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 16,
+              color: ThemeHelper.getTextPrimaryColor(context),
+            ),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeColor: ThemeHelper.getPrimaryColor(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSliderRow(String label, double value, double min, double max, ValueChanged<double> onChanged, BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: ThemeHelper.getTextPrimaryColor(context),
+                ),
+              ),
+              Text(
+                value.toInt().toString(),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: ThemeHelper.getPrimaryColor(context),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          Slider(
+            value: value,
+            min: min,
+            max: max,
+            onChanged: onChanged,
+            activeColor: ThemeHelper.getPrimaryColor(context),
+            inactiveColor: ThemeHelper.getDividerColor(context),
           ),
         ],
       ),
@@ -1002,52 +1346,7 @@ class _QuickToolsOverlay extends ConsumerWidget {
     );
   }
 
-  Widget _buildToggleRow(
-    String title,
-    bool value,
-    ValueChanged<bool> onChanged, {
-    bool showNewBadge = false,
-    BuildContext? context,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          if (showNewBadge) ...[
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: ThemeHelper.getPrimaryColor(context!),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text(
-                'NEW',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-          ],
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 16,
-              color: ThemeHelper.getTextPrimaryColor(context!),
-            ),
-          ),
-          const Spacer(),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeColor: ThemeHelper.getPrimaryColor(context!),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   Widget _buildFontSizeSlider(
     String title,
@@ -1443,4 +1742,176 @@ class _JuzIndex {
     '67:1',
     '78:1',
   ];
+}
+
+class _VerseOptionsSheet extends ConsumerWidget {
+  const _VerseOptionsSheet({required this.verse});
+  
+  final VerseDto verse;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: 16 + MediaQuery.of(context).padding.bottom,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Header
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Verse Options',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: ThemeHelper.getTextPrimaryColor(context),
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.close, color: ThemeHelper.getTextPrimaryColor(context)),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          
+          // Copy Arabic Text
+          ListTile(
+            leading: Icon(Icons.copy, color: ThemeHelper.getPrimaryColor(context)),
+            title: const Text('Copy Arabic Text'),
+            subtitle: const Text('Copy only the Arabic verse'),
+            onTap: () {
+              _copyArabicText(context);
+              Navigator.pop(context);
+            },
+          ),
+          
+          // Copy Translation
+          if (verse.translations.isNotEmpty)
+            ListTile(
+              leading: Icon(Icons.translate, color: ThemeHelper.getPrimaryColor(context)),
+              title: const Text('Copy Translation'),
+              subtitle: const Text('Copy only the translation'),
+              onTap: () {
+                _copyTranslation(context);
+                Navigator.pop(context);
+              },
+            ),
+          
+          // Copy Full Verse
+          ListTile(
+            leading: Icon(Icons.content_copy, color: ThemeHelper.getPrimaryColor(context)),
+            title: const Text('Copy Full Verse'),
+            subtitle: const Text('Copy Arabic text with translation'),
+            onTap: () {
+              _copyFullVerse(context, ref);
+              Navigator.pop(context);
+            },
+          ),
+          
+          // Report Error
+          ListTile(
+            leading: Icon(Icons.report_problem, color: Colors.orange),
+            title: const Text('Report Translation Error'),
+            subtitle: const Text('Help improve translation accuracy'),
+            onTap: () {
+              Navigator.pop(context);
+              _showReportDialog(context);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _copyArabicText(BuildContext context) {
+    Clipboard.setData(ClipboardData(text: verse.textUthmani));
+    _showCopySuccess(context, 'Arabic text copied');
+  }
+
+  void _copyTranslation(BuildContext context) {
+    if (verse.translations.isEmpty) return;
+    final cleanText = verse.translations.first.text
+        .replaceAll(RegExp(r'<sup[^>]*>[\s\S]*?<\/sup>', dotAll: true), ' ')
+        .replaceAll(RegExp(r'<[^>]+>'), ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+    
+    Clipboard.setData(ClipboardData(text: cleanText));
+    _showCopySuccess(context, 'Translation copied');
+  }
+
+  void _copyFullVerse(BuildContext context, WidgetRef ref) {
+    final chaptersAsync = ref.read(surahListProvider);
+    chaptersAsync.whenData((chapters) {
+      final chapterId = int.parse(verse.verseKey.split(':').first);
+      final chapter = chapters.firstWhere(
+        (c) => c.id == chapterId,
+        orElse: () => chapters.first,
+      );
+
+      final translationText = verse.translations.isNotEmpty
+          ? verse.translations.first.text
+              .replaceAll(RegExp(r'<sup[^>]*>[\s\S]*?<\/sup>', dotAll: true), ' ')
+              .replaceAll(RegExp(r'<[^>]+>'), ' ')
+              .replaceAll(RegExp(r'\s+'), ' ')
+              .trim()
+          : '';
+
+      final fullText = '''
+${verse.textUthmani}
+
+$translationText
+
+${chapter.nameSimple} ${verse.verseNumber} (${verse.verseKey})
+''';
+
+      Clipboard.setData(ClipboardData(text: fullText));
+      _showCopySuccess(context, 'Full verse copied');
+    });
+  }
+
+  void _showCopySuccess(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: ThemeHelper.getPrimaryColor(context),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _showReportDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Report Translation Error'),
+        content: Text(
+          'Thank you for helping improve the Quran translation. '
+          'Please email us at support@deenmate.app with details about the error in verse ${verse.verseKey}.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Could implement email functionality here
+            },
+            child: const Text('Send Email'),
+          ),
+        ],
+      ),
+    );
+  }
 }

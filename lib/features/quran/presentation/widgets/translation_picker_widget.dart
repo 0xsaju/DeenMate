@@ -75,11 +75,11 @@ class TranslationPickerWidget extends ConsumerWidget {
               
               return CheckboxListTile(
                 title: Text(
-                  resource.name,
+                  resource.name ?? 'Unknown',
                   style: const TextStyle(fontWeight: FontWeight.w500),
                 ),
                 subtitle: Text(
-                  'by ${resource.authorName}',
+                  'by ${resource.authorName ?? 'Unknown'}',
                   style: TextStyle(
                     color: Colors.grey[600],
                     fontSize: 12,
@@ -113,7 +113,7 @@ class TranslationPickerWidget extends ConsumerWidget {
                   ),
                   child: Center(
                     child: Text(
-                      resource.languageName.substring(0, 2).toUpperCase(),
+                      (resource.languageName ?? 'EN').substring(0, 2).toUpperCase(),
                       style: TextStyle(
                         color: Colors.green[700],
                         fontSize: 10,
