@@ -8,7 +8,7 @@ import '../../../../core/error/failures.dart';
 import '../../../../core/utils/islamic_utils.dart';
 import '../../data/services/prayer_notification_service.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
-import 'package:timezone/timezone.dart' as tz;
+
 // Keep timezone local as UTC for now to avoid extra dependency issues;
 // scheduling uses tz.local (default set by Flutter engine to device zone).
 import '../../domain/entities/athan_settings.dart';
@@ -347,7 +347,6 @@ class AthanAudioNotifier extends StateNotifier<AthanAudioState> {
   }
 
   Future<AthanSettings> _settings() async {
-    final repo = _notificationService; // placeholder to keep reference
     final container = ProviderContainer();
     try {
       final either = await container

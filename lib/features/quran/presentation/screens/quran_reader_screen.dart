@@ -2,12 +2,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../data/dto/verse_dto.dart';
 import '../../data/dto/translation_resource_dto.dart';
 import '../state/providers.dart';
 import '../widgets/translation_picker_widget.dart';
 import '../../../../core/theme/theme_helper.dart';
+import '../../../../core/storage/hive_boxes.dart' as boxes;
 
 class QuranReaderScreen extends ConsumerStatefulWidget {
   const QuranReaderScreen({
@@ -37,7 +39,7 @@ class _QuranReaderScreenState extends ConsumerState<QuranReaderScreen>
   bool _isFetchingMore = false;
   int? _inflightPage;
   String? _errorMessage;
-  String? _loadMoreErrorMessage;
+
   Timer? _scrollDebounceTimer;
   Timer? _periodicSaveTimer;
   int _lastSavedVerseIndex = -1;
@@ -64,12 +66,18 @@ class _QuranReaderScreenState extends ConsumerState<QuranReaderScreen>
       }
     });
 
-    // Clear cache to fix translation issues
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(prefsProvider.notifier).clearCacheAndReset();
-    });
+    // Note: Removed clearCacheAndReset call as it was resetting user preferences
 
-    // Remove the ref.listen call from initState as it's not allowed here
+    // Listen for translation preference changes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.listen(prefsProvider, (previous, next) {
+        print('DEBUG: Translation preferences changed from ${previous?.selectedTranslationIds} to ${next.selectedTranslationIds}');
+        if (previous?.selectedTranslationIds != next.selectedTranslationIds) {
+          print('DEBUG: Calling _onTranslationPreferencesChanged');
+          _onTranslationPreferencesChanged();
+        }
+      });
+    });
   }
 
   void _updateVersesFromCache() {
@@ -88,6 +96,32 @@ class _QuranReaderScreenState extends ConsumerState<QuranReaderScreen>
       _audioUrls.addAll(allUrls);
       ref.read(quranAudioProvider.notifier).setPlaylist(_audioUrls);
     });
+  }
+
+  void _onTranslationPreferencesChanged() async {
+    print('DEBUG: _onTranslationPreferencesChanged - clearing cache and reloading page $_page');
+    
+    // Clear the page cache when translations change
+    _pageCache.clear();
+    
+    // Clear the Hive cache for all pages of this chapter to force fresh API calls
+    final vBox = await Hive.openBox(boxes.Boxes.verses);
+    
+    // Clear all cached pages for this chapter with any translation combination
+    final keysToDelete = <String>[];
+    for (final key in vBox.keys) {
+      if (key.toString().startsWith('ch:${widget.chapterId}|')) {
+        keysToDelete.add(key.toString());
+      }
+    }
+    
+    for (final key in keysToDelete) {
+      await vBox.delete(key);
+      print('DEBUG: Deleted cache key: $key');
+    }
+    
+    // Reload the current page with new translations
+    await _loadPage(_page);
   }
 
   void _cleanupOldPages() {
@@ -183,7 +217,6 @@ class _QuranReaderScreenState extends ConsumerState<QuranReaderScreen>
     final bool isInitial = _verses.isEmpty && page == 1;
     setState(() {
       _errorMessage = null;
-      if (!isInitial) _loadMoreErrorMessage = null;
       _inflightPage = page;
       if (isInitial) {
         _loading = true;
@@ -192,7 +225,13 @@ class _QuranReaderScreenState extends ConsumerState<QuranReaderScreen>
       }
     });
     try {
-      final args = SurahPageArgs(widget.chapterId, page);
+      final prefs = ref.read(prefsProvider);
+      print('DEBUG: Loading page $page with translation IDs: ${prefs.selectedTranslationIds}');
+      final args = SurahPageArgs(
+        widget.chapterId, 
+        page,
+        translationIds: prefs.selectedTranslationIds,
+      );
       final dto = await ref.read(surahPageProvider(args).future);
       setState(() {
         _page = dto.pagination.currentPage;
@@ -231,12 +270,10 @@ class _QuranReaderScreenState extends ConsumerState<QuranReaderScreen>
           }();
         }
       }
-    } catch (e, st) {
+    } catch (e) {
       print('Reader: load failed for page=$page error=$e');
       if (isInitial) {
         _errorMessage = e.toString();
-      } else {
-        _loadMoreErrorMessage = e.toString();
       }
     } finally {
       if (mounted) {
@@ -504,17 +541,17 @@ class _QuranReaderScreenState extends ConsumerState<QuranReaderScreen>
                 if (!prefs.showArabic) return const SizedBox.shrink();
                 
                 return Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  child: Text(
-                    'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
-                    style: TextStyle(
+              margin: const EdgeInsets.only(bottom: 16),
+              child: Text(
+                'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
+                style: TextStyle(
                       fontSize: prefs.arabicFontSize,
-                      fontWeight: FontWeight.w600,
-                      color: ThemeHelper.getPrimaryColor(context),
-                      fontFamily: 'Uthmani',
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+                  fontWeight: FontWeight.w600,
+                  color: ThemeHelper.getPrimaryColor(context),
+                  fontFamily: 'Uthmani',
+                ),
+                textAlign: TextAlign.center,
+              ),
                 );
               },
             ),
@@ -581,14 +618,14 @@ class _QuranReaderScreenState extends ConsumerState<QuranReaderScreen>
               if (!prefs.showArabic) return const SizedBox.shrink();
               
               return Text(
-                verse.textUthmani,
-                style: TextStyle(
+            verse.textUthmani,
+            style: TextStyle(
                   fontSize: prefs.arabicFontSize,
-                  fontWeight: FontWeight.w500,
-                  color: ThemeHelper.getTextPrimaryColor(context),
-                  fontFamily: 'Uthmani',
+              fontWeight: FontWeight.w500,
+              color: ThemeHelper.getTextPrimaryColor(context),
+              fontFamily: 'Uthmani',
                   height: prefs.arabicLineHeight,
-                ),
+            ),
               );
             },
           ),
@@ -614,7 +651,7 @@ class _QuranReaderScreenState extends ConsumerState<QuranReaderScreen>
                 ],
               );
             },
-          ),
+            ),
         ],
       ),
     );
@@ -1099,13 +1136,13 @@ class _QuickToolsOverlay extends ConsumerWidget {
                         ),
                         Expanded(
                           child: Text(
-                            'Quick Tools',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              color: ThemeHelper.getTextPrimaryColor(context),
-                            ),
+                          'Quick Tools',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: ThemeHelper.getTextPrimaryColor(context),
                           ),
+                        ),
                         ),
                       ],
                     ),
@@ -1155,7 +1192,7 @@ class _QuickToolsOverlay extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Arabic Toggle
                     _buildToggleRow(
                       'Arabic',
@@ -1203,7 +1240,7 @@ class _QuickToolsOverlay extends ConsumerWidget {
                         },
                       ),
                     ],
-                    
+
                     const SizedBox(height: 24),
 
                     // Font Settings
@@ -1275,28 +1312,28 @@ class _QuickToolsOverlay extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
+          children: [
+            Text(
                 label,
                 style: TextStyle(
-                  fontSize: 16,
+                fontSize: 16,
                   color: ThemeHelper.getTextPrimaryColor(context),
-                ),
               ),
-              Text(
+            ),
+            Text(
                 value.toInt().toString(),
                 style: TextStyle(
-                  fontSize: 16,
+                fontSize: 16,
                   color: ThemeHelper.getPrimaryColor(context),
                   fontWeight: FontWeight.w600,
-                ),
               ),
-            ],
-          ),
+            ),
+          ],
+        ),
           Slider(
             value: value,
             min: min,
@@ -1310,97 +1347,15 @@ class _QuickToolsOverlay extends ConsumerWidget {
     );
   }
 
-  Widget _buildQuickTab(String label, bool isSelected, BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(right: 8),
-      child: GestureDetector(
-        onTap: () {
-          // TODO: Implement tab switching
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? ThemeHelper.getPrimaryColor(context)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: isSelected
-                  ? ThemeHelper.getPrimaryColor(context)
-                  : ThemeHelper.getDividerColor(context),
-              width: 1,
-            ),
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: isSelected
-                  ? Colors.white
-                  : ThemeHelper.getPrimaryColor(context),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
 
 
-  Widget _buildFontSizeSlider(
-    String title,
-    double value,
-    double maxValue,
-    ValueChanged<double> onChanged,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Color(0xFF333333),
-              ),
-            ),
-            const Spacer(),
-            Text(
-              value.toStringAsFixed(0),
-              style: const TextStyle(
-                fontSize: 16,
-                color: Color(0xFF666666),
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        SliderTheme(
-          data: const SliderThemeData(
-            activeTrackColor: Color(0xFF7B1FA2),
-            inactiveTrackColor: Color(0xFFE0E0E0),
-            thumbColor: Color(0xFF7B1FA2),
-            overlayColor: Color(0x1A7B1FA2),
-            trackHeight: 4,
-          ),
-          child: Slider(
-            value: value,
-            min: 12,
-            max: maxValue + 10,
-            divisions: (maxValue + 10 - 12).toInt(),
-            onChanged: onChanged,
-          ),
-        ),
-      ],
-    );
-  }
+
+
 }
 
 class _AudioManagerSheet extends ConsumerWidget {
-  const _AudioManagerSheet({super.key});
+  const _AudioManagerSheet();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1505,7 +1460,6 @@ class _AudioManagerSheet extends ConsumerWidget {
 
 class _AutoScrollSheet extends StatelessWidget {
   const _AutoScrollSheet({
-    super.key,
     required this.isOn,
     required this.speed,
     required this.onToggle,
@@ -1564,28 +1518,10 @@ class _AutoScrollSheet extends StatelessWidget {
   }
 }
 
-class _FontChip extends StatelessWidget {
-  const _FontChip(
-      {required this.label,
-      required this.selected,
-      required this.onTap,
-      super.key});
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-  @override
-  Widget build(BuildContext context) {
-    return ChoiceChip(
-      label: Text(label),
-      selected: selected,
-      onSelected: (_) => onTap(),
-    );
-  }
-}
+
 
 class _QuickJumpSheet extends ConsumerStatefulWidget {
   const _QuickJumpSheet({
-    super.key,
     required this.currentChapterId,
     required this.onGoToSurah,
     required this.onGoToAyah,
@@ -1708,41 +1644,7 @@ class _QuickJumpSheetState extends ConsumerState<_QuickJumpSheet> {
   }
 }
 
-class _JuzIndex {
-  // Juz starts, 1-based index: chapter:ayah
-  static const List<String> starts = [
-    '1:1',
-    '2:142',
-    '2:253',
-    '3:93',
-    '4:24',
-    '4:148',
-    '5:82',
-    '6:111',
-    '7:88',
-    '8:41',
-    '9:93',
-    '11:6',
-    '12:53',
-    '15:1',
-    '17:1',
-    '18:75',
-    '21:1',
-    '23:1',
-    '25:21',
-    '27:56',
-    '29:46',
-    '33:31',
-    '36:28',
-    '39:32',
-    '41:47',
-    '46:1',
-    '51:31',
-    '58:1',
-    '67:1',
-    '78:1',
-  ];
-}
+
 
 class _VerseOptionsSheet extends ConsumerWidget {
   const _VerseOptionsSheet({required this.verse});

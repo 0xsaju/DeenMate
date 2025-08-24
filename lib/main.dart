@@ -11,6 +11,7 @@ import 'features/onboarding/presentation/providers/onboarding_providers.dart';
 import 'core/navigation/shell_wrapper.dart';
 import 'features/prayer_times/presentation/providers/prayer_times_providers.dart';
 import 'features/prayer_times/presentation/providers/notification_providers.dart';
+import 'features/quran/presentation/state/providers.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,6 +55,8 @@ class DeenMateApp extends ConsumerWidget {
       // Initialize notifications/Azan and schedule
       ref.watch(notificationInitProvider);
       ref.watch(autoNotificationSchedulerProvider);
+      // Background download essential Quran text (silently, no UI)
+      ref.watch(quranBackgroundDownloadProvider);
       // Listen to connectivity to auto-refresh when back online
       ref.watch(prayerTimesConnectivityRefreshProvider);
       // Schedule daily prayer time refreshes (4 times per day)

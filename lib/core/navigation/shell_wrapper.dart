@@ -3,16 +3,27 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/prayer_times/presentation/screens/athan_settings_screen.dart';
 import '../../features/settings/presentation/screens/app_settings_screen.dart';
+import '../../features/settings/presentation/screens/accessibility_settings_screen.dart';
 import '../../features/prayer_times/presentation/screens/calculation_method_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/qibla/presentation/screens/qibla_compass_screen.dart';
 import '../../features/home/presentation/screens/zakat_calculator_screen.dart';
 import '../../features/islamic_content/presentation/screens/islamic_content_screen.dart';
 import '../../features/quran/presentation/screens/quran_home_screen.dart';
-import '../../features/quran/presentation/screens/quran_reader_screen.dart';
+
+import '../../features/quran/presentation/screens/enhanced_quran_reader_screen.dart';
+import '../../features/quran/presentation/screens/bookmarks_screen.dart';
+import '../../features/quran/presentation/screens/reading_plans_screen.dart';
+import '../../features/quran/presentation/screens/audio_downloads_screen.dart';
+import '../../features/quran/presentation/screens/offline_management_screen.dart';
+import '../../features/quran/presentation/widgets/navigation_tabs_widget.dart';
+import '../../features/quran/presentation/screens/juz_reader_screen.dart';
+import '../../features/quran/presentation/screens/page_reader_screen.dart';
+import '../../features/quran/presentation/screens/hizb_reader_screen.dart';
+import '../../features/quran/presentation/screens/ruku_reader_screen.dart';
 import '../../features/inheritance/presentation/screens/inheritance_calculator_screen.dart';
 import '../../features/inheritance/presentation/screens/shariah_clarification_screen.dart';
-import '../routing/app_router.dart';
+
 import '../widgets/themed_widgets.dart';
 import 'bottom_navigation_wrapper.dart';
 import 'more_screen.dart';
@@ -31,7 +42,7 @@ class ShellWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Use HomeScreen as the home dashboard
-    final bodyWidget = state.matchedLocation == AppRouter.home
+    final bodyWidget = state.matchedLocation == EnhancedAppRouter.home
         ? const HomeScreen()
         : state.matchedLocation == '/more'
             ? const MoreScreen()
@@ -124,16 +135,80 @@ class EnhancedAppRouter {
           GoRoute(
             path: '/quran/surah/:id',
             name: 'quran-reader',
-            builder: (context, state) => QuranReaderScreen(
+            builder: (context, state) => EnhancedQuranReaderScreen(
               chapterId: int.parse(state.pathParameters['id']!),
             ),
           ),
           GoRoute(
             path: '/quran/surah/:id/verse/:verseKey',
             name: 'quran-reader-verse',
-            builder: (context, state) => QuranReaderScreen(
+            builder: (context, state) => EnhancedQuranReaderScreen(
               chapterId: int.parse(state.pathParameters['id']!),
               targetVerseKey: state.pathParameters['verseKey']!,
+            ),
+          ),
+
+          // Advanced Quran Features (MISSING ROUTES!)
+          GoRoute(
+            path: '/quran/bookmarks',
+            name: 'quran-bookmarks',
+            builder: (context, state) => const BookmarksScreen(),
+          ),
+          
+          GoRoute(
+            path: '/quran/reading-plans',
+            name: 'quran-reading-plans', 
+            builder: (context, state) => const ReadingPlansScreen(),
+          ),
+          
+          GoRoute(
+            path: '/quran/audio-downloads',
+            name: 'quran-audio-downloads',
+            builder: (context, state) => const AudioDownloadsScreen(),
+          ),
+          
+          GoRoute(
+            path: '/quran/offline-management',
+            name: 'quran-offline-management',
+            builder: (context, state) => const OfflineManagementScreen(),
+          ),
+          
+          // Navigation features
+          GoRoute(
+            path: '/quran/navigation',
+            name: 'quran-navigation',
+            builder: (context, state) => const NavigationTabsWidget(),
+          ),
+          
+          GoRoute(
+            path: '/quran/juz/:juzNumber',
+            name: 'quran-juz',
+            builder: (context, state) => JuzReaderScreen(
+              juzNumber: int.parse(state.pathParameters['juzNumber']!),
+            ),
+          ),
+          
+          GoRoute(
+            path: '/quran/page/:pageNumber',
+            name: 'quran-page',
+            builder: (context, state) => PageReaderScreen(
+              pageNumber: int.parse(state.pathParameters['pageNumber']!),
+            ),
+          ),
+          
+          GoRoute(
+            path: '/quran/hizb/:hizbNumber',
+            name: 'quran-hizb',
+            builder: (context, state) => HizbReaderScreen(
+              hizbNumber: int.parse(state.pathParameters['hizbNumber']!),
+            ),
+          ),
+          
+          GoRoute(
+            path: '/quran/ruku/:rukuNumber',
+            name: 'quran-ruku',
+            builder: (context, state) => RukuReaderScreen(
+              rukuNumber: int.parse(state.pathParameters['rukuNumber']!),
             ),
           ),
 
@@ -162,6 +237,13 @@ class EnhancedAppRouter {
             path: settings,
             name: 'settings',
             builder: (context, state) => const AppSettingsScreen(),
+          ),
+          
+          // Settings sub-routes
+          GoRoute(
+            path: '/settings/accessibility',
+            name: 'accessibility-settings',
+            builder: (context, state) => const AccessibilitySettingsScreen(),
           ),
 
           GoRoute(

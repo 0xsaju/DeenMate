@@ -8,4 +8,6 @@ class Boxes {
   static const search = 'quran_search_cache';
   static const resources = 'quran_resources';
   static const notes = 'quran_notes';
+  static const readingPlans = 'quran_reading_plans';
+  static const searchHistory = 'quran_search_history';
 }

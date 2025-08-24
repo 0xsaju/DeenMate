@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../prayer_times/domain/entities/location.dart';
+import '../../../prayer_times/presentation/providers/prayer_times_providers.dart';
 
 /// Location selection screen for DeenMate onboarding with modern Material 3 design
 class LocationScreen extends ConsumerStatefulWidget {
@@ -319,9 +321,20 @@ class _LocationScreenState extends ConsumerState<LocationScreen> {
         return;
       }
 
-      await Geolocator.getCurrentPosition();
+      final position = await Geolocator.getCurrentPosition();
 
-      // Location will be automatically detected by the app
+      // Save GPS location to prayer times system
+      final gpsLocation = Location(
+        latitude: position.latitude,
+        longitude: position.longitude,
+        city: 'Current Location',
+        country: 'Auto-detected',
+        timezone: 'Auto',
+        elevation: position.altitude,
+      );
+      
+      final repository = ref.read(prayerTimesRepositoryProvider);
+      await repository.savePreferredLocation(gpsLocation);
 
       setState(() {
         _locationPermissionGranted = true;
@@ -357,14 +370,82 @@ class _LocationScreenState extends ConsumerState<LocationScreen> {
     showDialog(
       context: context,
       builder: (context) => _ManualLocationDialog(
-        onLocationSelected: (city, country) {
-          setState(() {
-            _selectedCity = city;
-            _selectedCountry = country;
-            _locationPermissionGranted = false;
-          });
-        },
+              onLocationSelected: (city, country) async {
+        setState(() {
+          _selectedCity = city;
+          _selectedCountry = country;
+          _locationPermissionGranted = false;
+        });
+        
+        // Save the manual location to prayer times system
+        await _saveManualLocation(city, country);
+      },
       ),
+    );
+  }
+
+  Future<void> _saveManualLocation(String city, String country) async {
+    try {
+      // Create location object with estimated coordinates
+      final location = _getLocationForCity(city, country);
+      
+      // Save to prayer times repository
+      final repository = ref.read(prayerTimesRepositoryProvider);
+      await repository.savePreferredLocation(location);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Location "$city, $country" saved successfully!'),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save location: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    }
+  }
+
+  Location _getLocationForCity(String city, String country) {
+    // Common locations with approximate coordinates
+    final locationMap = {
+      'Dhaka,Bangladesh': Location(
+        latitude: 23.8103,
+        longitude: 90.4125,
+        city: 'Dhaka',
+        country: 'Bangladesh',
+        timezone: 'Asia/Dhaka',
+      ),
+      'Chittagong,Bangladesh': Location(
+        latitude: 22.3569,
+        longitude: 91.7832,
+        city: 'Chittagong',
+        country: 'Bangladesh',
+        timezone: 'Asia/Dhaka',
+      ),
+      'Sylhet,Bangladesh': Location(
+        latitude: 24.8949,
+        longitude: 91.8687,
+        city: 'Sylhet',
+        country: 'Bangladesh',
+        timezone: 'Asia/Dhaka',
+      ),
+      // Add more locations as needed
+    };
+
+    return locationMap['$city,$country'] ?? Location(
+      latitude: 23.8103, // Default to Dhaka
+      longitude: 90.4125,
+      city: city,
+      country: country,
+      timezone: 'Asia/Dhaka',
     );
   }
 

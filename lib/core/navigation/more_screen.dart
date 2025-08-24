@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../routing/app_router.dart';
-import '../widgets/theme_switcher.dart';
 import '../widgets/themed_widgets.dart';
 
 /// More screen for additional features and settings
@@ -22,7 +20,7 @@ class MoreScreen extends ConsumerWidget {
         foregroundColor: colorScheme.onPrimary,
         showBackButton: false,
         actions: const [
-          QuickThemeToggle(),
+          // Theme toggle moved to Settings
         ],
       ),
       body: Column(
@@ -30,87 +28,56 @@ class MoreScreen extends ConsumerWidget {
           // Islamic header
           _buildIslamicHeader(context),
           
-          // Theme switcher card
-          const Padding(
-            padding: EdgeInsets.all(16),
-            child: ThemeSwitcher(
-              compact: true,
-              showDescription: false,
-            ),
-          ),
-          
           // Features grid
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: GridView.count(
+                              child: GridView.count(
                 crossAxisCount: 2,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
                 children: [
-                  _buildFeatureCard(
-                    context,
-                    'Athan Settings',
-                    'আজান সেটিংস',
-                    Icons.volume_up,
-                    'Athan & notifications',
-                    FeatureColors.getColor('prayer', context),
-                    AppRouter.athanSettings,
-                  ),
-                  _buildFeatureCard(
-                    context,
-                    'Sawm Tracker',
-                    'সিয়াম ট্র্যাকার',
-                    Icons.calendar_month,
-                    'Track your fasting',
-                    FeatureColors.getColor('islamic', context),
-                    AppRouter.sawmTracker,
-                  ),
-                  _buildFeatureCard(
-                    context,
-                    'Islamic Will',
-                    'ইসলামিক উইল',
-                    Icons.description,
-                    'Generate Islamic will',
-                    FeatureColors.getColor('dua', context),
-                    AppRouter.islamicWill,
-                  ),
-                  _buildFeatureCard(
-                    context,
-                    'History',
-                    'ইতিহাস',
-                    Icons.history,
-                    'View calculations',
-                    FeatureColors.getColor('prayer', context),
-                    AppRouter.history,
-                  ),
-                  _buildFeatureCard(
-                    context,
-                    'Reports',
-                    'রিপোর্ট',
-                    Icons.assessment,
-                    'Generate reports',
-                    colorScheme.error,
-                    AppRouter.reports,
-                  ),
-                  _buildFeatureCard(
-                    context,
-                    'Profile',
-                    'প্রোফাইল',
-                    Icons.person,
-                    'Manage profile',
-                    FeatureColors.getColor('zakat', context),
-                    AppRouter.profile,
-                  ),
+                  // SETTINGS SECTION
                   _buildFeatureCard(
                     context,
                     'Settings',
                     'সেটিংস',
                     Icons.settings,
-                    'App preferences',
+                    'App preferences & configuration',
                     FeatureColors.getColor('qibla', context),
-                    AppRouter.settings,
+                    '/settings',
                   ),
+                  
+                  // QURAN ADVANCED FEATURES
+                  _buildFeatureCard(
+                    context,
+                    'Quran Bookmarks',
+                    'কুরআন বুকমার্ক',
+                    Icons.bookmark,
+                    'Saved verses & notes',
+                    FeatureColors.getColor('prayer', context),
+                    '/quran/bookmarks',
+                  ),
+                  _buildFeatureCard(
+                    context,
+                    'Reading Plans',
+                    'পঠন পরিকল্পনা',
+                    Icons.schedule,
+                    '30-day & Ramadan plans',
+                    FeatureColors.getColor('islamic', context),
+                    '/quran/reading-plans',
+                  ),
+                  _buildFeatureCard(
+                    context,
+                    'Audio Downloads',
+                    'অডিও ডাউনলোড',
+                    Icons.download,
+                    'Offline recitations',
+                    FeatureColors.getColor('dua', context),
+                    '/quran/audio-downloads',
+                  ),
+                  
+                  // ISLAMIC TOOLS
                   _buildFeatureCard(
                     context,
                     'Inheritance',
@@ -118,7 +85,7 @@ class MoreScreen extends ConsumerWidget {
                     Icons.calculate,
                     'Islamic inheritance calculator',
                     FeatureColors.getColor('islamic', context),
-                    AppRouter.inheritanceCalculator,
+                    '/inheritance-calculator',
                   ),
                   _buildFeatureCard(
                     context,
@@ -127,7 +94,56 @@ class MoreScreen extends ConsumerWidget {
                     Icons.book,
                     'Learn inheritance principles',
                     FeatureColors.getColor('dua', context),
-                    AppRouter.shariahClarification,
+                    '/shariah-clarification',
+                  ),
+                  
+                  // USER FEATURES
+                  _buildFeatureCard(
+                    context,
+                    'Profile',
+                    'প্রোফাইল',
+                    Icons.person,
+                    'Manage profile',
+                    FeatureColors.getColor('zakat', context),
+                    '/profile',
+                  ),
+                  _buildFeatureCard(
+                    context,
+                    'History',
+                    'ইতিহাস',
+                    Icons.history,
+                    'View calculations',
+                    FeatureColors.getColor('prayer', context),
+                    '/history',
+                  ),
+                  
+                  // FUTURE FEATURES
+                  _buildFeatureCard(
+                    context,
+                    'Sawm Tracker',
+                    'সিয়াম ট্র্যাকার',
+                    Icons.calendar_month,
+                    'Track your fasting',
+                    FeatureColors.getColor('islamic', context),
+                    '/sawm-tracker',
+                  ),
+                  _buildFeatureCard(
+                    context,
+                    'Islamic Will',
+                    'ইসলামিক উইল',
+                    Icons.description,
+                    'Generate Islamic will',
+                    FeatureColors.getColor('dua', context),
+                    '/islamic-will',
+                  ),
+                  _buildFeatureCard(
+                    context,
+                    'Reports',
+                    'রিপোর্ট',
+                    Icons.assessment,
+                    'Generate reports',
+                    colorScheme.error,
+                    '/reports',
                   ),
                 ],
               ),
@@ -149,7 +165,7 @@ class MoreScreen extends ConsumerWidget {
       end: Alignment.bottomCenter,
       colors: isDark 
           ? [colorScheme.surface, colorScheme.primary.withOpacity(0.6)]
-          : [Colors.green, Colors.lightGreen],
+          : [colorScheme.primary, colorScheme.primaryContainer],
     );
     
     return Container(
@@ -208,7 +224,7 @@ class MoreScreen extends ConsumerWidget {
         end: Alignment.bottomRight,
         colors: [
           color.withOpacity(isDark ? 0.2 : 0.1),
-          if (isDark) colorScheme.surface else Colors.white,
+          colorScheme.surface,
         ],
       ),
       child: Column(

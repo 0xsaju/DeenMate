@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../core/routing/app_router.dart';
+
 import '../../data/islamic_content_data.dart';
 import '../widgets/daily_dua_card.dart';
 import '../widgets/daily_hadith_card.dart';
@@ -47,7 +47,7 @@ class _IslamicContentScreenState extends State<IslamicContentScreen>
         backgroundColor: theme.colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => context.go(AppRouter.home),
+          onPressed: () => context.go('/'),
           icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
         ),
         title: Column(

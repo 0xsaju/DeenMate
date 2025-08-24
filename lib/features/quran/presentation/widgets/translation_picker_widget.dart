@@ -3,11 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../state/providers.dart';
 import '../../data/dto/translation_resource_dto.dart';
 
-class TranslationPickerWidget extends ConsumerWidget {
+class TranslationPickerWidget extends ConsumerStatefulWidget {
   const TranslationPickerWidget({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TranslationPickerWidget> createState() => _TranslationPickerWidgetState();
+}
+
+class _TranslationPickerWidgetState extends ConsumerState<TranslationPickerWidget> {
+  String _selectedLanguage = 'all';
+
+  @override
+  Widget build(BuildContext context) {
     final prefs = ref.watch(prefsProvider);
     final resourcesAsync = ref.watch(translationResourcesProvider);
 
@@ -43,6 +50,11 @@ class TranslationPickerWidget extends ConsumerWidget {
     List<TranslationResourceDto> resources,
     QuranPrefs prefs,
   ) {
+    print('DEBUG: Building translation list with ${resources.length} resources');
+    print('DEBUG: Current selected translation IDs: ${prefs.selectedTranslationIds}');
+    for (final resource in resources.take(5)) {
+      print('DEBUG: Resource ${resource.id}: ${resource.name} (${resource.languageName})');
+    }
     return Column(
       children: [
         // Filter by language
@@ -52,15 +64,21 @@ class TranslationPickerWidget extends ConsumerWidget {
             children: [
               const Text('Language: '),
               DropdownButton<String>(
-                value: 'en', // Default to English for now
+                value: _selectedLanguage,
                 items: const [
+                  DropdownMenuItem(value: 'all', child: Text('All Languages')),
                   DropdownMenuItem(value: 'en', child: Text('English')),
                   DropdownMenuItem(value: 'ar', child: Text('Arabic')),
                   DropdownMenuItem(value: 'ur', child: Text('Urdu')),
                   DropdownMenuItem(value: 'bn', child: Text('Bengali')),
+                  DropdownMenuItem(value: 'id', child: Text('Indonesian')),
+                  DropdownMenuItem(value: 'tr', child: Text('Turkish')),
+                  DropdownMenuItem(value: 'fr', child: Text('French')),
                 ],
                 onChanged: (value) {
-                  // TODO: Implement language filtering
+                  setState(() {
+                    _selectedLanguage = value ?? 'all';
+                  });
                 },
               ),
             ],
@@ -68,9 +86,10 @@ class TranslationPickerWidget extends ConsumerWidget {
         ),
         Expanded(
           child: ListView.builder(
-            itemCount: resources.length,
+            itemCount: _getFilteredResources(resources).length,
             itemBuilder: (context, index) {
-              final resource = resources[index];
+              final filteredResources = _getFilteredResources(resources);
+              final resource = filteredResources[index];
               final isSelected = prefs.selectedTranslationIds.contains(resource.id);
               
               return CheckboxListTile(
@@ -89,10 +108,12 @@ class TranslationPickerWidget extends ConsumerWidget {
                 onChanged: (selected) {
                   if (selected == null) return;
                   
+                  print('DEBUG: Translation ${resource.id} (${resource.name}) ${selected ? 'selected' : 'deselected'}');
                   final notifier = ref.read(prefsProvider.notifier);
                   if (selected) {
                     // Add translation
                     final newIds = [...prefs.selectedTranslationIds, resource.id];
+                    print('DEBUG: Adding translation ${resource.id}, new IDs: $newIds');
                     notifier.updateTranslationIds(newIds);
                   } else {
                     // Remove translation (but keep at least one)
@@ -100,7 +121,10 @@ class TranslationPickerWidget extends ConsumerWidget {
                       final newIds = prefs.selectedTranslationIds
                           .where((id) => id != resource.id)
                           .toList();
+                      print('DEBUG: Removing translation ${resource.id}, new IDs: $newIds');
                       notifier.updateTranslationIds(newIds);
+                    } else {
+                      print('DEBUG: Cannot remove translation ${resource.id} - only one left');
                     }
                   }
                 },
@@ -139,5 +163,33 @@ class TranslationPickerWidget extends ConsumerWidget {
         ),
       ],
     );
+  }
+
+  List<TranslationResourceDto> _getFilteredResources(List<TranslationResourceDto> resources) {
+    if (_selectedLanguage == 'all') {
+      return resources;
+    }
+    
+    return resources.where((resource) {
+      final languageName = resource.languageName?.toLowerCase() ?? '';
+      switch (_selectedLanguage) {
+        case 'en':
+          return languageName.contains('english');
+        case 'ar':
+          return languageName.contains('arabic') || languageName.contains('عربي');
+        case 'ur':
+          return languageName.contains('urdu');
+        case 'bn':
+          return languageName.contains('bengali') || languageName.contains('bangla');
+        case 'id':
+          return languageName.contains('indonesian');
+        case 'tr':
+          return languageName.contains('turkish');
+        case 'fr':
+          return languageName.contains('french');
+        default:
+          return true;
+      }
+    }).toList();
   }
 }

@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/dto/chapter_dto.dart';
+
 import '../state/providers.dart';
 import '../../../../core/theme/theme_helper.dart';
 import 'quran_reader_screen.dart';
+import 'offline_management_screen.dart';
 
 class QuranHomeScreen extends ConsumerStatefulWidget {
   const QuranHomeScreen({super.key});
@@ -88,6 +90,56 @@ class _QuranHomeScreenState extends ConsumerState<QuranHomeScreen> {
         ),
         centerTitle: !_isSearching,
         actions: [
+          if (!_isSearching) ...[
+            // Offline status indicator
+            Consumer(
+              builder: (context, ref, child) {
+                final offlineStatus = ref.watch(offlineContentStatusProvider);
+                return offlineStatus.when(
+                  data: (status) => IconButton(
+                    icon: Icon(
+                      status.isFullyOffline 
+                        ? Icons.cloud_done 
+                        : status.hasEssentialContent
+                          ? Icons.cloud_download
+                          : Icons.cloud_off,
+                      color:                       status.isFullyOffline 
+                        ? ThemeHelper.getPrimaryColor(context)
+                        : status.hasEssentialContent
+                          ? Theme.of(context).colorScheme.secondary
+                          : ThemeHelper.getTextSecondaryColor(context),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const OfflineManagementScreen(),
+                        ),
+                      );
+                    },
+                    tooltip: status.isFullyOffline 
+                      ? 'Fully available offline'
+                      : status.hasEssentialContent
+                        ? 'Essential content available'
+                        : 'Limited offline content',
+                  ),
+                  loading: () => IconButton(
+                    icon: Icon(
+                      Icons.cloud_off,
+                      color: ThemeHelper.getTextSecondaryColor(context),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const OfflineManagementScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  error: (_, __) => const SizedBox.shrink(),
+                );
+              },
+            ),
+          ],
           IconButton(
             icon: Icon(_isSearching ? Icons.close : Icons.search,
                 color: ThemeHelper.getTextPrimaryColor(context)),
@@ -125,16 +177,16 @@ class _QuranHomeScreenState extends ConsumerState<QuranHomeScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.error_outline,
                 size: 48,
-                color: Colors.red,
+                color: Theme.of(context).colorScheme.error,
               ),
               const SizedBox(height: 16),
               Text(
                 'Error loading Quran',
                 style: theme.textTheme.titleMedium?.copyWith(
-                  color: Colors.red,
+                  color: Theme.of(context).colorScheme.error,
                 ),
               ),
             ],
@@ -207,12 +259,12 @@ class _QuranHomeScreenState extends ConsumerState<QuranHomeScreen> {
       }
     }
     
-    // Show normal content
+    // Show content based on selected tab
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // Last Read Section
-        if (lastReadAsync.value != null) ...[
+        // Last Read Section (only show for Sura tab)
+        if (_selectedTab == 'Sura' && lastReadAsync.value != null) ...[
           const Text(
             'Last Read',
             style: TextStyle(
@@ -226,12 +278,18 @@ class _QuranHomeScreenState extends ConsumerState<QuranHomeScreen> {
           const SizedBox(height: 24),
         ],
 
+        // Quick Access Features Section (only show for Sura tab)
+        if (_selectedTab == 'Sura') ...[
+          _buildQuickAccessSection(),
+          const SizedBox(height: 24),
+        ],
+
         // Navigation Tabs
         _buildNavigationTabs(),
         const SizedBox(height: 16),
 
-        // Chapter List
-        ..._buildSurahList(list),
+        // Content based on selected tab
+        _buildTabContent(),
       ],
     );
   }
@@ -328,7 +386,7 @@ class _QuranHomeScreenState extends ConsumerState<QuranHomeScreen> {
                               'Continue',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.white,
+                                color: Theme.of(context).colorScheme.onPrimary,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -352,6 +410,83 @@ class _QuranHomeScreenState extends ConsumerState<QuranHomeScreen> {
     );
   }
 
+  Widget _buildQuickAccessSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Quick Access',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF5D4037),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildQuickAccessTile(
+                'Bookmarks',
+                Icons.bookmark,
+                const Color(0xFF7B1FA2),
+                () => context.go('/quran/bookmarks'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildQuickAccessTile(
+                'Reading Plans',
+                Icons.schedule,
+                const Color(0xFF2E7D32),
+                () => context.go('/quran/reading-plans'),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // Note: Offline functionality moved to cloud icon in top bar
+        // Audio Downloads moved to More > Settings as per user feedback
+      ],
+    );
+  }
+
+  Widget _buildQuickAccessTile(String title, IconData icon, Color color, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: color.withOpacity(0.3),
+            width: 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              color: color,
+              size: 28,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildNavigationTabs() {
     return SizedBox(
       height: 40,
@@ -369,7 +504,15 @@ class _QuranHomeScreenState extends ConsumerState<QuranHomeScreen> {
                 setState(() {
                   _selectedTab = tab;
                 });
-                // TODO: Implement tab switching
+                
+                // Change content within the same page
+                setState(() {
+                  _selectedTab = tab;
+                  // Clear search when switching tabs
+                  _searchQuery = '';
+                  _isSearching = false;
+                  _filteredChapters.clear();
+                });
               },
               child: Container(
                 padding:
@@ -392,7 +535,7 @@ class _QuranHomeScreenState extends ConsumerState<QuranHomeScreen> {
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: isSelected
-                        ? Colors.white
+                        ? Theme.of(context).colorScheme.onPrimary
                         : ThemeHelper.getPrimaryColor(context),
                   ),
                 ),
@@ -401,6 +544,175 @@ class _QuranHomeScreenState extends ConsumerState<QuranHomeScreen> {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildTabContent() {
+    switch (_selectedTab) {
+      case 'Sura':
+        return Column(
+          children: _buildSurahList(_filteredChapters.isNotEmpty ? _filteredChapters : []),
+        );
+      case 'Page':
+        return _buildPageList();
+      case 'Juz':
+        return _buildJuzList();
+      case 'Hizb':
+        return _buildHizbList();
+      case 'Ruku':
+        return _buildRukuList();
+      default:
+        return Column(
+          children: _buildSurahList(_filteredChapters.isNotEmpty ? _filteredChapters : []),
+        );
+    }
+  }
+
+  Widget _buildPageList() {
+    return Consumer(
+      builder: (context, ref, child) {
+        return ref.watch(pagesProvider).when(
+          data: (pages) => ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: pages.length,
+            itemBuilder: (context, index) {
+              final page = pages[index];
+              return Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: ThemeHelper.getPrimaryColor(context),
+                    child: Text(
+                      '${page.pageNumber}',
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  title: Text('Page ${page.pageNumber}'),
+                  subtitle: Text('${page.verseCount ?? 0} verses'),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () => context.go('/quran/page/${page.pageNumber}'),
+                ),
+              );
+            },
+          ),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, _) => Center(
+            child: Text('Error loading pages: $error'),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildJuzList() {
+    return Consumer(
+      builder: (context, ref, child) {
+        return ref.watch(juzListProvider).when(
+          data: (juzList) => ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: juzList.length,
+            itemBuilder: (context, index) {
+              final juz = juzList[index];
+              return Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: ThemeHelper.getPrimaryColor(context),
+                    child: Text(
+                      '${juz.juzNumber}',
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  title: Text('Juz ${juz.juzNumber}'),
+                  subtitle: Text('${juz.verseCount ?? 0} verses'),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () => context.go('/quran/juz/${juz.juzNumber}'),
+                ),
+              );
+            },
+          ),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, _) => Center(
+            child: Text('Error loading Juz list: $error'),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildHizbList() {
+    return Consumer(
+      builder: (context, ref, child) {
+        return ref.watch(hizbListProvider).when(
+          data: (hizbList) => ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: hizbList.length,
+            itemBuilder: (context, index) {
+              final hizb = hizbList[index];
+              return Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: ThemeHelper.getPrimaryColor(context),
+                    child: Text(
+                      '${hizb.hizbNumber}',
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  title: Text('Hizb ${hizb.hizbNumber}'),
+                  subtitle: Text('${hizb.verseCount ?? 0} verses'),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () => context.go('/quran/hizb/${hizb.hizbNumber}'),
+                ),
+              );
+            },
+          ),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, _) => Center(
+            child: Text('Error loading Hizb list: $error'),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildRukuList() {
+    return Consumer(
+      builder: (context, ref, child) {
+        return ref.watch(rukuListProvider).when(
+          data: (rukuList) => ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: rukuList.length,
+            itemBuilder: (context, index) {
+              final ruku = rukuList[index];
+              return Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: ThemeHelper.getPrimaryColor(context),
+                    child: Text(
+                      '${ruku.rukuNumber}',
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  title: Text('Ruku ${ruku.rukuNumber}'),
+                  subtitle: Text('${ruku.verseCount ?? 0} verses'),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () => context.go('/quran/ruku/${ruku.rukuNumber}'),
+                ),
+              );
+            },
+          ),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, _) => Center(
+            child: Text('Error loading Ruku list: $error'),
+          ),
+        );
+      },
     );
   }
 
@@ -541,6 +853,8 @@ class _QuranHomeScreenState extends ConsumerState<QuranHomeScreen> {
     );
   }
 
+
+
   Widget _buildNoSearchResults() {
     return Padding(
       padding: const EdgeInsets.all(24),
@@ -597,4 +911,6 @@ class _QuranHomeScreenState extends ConsumerState<QuranHomeScreen> {
       ],
     );
   }
+
+
 }

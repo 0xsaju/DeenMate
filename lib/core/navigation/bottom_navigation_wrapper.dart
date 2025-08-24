@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../routing/app_router.dart';
+
 import '../localization/strings.dart';
 import '../../features/home/presentation/widgets/islamic_bottom_navigation.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -38,8 +38,8 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
   bool _shouldShowBottomNav() {
     // Don't show bottom nav on certain screens
     final hideOnRoutes = [
-      AppRouter.athanSettings,
-      AppRouter.calculationMethod,
+      '/athan-settings',
+      '/calculation-method',
     ];
 
     return !hideOnRoutes.contains(widget.currentLocation);
@@ -114,16 +114,16 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
 
   int _getSelectedIndex() {
     switch (widget.currentLocation) {
-      case AppRouter.home:
+      case '/':
         return 0;
       case '/islamic-content':
         return 1;
       case '/quran':
         return 1;
-      case AppRouter.prayerTimes:
+      case '/prayer-times':
         // Treat prayer-times as Home for selection since it renders HomeScreen
         return 0;
-      case AppRouter.qiblaFinder:
+      case '/qibla-finder':
         return 2;
       default:
         // Settings, profile, etc. go to "More" tab
@@ -145,12 +145,12 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
   bool _isMoreTabRoute(String location) {
     final moreTabRoutes = [
       '/more',
-      AppRouter.settings,
-      AppRouter.profile,
-      AppRouter.history,
-      AppRouter.reports,
-      AppRouter.sawmTracker,
-      AppRouter.islamicWill,
+      '/settings',
+      '/profile',
+      '/history',
+      '/reports',
+      '/sawm-tracker',
+      '/islamic-will',
     ];
     return moreTabRoutes.contains(location);
   }
@@ -158,10 +158,10 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
   void _onDestinationSelected(int index) {
     switch (index) {
       case 0:
-        context.go(AppRouter.home);
+        context.go('/');
         break;
       case 1:
-        context.go(AppRouter.quranHome);
+        context.go('/quran');
         break;
       case 2:
         // Navigate to Hadith/Islamic content
@@ -175,39 +175,55 @@ class _BottomNavigationWrapperState extends State<BottomNavigationWrapper> {
   }
 
   Future<bool> _onWillPop() async {
-    final go = GoRouter.of(context);
-    // If we can pop a deeper route, pop and do not exit
-    if (go.canPop()) {
-      go.pop();
-      return false;
-    }
+    try {
+      final go = GoRouter.of(context);
+      
+      // Check if we can safely pop
+      if (go.canPop()) {
+        go.pop();
+        return false;
+      }
 
-    // If not on Home tab, navigate to Home instead of exiting
-    final isOnHome = widget.currentLocation == AppRouter.home ||
-        widget.currentLocation == AppRouter.prayerTimes;
-    if (!isOnHome) {
-      context.go(AppRouter.home);
-      return false;
-    }
+      // If not on Home tab, navigate to Home instead of exiting
+      final isOnHome = widget.currentLocation == '/' ||
+          widget.currentLocation == '/prayer-times';
+      if (!isOnHome) {
+        context.go('/');
+        return false;
+      }
 
-    // We are on Home and cannot pop -> confirm exit
-    final shouldExit = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Exit DeenMate'),
-        content: const Text('Are you sure you want to exit the app?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Exit'),
-          ),
-        ],
-      ),
-    );
-    return shouldExit ?? false;
+      // We are on Home and cannot pop -> confirm exit
+      if (!mounted) return true;
+      
+      final shouldExit = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Exit DeenMate'),
+          content: const Text('Are you sure you want to exit the app?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                if (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop(false);
+                }
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop(true);
+                }
+              },
+              child: const Text('Exit'),
+            ),
+          ],
+        ),
+      );
+      return shouldExit ?? false;
+    } catch (e) {
+      // If there's any navigation error, allow the app to exit safely
+      return true;
+    }
   }
 }

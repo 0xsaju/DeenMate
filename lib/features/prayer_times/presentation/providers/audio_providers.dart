@@ -116,13 +116,14 @@ class AthanAudioNotifier extends StateNotifier<AthanAudioState> {
       // Ensure no looping and set a comfortable preview volume
       await _audioPlayer.setReleaseMode(ReleaseMode.stop);
 
-      // Play preview and auto-stop after 10 seconds
+      // Play preview with reduced duration (30 seconds max for preview)
       await _audioPlayer.play(
         DeviceFileSource(file.path),
         volume: 0.6,
       );
 
-      _previewStopTimer = Timer(const Duration(seconds: 10), () async {
+      // Use 30 seconds for preview instead of 10 to give a better sense of the full Azan
+      _previewStopTimer = Timer(const Duration(seconds: 30), () async {
         try {
           await _audioPlayer.stop();
         } catch (_) {}

@@ -25,15 +25,16 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen>
     with TickerProviderStateMixin {
-  Color get _primaryColor => Colors.green;
-  Color get _cardColor => Colors.white;
-  Color get _textPrimaryColor => Colors.black87;
-  Color get _textSecondaryColor => Colors.black54;
-  Color get _dividerColor => Colors.grey.shade300;
-  Color get _alertPillColor => Colors.orange.shade100;
-  Color get _headerPrimaryColor => Colors.black87;
-  Color get _headerSecondaryColor => Colors.black54;
-  Color get _accentColor => Colors.green;
+  // Theme-aware colors that adapt to light/dark mode
+  Color _primaryColor(BuildContext context) => Theme.of(context).colorScheme.primary;
+  Color _cardColor(BuildContext context) => Theme.of(context).colorScheme.surface;
+  Color _textPrimaryColor(BuildContext context) => Theme.of(context).colorScheme.onSurface;
+  Color _textSecondaryColor(BuildContext context) => Theme.of(context).colorScheme.onSurfaceVariant;
+  Color _dividerColor(BuildContext context) => Theme.of(context).colorScheme.outline;
+  Color _alertPillColor(BuildContext context) => Theme.of(context).colorScheme.secondaryContainer;
+  Color _headerPrimaryColor(BuildContext context) => Theme.of(context).colorScheme.onSurface;
+  Color _headerSecondaryColor(BuildContext context) => Theme.of(context).colorScheme.onSurfaceVariant;
+  Color _accentColor(BuildContext context) => Theme.of(context).colorScheme.primary;
   CalculationMethodService get _methodService =>
       CalculationMethodService.instance;
 
@@ -55,7 +56,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         top: true,
         bottom: true,
@@ -138,11 +139,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       child: Container(
         height: 120,
         decoration: BoxDecoration(
-          color: _cardColor,
+          color: _cardColor(context),
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Theme.of(context).shadowColor.withOpacity(0.08),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -268,11 +269,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       child: Container(
         height: 40,
         decoration: BoxDecoration(
-          color: _alertPillColor,
+          color: _alertPillColor(context),
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Theme.of(context).shadowColor.withOpacity(0.06),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -282,7 +283,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              Icon(Icons.timer, size: 18, color: _headerSecondaryColor),
+              Icon(Icons.timer, size: 18, color: _headerSecondaryColor(context)),
               const SizedBox(width: 10),
               Expanded(
                 child: countdownAsync.when(
@@ -324,15 +325,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         break;
                     }
                     return Row(
-                      children: [
+                  children: [
                         if (prefix.isNotEmpty)
                           Text(prefix,
-                              maxLines: 1,
-                              softWrap: false,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                  fontSize: 14, color: _headerPrimaryColor)),
-                        Flexible(
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                                  fontSize: 14, color: _headerPrimaryColor(context))),
+                    Flexible(
                           child: Text(
                             value,
                             maxLines: 1,
@@ -341,18 +342,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: _headerPrimaryColor),
+                                color: _headerPrimaryColor(context)),
                           ),
                         ),
                       ],
-                    );
-                  },
-                  loading: () => Text('—',
+                          );
+                        },
+                        loading: () => Text('—',
                       style:
-                          TextStyle(fontSize: 14, color: _headerPrimaryColor)),
-                  error: (_, __) => Text('—',
+                          TextStyle(fontSize: 14, color: _headerPrimaryColor(context))),
+                        error: (_, __) => Text('—',
                       style:
-                          TextStyle(fontSize: 14, color: _headerPrimaryColor)),
+                          TextStyle(fontSize: 14, color: _headerPrimaryColor(context))),
                 ),
               ),
             ],
@@ -364,7 +365,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   Widget _buildPrayerCards(AsyncValue<PrayerDetail> currentAndNextPrayerAsync,
       AsyncValue<prayer_entities.PrayerTimes> prayerTimesAsync, bool use24h) {
-    const double cardHeight = 120;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Dynamic height based on screen size
+        final double cardHeight = constraints.maxWidth < 360 ? 100 : 120;
     return Row(
       children: [
         Expanded(
@@ -383,7 +387,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     time: '—',
                     endTime: null,
                     isCurrent: true,
-                    backgroundColor: _cardColor,
+                    backgroundColor: _cardColor(context),
                     silhouetteColor: const Color(0xFFCC6E3C),
                   );
                 }
@@ -398,7 +402,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   time: currentTime ?? '—',
                   endTime: endTime,
                   isCurrent: true,
-                  backgroundColor: _cardColor,
+                  backgroundColor: _cardColor(context),
                   silhouetteColor: const Color(0xFFCC6E3C),
                 );
               },
@@ -407,7 +411,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 prayerName: '—',
                 time: '—',
                 isCurrent: true,
-                backgroundColor: _cardColor,
+                backgroundColor: _cardColor(context),
                 silhouetteColor: const Color(0xFFCC6E3C),
               ),
               error: (_, __) => _buildPrayerCard(
@@ -415,7 +419,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 prayerName: '—',
                 time: '—',
                 isCurrent: true,
-                backgroundColor: _cardColor,
+                backgroundColor: _cardColor(context),
                 silhouetteColor: const Color(0xFFCC6E3C),
               ),
             ),
@@ -443,7 +447,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   azanTime: azan,
                   jamaatTime: jamaat,
                   isCurrent: false,
-                  backgroundColor: _cardColor,
+                  backgroundColor: _cardColor(context),
                   silhouetteColor: const Color.fromARGB(255, 118, 172, 122),
                 );
               },
@@ -452,7 +456,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 prayerName: '—',
                 time: '—',
                 isCurrent: false,
-                backgroundColor: _cardColor,
+                backgroundColor: _cardColor(context),
                 silhouetteColor: const Color.fromARGB(255, 118, 172, 122),
               ),
               error: (_, __) => _buildPrayerCard(
@@ -460,13 +464,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 prayerName: '—',
                 time: '—',
                 isCurrent: false,
-                backgroundColor: _cardColor,
+                backgroundColor: _cardColor(context),
                 silhouetteColor: const Color.fromARGB(255, 118, 172, 122),
               ),
             ),
           ),
         ),
       ],
+    );
+      },
     );
   }
 
@@ -478,7 +484,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     String? azanTime,
     String? jamaatTime,
     required bool isCurrent,
-    Color backgroundColor = Colors.white,
+    Color? backgroundColor,
     Color silhouetteColor = const Color(0xFF2C3E50),
   }) {
     final theme = Theme.of(context);
@@ -532,7 +538,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             child: Container(
               padding: EdgeInsets.fromLTRB(
                   16 * scale, 14 * scale, 16 * scale, 12 * scale),
-              decoration: BoxDecoration(
+            decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 color: isCurrent
                     ? theme.colorScheme.primaryContainer.withOpacity(0.3)
@@ -544,67 +550,69 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   width: 1,
                 ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
+                            child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                   Row(
                     children: [
                       Icon(
                         isCurrent ? Icons.access_time : Icons.schedule,
-                        size: 16 * scale,
+                        size: 14 * scale,
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 4),
                       Expanded(
                         child: Text(
-                          title,
+                      title,
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            fontSize: 14 * scale,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 12 * scale,
+                          fontWeight: FontWeight.w600,
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
-                  ),
-                  SizedBox(height: gapTop),
-                  Text(
-                    prayerName,
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontSize: nameSize,
-                      fontWeight: FontWeight.w600,
-                      color: isCurrent
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.onSurface,
                     ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: gapSmall),
+                    SizedBox(height: gapTop),
+                  Flexible(
+                    child: Text(
+                      prayerName,
+                      style: theme.textTheme.titleLarge?.copyWith(
+                          fontSize: nameSize,
+                          fontWeight: FontWeight.w600,
+                        color: isCurrent
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.onSurface,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    ),
+                    SizedBox(height: gapSmall),
                   _buildTimeWithMeridiem(
                     time,
-                    mainSize: 32 * scale,
-                    meridiemSize: 15 * scale,
+                    mainSize: 28 * scale,
+                    meridiemSize: 13 * scale,
                     color: theme.colorScheme.onSurface,
                   ),
-                  if (endTime != null) ...[
-                    SizedBox(height: gapTiny),
-                    _buildSecondaryInfo('End time - $endTime',
+                    if (endTime != null) ...[
+                      SizedBox(height: gapTiny),
+                      _buildSecondaryInfo('End time - $endTime',
                         fontSize: subtitleSize, theme: theme),
-                  ],
-                  if (azanTime != null) ...[
+                    ],
+                    if (azanTime != null) ...[
                     SizedBox(height: (gapTiny - 1).clamp(0, 6).toDouble()),
-                    _buildSecondaryInfo('Azan - $azanTime',
+                      _buildSecondaryInfo('Azan - $azanTime',
                         fontSize: subtitleSize, theme: theme),
-                  ],
-                  if (jamaatTime != null) ...[
+                    ],
+                    if (jamaatTime != null) ...[
                     SizedBox(height: (gapTiny - 1).clamp(0, 6).toDouble()),
-                    _buildSecondaryInfo("Jama'at - $jamaatTime",
+                      _buildSecondaryInfo("Jama'at - $jamaatTime",
                         fontSize: subtitleSize, theme: theme),
+                    ],
                   ],
-                ],
-              ),
+                ),
             ),
           );
         },
@@ -693,8 +701,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Widget _buildSecondaryInfo(String text,
       {double fontSize = 12, ThemeData? theme}) {
     final Color labelColor =
-        theme?.colorScheme.onSurfaceVariant ?? _textSecondaryColor;
-    final Color valueColor = theme?.colorScheme.onSurface ?? _textPrimaryColor;
+        (theme?.colorScheme.onSurfaceVariant ?? _textSecondaryColor(context)) as Color;
+    final Color valueColor = (theme?.colorScheme.onSurface ?? _textPrimaryColor(context)) as Color;
     final parts = text.split(' - ');
     if (parts.length == 2) {
       final label = parts[0];
@@ -712,8 +720,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ),
             TextSpan(
               text: value,
-              style: TextStyle(
-                fontSize: fontSize,
+        style: TextStyle(
+            fontSize: fontSize,
                 fontWeight: FontWeight.w700,
                 color: valueColor,
               ),
@@ -740,67 +748,67 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       ),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
+      decoration: BoxDecoration(
           color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: theme.colorScheme.outline.withOpacity(0.1),
             width: 1,
           ),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Row(
-                children: [
-                  Consumer(builder: (context, ref, _) {
-                    // Fajr notifications toggle
-                    final settings = ref.watch(athanSettingsNotifierProvider);
-                    final enabled = settings?.isPrayerEnabled('fajr') ?? true;
-                    return InkWell(
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Row(
+              children: [
+                Consumer(builder: (context, ref, _) {
+                  // Fajr notifications toggle
+                  final settings = ref.watch(athanSettingsNotifierProvider);
+                  final enabled = settings?.isPrayerEnabled('fajr') ?? true;
+                  return InkWell(
                       borderRadius: BorderRadius.circular(999),
                       onTap: () async {
-                        ref
-                            .read(athanSettingsNotifierProvider.notifier)
-                            .togglePrayer('fajr');
+                      ref
+                          .read(athanSettingsNotifierProvider.notifier)
+                          .togglePrayer('fajr');
                         // Reschedule notifications for today after toggle
                         try {
                           final scheduler =
                               ref.read(dailyNotificationSchedulerProvider);
                           await scheduler.scheduleToday();
                         } catch (_) {}
-                      },
-                      child: Container(
+                    },
+                    child: Container(
                         width: 44,
                         height: 44,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
                           color:
-                              (enabled ? const Color(0xFFFF6B35) : Colors.grey)
+                              (enabled ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.outline)
                                   .withOpacity(0.12),
                           shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                            enabled
-                                ? Icons.notifications_active
-                                : Icons.notifications_off,
-                            color:
-                                enabled ? const Color(0xFFFF6B35) : Colors.grey,
-                            size: 22),
                       ),
-                    );
-                  }),
+                      child: Icon(
+                          enabled
+                              ? Icons.notifications_active
+                              : Icons.notifications_off,
+                          color:
+                              enabled ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.outline,
+                          size: 22),
+                    ),
+                  );
+                }),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Text('Suhoor',
-                            style: TextStyle(
+                  children: [
+                    const Text('Suhoor',
+                        style: TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF2C3E50))),
-                        prayerTimesAsync.when(
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF2C3E50))),
+                    prayerTimesAsync.when(
                           data: (p) => _buildCompactTimeWithMeridiem(
                               _formatTime(p.fajr.time, use24h)!,
                               mainSize: 22,
@@ -811,28 +819,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         ),
                       ],
                     ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-            Container(
+          ),
+          Container(
               width: 1,
-              height: 52,
+            height: 52,
               color: const Color(0xFFFFC39B),
-            ),
-            Expanded(
-              child: Row(
-                children: [
+          ),
+          Expanded(
+            child: Row(
+              children: [
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Text('Iftaar',
-                            style: TextStyle(
+                  children: [
+                    const Text('Iftaar',
+                        style: TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF2C3E50))),
-                        prayerTimesAsync.when(
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF2C3E50))),
+                    prayerTimesAsync.when(
                           data: (p) => _buildCompactTimeWithMeridiem(
                               _formatTime(p.maghrib.time, use24h)!,
                               mainSize: 22,
@@ -840,54 +848,54 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               color: const Color(0xFF2C3E50)),
                           loading: () => _buildCompactTimeWithMeridiem('—'),
                           error: (_, __) => _buildCompactTimeWithMeridiem('—'),
-                        ),
-                      ],
                     ),
+                  ],
+                ),
                   ),
                   const SizedBox(width: 12),
-                  Consumer(builder: (context, ref, _) {
-                    final settings = ref.watch(athanSettingsNotifierProvider);
+                Consumer(builder: (context, ref, _) {
+                  final settings = ref.watch(athanSettingsNotifierProvider);
                     final enabled =
                         settings?.isPrayerEnabled('maghrib') ?? true;
-                    return InkWell(
+                  return InkWell(
                       borderRadius: BorderRadius.circular(999),
                       onTap: () async {
-                        ref
-                            .read(athanSettingsNotifierProvider.notifier)
-                            .togglePrayer('maghrib');
+                      ref
+                          .read(athanSettingsNotifierProvider.notifier)
+                          .togglePrayer('maghrib');
                         // Reschedule notifications for today after toggle
                         try {
                           final scheduler =
                               ref.read(dailyNotificationSchedulerProvider);
                           await scheduler.scheduleToday();
                         } catch (_) {}
-                      },
-                      child: Container(
+                    },
+                    child: Container(
                         width: 44,
                         height: 44,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: (enabled
-                                  ? const Color(0xFFFF6B35)
-                                  : const Color(0xFF7F8C8D))
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: (enabled
+                                ? const Color(0xFFFF6B35)
+                                : const Color(0xFF7F8C8D))
                               .withOpacity(0.12),
                           shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                            enabled
-                                ? Icons.notifications_active
-                                : Icons.notifications_off,
-                            color: enabled
-                                ? const Color(0xFFFF6B35)
-                                : const Color(0xFF7F8C8D),
-                            size: 22),
                       ),
-                    );
-                  }),
-                ],
-              ),
+                      child: Icon(
+                          enabled
+                              ? Icons.notifications_active
+                              : Icons.notifications_off,
+                          color: enabled
+                              ? const Color(0xFFFF6B35)
+                              : const Color(0xFF7F8C8D),
+                          size: 22),
+                    ),
+                  );
+                }),
+              ],
             ),
-          ],
+          ),
+        ],
         ),
       ),
     );
@@ -903,7 +911,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           const SizedBox(width: 8),
           Expanded(
             child: Consumer(builder: (context, ref, _) {
-              final settingsAsync = ref.watch(prayerSettingsProvider);
+                final settingsAsync = ref.watch(prayerSettingsProvider);
               final ptAsync = ref.watch(currentPrayerTimesProvider);
               // Compute compact last-updated label and tooltip
               String? lastUpdatedLabel;
@@ -949,7 +957,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           style: theme.textTheme.bodyMedium?.copyWith(
                               fontSize: 14,
                               color: theme.colorScheme.onSurfaceVariant),
-                          overflow: TextOverflow.ellipsis,
+                    overflow: TextOverflow.ellipsis,
                         );
                       },
                       loading: () => Text('timings from AlAdhan',
@@ -1000,11 +1008,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       AsyncValue<prayer_entities.PrayerTimes> prayerTimesAsync, bool use24h) {
     return Container(
       decoration: BoxDecoration(
-        color: _cardColor,
+        color: _cardColor(context),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Theme.of(context).shadowColor.withOpacity(0.1),
               blurRadius: 10,
               offset: const Offset(0, 4)),
         ],
@@ -1092,8 +1100,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       prayer['name'] as String,
                       style: theme.textTheme.bodyLarge?.copyWith(
                         fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: isCurrentPrayer
+                          fontWeight: FontWeight.w600,
+                          color: isCurrentPrayer
                             ? theme.colorScheme.primary
                             : theme.colorScheme.onSurface,
                       ),
@@ -1104,7 +1112,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     children: [
                       _buildSmallTimeWithMeridiem(
                         _formatTime(prayer['start'] as DateTime, use24h)!,
-                        color: isCurrentPrayer
+                      color: isCurrentPrayer
                             ? theme.colorScheme.primary
                             : theme.colorScheme.onSurface,
                       ),
@@ -1190,7 +1198,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         if (i.isOdd) {
           return Container(
             height: 2,
-            color: _dividerColor,
+            color: _dividerColor(context),
             margin: const EdgeInsets.symmetric(horizontal: 16),
           );
         }
@@ -1250,11 +1258,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        color: _cardColor,
+        color: _cardColor(context),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Theme.of(context).shadowColor.withOpacity(0.1),
               blurRadius: 10,
               offset: const Offset(0, 4)),
         ],
@@ -1270,7 +1278,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   _buildTimingColumn('Sunrise', '—', Icons.wb_sunny),
             ),
           ),
-          Container(width: 2, height: 48, color: _dividerColor),
+          Container(width: 2, height: 48, color: _dividerColor(context)),
           Expanded(
             child: prayerTimesAsync.when(
               data: (p) => _buildTimingColumn('Mid Day',
@@ -1281,7 +1289,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   _buildTimingColumn('Mid Day', '—', Icons.access_time),
             ),
           ),
-          Container(width: 2, height: 48, color: _dividerColor),
+          Container(width: 2, height: 48, color: _dividerColor(context)),
           Expanded(
             child: prayerTimesAsync.when(
               data: (p) => _buildTimingColumn(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/routing/app_router.dart';
+
 import 'simple_inheritance_calculator.dart';
 
 /// Main inheritance calculator screen
@@ -32,7 +32,7 @@ class _InheritanceCalculatorScreenState
         actions: [
           IconButton(
             icon: const Icon(Icons.help_outline),
-            onPressed: () => context.go(AppRouter.shariahClarification),
+            onPressed: () => context.go('/shariah-clarification'),
           ),
         ],
       ),

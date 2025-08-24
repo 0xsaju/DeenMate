@@ -12,6 +12,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'dart:async'; // Added for Timer
 import 'package:flutter/foundation.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../../../core/error/failures.dart';
 
@@ -29,7 +30,7 @@ class PrayerNotificationService {
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
   final AudioPlayer _audioPlayer = AudioPlayer();
-
+  
   bool _isInitialized = false;
   bool _isAthanPlaying = false;
   Timer? _volumeCheckTimer;
@@ -55,7 +56,7 @@ class PrayerNotificationService {
       await _initializeLocalNotifications();
       // Firebase Cloud Messaging not required for local Azan scheduling
       await _requestPermissions();
-
+      
       _isInitialized = true;
     } catch (e) {
       throw Failure.notificationScheduleFailure(
@@ -69,7 +70,7 @@ class PrayerNotificationService {
     // Android initialization
     const androidInitialization =
         AndroidInitializationSettings('@drawable/ic_notification');
-
+    
     // iOS initialization
     const iosInitialization = DarwinInitializationSettings();
 
@@ -158,7 +159,7 @@ class PrayerNotificationService {
 
     // Cancel existing notifications for the day to avoid duplicates
     try {
-      await cancelDailyNotifications(prayerTimes.date);
+    await cancelDailyNotifications(prayerTimes.date);
     } catch (_) {}
 
     if (!athanSettings.isEnabled) return;
@@ -174,7 +175,7 @@ class PrayerNotificationService {
     for (var i = 0; i < prayers.length; i++) {
       final prayer = prayers[i];
       final prayerName = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'][i];
-
+      
       // Check if this prayer is enabled in settings
       if (athanSettings.prayerSpecificSettings?[prayerName.toLowerCase()] ==
           false) {
@@ -326,7 +327,7 @@ class PrayerNotificationService {
     if (settings.reminderMinutes > 0) {
       final reminderTime =
           prayer.time.subtract(Duration(minutes: settings.reminderMinutes));
-
+      
       if (reminderTime.isAfter(DateTime.now())) {
         await _scheduleRobustNotification(
           notificationId,
@@ -335,8 +336,8 @@ class PrayerNotificationService {
           reminderTime,
           _prayerReminderChannel,
           'prayer_reminder:$prayerName:${date.toIso8601String()}',
-          importance: Importance.high,
-          priority: Priority.high,
+            importance: Importance.high,
+            priority: Priority.high,
         );
       }
     }
@@ -350,16 +351,16 @@ class PrayerNotificationService {
         prayer.time,
         _athanChannel,
         'athan:$prayerName:${date.toIso8601String()}',
-        importance: Importance.max,
-        priority: Priority.max,
-        actions: [
-          const AndroidNotificationAction(
-            'MARK_COMPLETED',
-            'Mark as Prayed',
-          ),
-          const AndroidNotificationAction(
-            'SNOOZE_5',
-            'Remind in 5 min',
+          importance: Importance.max,
+          priority: Priority.max,
+          actions: [
+            const AndroidNotificationAction(
+              'MARK_COMPLETED',
+              'Mark as Prayed',
+            ),
+            const AndroidNotificationAction(
+              'SNOOZE_5',
+              'Remind in 5 min',
           ),
         ],
         // This will trigger Azan audio playback
@@ -565,7 +566,7 @@ class PrayerNotificationService {
 
     try {
       _isAthanPlaying = true;
-
+      
       // Check if device is in silent/vibrate mode
       if (await _isDeviceInSilentMode()) {
         // Don't play audio if device is in silent mode
@@ -808,7 +809,7 @@ class PrayerNotificationService {
       'Isha':
           "It's time for Isha prayer. End your day in gratitude and worship.",
     };
-
+    
     return messages[prayerName] ?? "It's time for $prayerName prayer.";
   }
 
@@ -845,6 +846,24 @@ class PrayerNotificationService {
     if (!_isInitialized) {
       await initialize();
     }
+  }
+
+  /// Get current Athan settings
+  Future<AthanSettings> _getAthanSettings() async {
+    try {
+      // Use Hive directly to get settings
+      final box = await Hive.openBox('athan_settings');
+      final settingsMap = box.get('settings') as Map<String, dynamic>?;
+      
+      if (settingsMap != null) {
+        return AthanSettings.fromJson(settingsMap);
+      }
+    } catch (e) {
+      // Failed to get settings from Hive
+    }
+    
+    // Return default settings if not found
+    return const AthanSettings();
   }
 
   /// Handle local notification received (iOS)
@@ -909,8 +928,14 @@ class PrayerNotificationService {
         // Get the singleton instance and play Athan
         final service = PrayerNotificationService();
 
-        // Use default settings for notification tap (user can adjust in settings)
-        service.playAthan('abdulbasit', 1.0, durationSeconds: 180);
+        // Get current Athan settings instead of using hardcoded values
+        final settings = await service._getAthanSettings();
+        
+        await service.playAthan(
+          settings.muadhinVoice, 
+          settings.volume,
+          durationSeconds: settings.durationSeconds,
+        );
       }
     } catch (e) {
       // Failed to play Athan for notification

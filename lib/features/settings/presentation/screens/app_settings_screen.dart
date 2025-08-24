@@ -3,13 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../../core/routing/app_router.dart';
+
 // Legacy notification service removed; notifications are managed via
 // prayer notification providers and repository-backed services.
 import '../../../../core/constants/app_constants.dart';
 // Deprecated direct service import removed; use repository-backed providers instead
 import '../../../../core/theme/islamic_theme.dart';
-import '../../../../core/theme/theme_switcher.dart';
+import '../../../../core/theme/theme_selector_widget.dart';
 
 // Demo screen removed per product decision to avoid extra widgets on Home
 
@@ -68,8 +68,8 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
       child: Row(
         children: [
           IconButton(
-            onPressed: () => context.go(AppRouter.home),
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => context.go('/'),
+            icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onPrimary),
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -79,14 +79,14 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
                 Text(
                   'Settings',
                   style: IslamicTheme.textTheme.headlineMedium?.copyWith(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onPrimary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
                   'সেটিংস | الإعدادات',
                   style: IslamicTheme.textTheme.bodySmall?.copyWith(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.9),
                   ),
                 ),
               ],
@@ -98,7 +98,6 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
   }
 
   Widget _buildSettingsList() {
-    final theme = Theme.of(context);
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -109,7 +108,7 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
               title: 'Athan Settings',
               subtitle: 'Reciter, volume, preview',
               icon: Icons.volume_up,
-              route: AppRouter.athanSettings,
+              route: '/athan-settings',
             ),
             _buildSwitchTile(
               'Prayer Notifications',
@@ -150,14 +149,47 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
         ),
         const SizedBox(height: 24),
         _buildSection(
+          'Quran Settings',
+          [
+            _buildNavTile(
+              title: 'Reading Preferences',
+              subtitle: 'Font size, translations, layout',
+              icon: Icons.text_fields,
+              route: '/quran', // For now, goes to Quran home
+            ),
+            _buildNavTile(
+              title: 'Offline Content',
+              subtitle: 'Download content for offline use',
+              icon: Icons.cloud_download,
+              route: '/quran/offline-management',
+            ),
+            _buildNavTile(
+              title: 'Audio Downloads',
+              subtitle: 'Download recitations for offline use',
+              icon: Icons.download,
+              route: '/quran/audio-downloads',
+            ),
+            _buildNavTile(
+              title: 'Accessibility',
+              subtitle: 'Screen reader, high contrast, text scaling',
+              icon: Icons.accessibility,
+              route: '/settings/accessibility',
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        _buildSection(
           'App Settings',
           [
-            const ThemeSwitcher(),
             _buildLanguageTile(),
             _buildAboutTile(),
             _buildPrivacyTile(),
           ],
         ),
+        const SizedBox(height: 24),
+        // New theme selector section
+        const ThemeSelectorWidget(),
+        // User Preferences section temporarily removed until proper route is implemented
         const SizedBox(height: 24),
         _buildSection(
           'Data & Storage',
@@ -576,7 +608,7 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
           ),
           TextButton(
             onPressed: () => context.pop(true),
-            child: const Text('Clear', style: TextStyle(color: Colors.red)),
+            child: Text('Clear', style: TextStyle(color: Theme.of(context).colorScheme.error)),
           ),
         ],
       ),
