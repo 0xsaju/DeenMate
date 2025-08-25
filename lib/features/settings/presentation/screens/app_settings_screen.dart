@@ -3,13 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 // Legacy notification service removed; notifications are managed via
 // prayer notification providers and repository-backed services.
 import '../../../../core/constants/app_constants.dart';
 // Deprecated direct service import removed; use repository-backed providers instead
 import '../../../../core/theme/islamic_theme.dart';
 import '../../../../core/theme/theme_selector_widget.dart';
+import '../../../../core/localization/language_models.dart';
+import '../../../../core/localization/language_provider.dart';
 
 // Demo screen removed per product decision to avoid extra widgets on Home
 
@@ -321,17 +322,23 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
   }
 
   Widget _buildLanguageTile() {
-    return ListTile(
-      leading: const Icon(Icons.language, color: IslamicTheme.islamicGreen),
-      title: const Text('Language'),
-      subtitle: Text(
-        _selectedLanguage,
-        style: IslamicTheme.textTheme.bodySmall?.copyWith(
-          color: IslamicTheme.textSecondary,
-        ),
-      ),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-      onTap: _showLanguageDialog,
+    return Consumer(
+      builder: (context, ref, child) {
+        final currentLanguage = ref.watch(currentLanguageProvider);
+        
+        return ListTile(
+          leading: const Icon(Icons.language, color: IslamicTheme.islamicGreen),
+          title: const Text('Language'),
+          subtitle: Text(
+            currentLanguage.nativeName,
+            style: IslamicTheme.textTheme.bodySmall?.copyWith(
+              color: IslamicTheme.textSecondary,
+            ),
+          ),
+          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+          onTap: () => _showLanguageDialog(ref),
+        );
+      },
     );
   }
 
@@ -471,8 +478,9 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
     );
   }
 
-  void _showLanguageDialog() {
-    const languages = ['English', 'বাংলা', 'العربية'];
+  void _showLanguageDialog(WidgetRef ref) {
+    final availableLanguages = ref.read(availableLanguagesProvider);
+    final currentLanguage = ref.read(currentLanguageProvider);
 
     showDialog(
       context: context,
@@ -480,14 +488,57 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
         title: const Text('Select Language'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: languages.map((language) {
-            return RadioListTile<String>(
-              title: Text(language),
+          children: availableLanguages.map((languageData) {
+            final language = SupportedLanguage.fromCode(languageData.code);
+            
+            return RadioListTile<SupportedLanguage>(
+              title: Row(
+                children: [
+                  Text(languageData.flagEmoji),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          languageData.nativeName,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        Text(
+                          languageData.name,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (!languageData.isFullySupported)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'Coming Soon',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.orange[700],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
               value: language,
-              groupValue: _selectedLanguage,
+              groupValue: currentLanguage,
               onChanged: (value) {
-                context.pop();
-                _setLanguage(value!);
+                if (value != null) {
+                  context.pop();
+                  _setLanguage(value, ref);
+                }
               },
               activeColor: IslamicTheme.islamicGreen,
             );
@@ -579,19 +630,67 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
     await _saveSettings();
   }
 
-  Future<void> _setLanguage(String language) async {
-    setState(() {
-      _selectedLanguage = language;
-    });
-    await _saveSettings();
-
-    // TODO: Implement language change
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Language change will take effect on app restart'),
-        backgroundColor: IslamicTheme.islamicGreen,
-      ),
-    );
+  Future<void> _setLanguage(SupportedLanguage language, WidgetRef ref) async {
+    try {
+      // Use the language switcher to change language
+      final languageSwitcher = ref.read(languageSwitcherProvider);
+      final success = await languageSwitcher.switchLanguage(language);
+      
+      if (success) {
+        // Show success message for unsupported languages
+        if (!language.isFullySupported) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  '${language.nativeName} support is coming soon. The app will use English for now.',
+                  style: const TextStyle(color: Colors.white),
+                ),
+                backgroundColor: const Color(0xFFFF9800),
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+        } else {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Language changed to ${language.nativeName}',
+                  style: const TextStyle(color: Colors.white),
+                ),
+                backgroundColor: IslamicTheme.islamicGreen,
+              ),
+            );
+          }
+        }
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Failed to change language. Please try again.',
+                style: TextStyle(color: Colors.white),
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (error) {
+      debugPrint('Error changing language: $error');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'An error occurred while changing language.',
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _clearCache() async {

@@ -6,6 +6,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'core/state/prayer_settings_state.dart';
 import 'core/state/app_lifecycle_manager.dart';
 import 'core/theme/theme_provider.dart';
+import 'core/localization/language_provider.dart';
+import 'core/localization/language_models.dart';
 import 'features/onboarding/presentation/screens/onboarding_navigation_screen.dart';
 import 'features/onboarding/presentation/providers/onboarding_providers.dart';
 import 'core/navigation/shell_wrapper.dart';
@@ -32,6 +34,9 @@ void main() async {
 
   // Initialize prayer settings state
   await PrayerSettingsState.instance.loadSettings();
+
+  // Initialize language system
+  await Hive.initFlutter();
 
   runApp(
     const ProviderScope(
@@ -70,16 +75,13 @@ class DeenMateApp extends ConsumerWidget {
             debugShowCheckedModeBanner: false,
             theme: ref.watch(themeDataProvider),
             themeMode: ThemeMode.system,
+            locale: ref.watch(currentLocaleProvider),
             localizationsDelegates: const [
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            supportedLocales: const [
-              Locale('en'),
-              Locale('bn'),
-              Locale('ar'),
-            ],
+            supportedLocales: SupportedLanguage.values.map((lang) => lang.locale).toList(),
             routerConfig: EnhancedAppRouter.router,
             builder: (context, child) {
               return AppLifecycleManager(
@@ -116,16 +118,13 @@ class DeenMateApp extends ConsumerWidget {
             debugShowCheckedModeBanner: false,
             theme: ref.watch(themeDataProvider),
             themeMode: ThemeMode.system,
+            locale: ref.watch(currentLocaleProvider),
             localizationsDelegates: const [
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            supportedLocales: const [
-              Locale('en'),
-              Locale('bn'),
-              Locale('ar'),
-            ],
+            supportedLocales: SupportedLanguage.values.map((lang) => lang.locale).toList(),
             home: const OnboardingNavigationScreen(),
           );
   }

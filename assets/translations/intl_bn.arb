@@ -1,0 +1,337 @@
+{
+  "@@locale": "bn",
+  "appTitle": "দীনমেট",
+  "@appTitle": {
+    "description": "The main app title"
+  },
+
+  "onboardingWelcomeTitle": "দীনমেটে স্বাগতম",
+  "@onboardingWelcomeTitle": {
+    "description": "Title for the welcome onboarding screen"
+  },
+  "onboardingWelcomeSubtitle": "আপনার সম্পূর্ণ ইসলামিক সঙ্গী",
+  "@onboardingWelcomeSubtitle": {
+    "description": "Subtitle for the welcome onboarding screen"
+  },
+  "onboardingLanguageTitle": "আপনার ভাষা নির্বাচন করুন",
+  "@onboardingLanguageTitle": {
+    "description": "Title for language selection screen"
+  },
+  "onboardingLanguageSubtitle": "অ্যাপের জন্য আপনার পছন্দের ভাষা নির্বাচন করুন",
+  "@onboardingLanguageSubtitle": {
+    "description": "Subtitle for language selection screen"
+  },
+  "onboardingUsernameTitle": "আমরা আপনাকে কী বলব?",
+  "@onboardingUsernameTitle": {
+    "description": "Title for username input screen"
+  },
+  "onboardingUsernameSubtitle": "আপনার নাম বা পছন্দের ডাকনাম লিখুন",
+  "@onboardingUsernameSubtitle": {
+    "description": "Subtitle for username input screen"
+  },
+  "onboardingLocationTitle": "আপনার অবস্থান সেট করুন",
+  "@onboardingLocationTitle": {
+    "description": "Title for location setup screen"
+  },
+  "onboardingLocationSubtitle": "এটি আমাদের সঠিক নামাজের সময় প্রদান করতে সাহায্য করে",
+  "@onboardingLocationSubtitle": {
+    "description": "Subtitle for location setup screen"
+  },
+  "onboardingCalculationTitle": "নামাজের সময় গণনা",
+  "@onboardingCalculationTitle": {
+    "description": "Title for calculation method screen"
+  },
+  "onboardingCalculationSubtitle": "আপনার পছন্দের গণনা পদ্ধতি নির্বাচন করুন",
+  "@onboardingCalculationSubtitle": {
+    "description": "Subtitle for calculation method screen"
+  },
+  "onboardingMadhhabTitle": "আপনার মাযহাব নির্বাচন করুন",
+  "@onboardingMadhhabTitle": {
+    "description": "Title for madhhab selection screen"
+  },
+  "onboardingMadhhabSubtitle": "আপনার ইসলামিক চিন্তাধারা নির্বাচন করুন",
+  "@onboardingMadhhabSubtitle": {
+    "description": "Subtitle for madhhab selection screen"
+  },
+  "onboardingNotificationsTitle": "বিজ্ঞপ্তি",
+  "@onboardingNotificationsTitle": {
+    "description": "Title for notifications setup screen"
+  },
+  "onboardingNotificationsSubtitle": "নামাজের স্মরণিকা দিয়ে সংযুক্ত থাকুন",
+  "@onboardingNotificationsSubtitle": {
+    "description": "Subtitle for notifications setup screen"
+  },
+  "onboardingThemeTitle": "আপনার থিম নির্বাচন করুন",
+  "@onboardingThemeTitle": {
+    "description": "Title for theme selection screen"
+  },
+  "onboardingThemeSubtitle": "আপনার পছন্দের দৃশ্য শৈলী নির্বাচন করুন",
+  "@onboardingThemeSubtitle": {
+    "description": "Subtitle for theme selection screen"
+  },
+  "onboardingCompleteTitle": "আপনি প্রস্তুত!",
+  "@onboardingCompleteTitle": {
+    "description": "Title for completion screen"
+  },
+  "onboardingCompleteSubtitle": "দীনমেটে স্বাগতম। চলুন আপনার যাত্রা শুরু করি।",
+  "@onboardingCompleteSubtitle": {
+    "description": "Subtitle for completion screen"
+  },
+
+  "navigationHome": "হোম",
+  "@navigationHome": {
+    "description": "Navigation label for home screen"
+  },
+  "navigationQuran": "কুরআন",
+  "@navigationQuran": {
+    "description": "Navigation label for Quran screen"
+  },
+  "navigationHadith": "হাদিস",
+  "@navigationHadith": {
+    "description": "Navigation label for Hadith screen"
+  },
+  "navigationMore": "আরও",
+  "@navigationMore": {
+    "description": "Navigation label for more options screen"
+  },
+
+  "prayerTimesTitle": "নামাজের সময়",
+  "@prayerTimesTitle": {
+    "description": "Title for prayer times section"
+  },
+  "prayerFajr": "ফজর",
+  "@prayerFajr": {
+    "description": "Fajr prayer name"
+  },
+  "prayerSunrise": "সূর্যোদয়",
+  "@prayerSunrise": {
+    "description": "Sunrise time label"
+  },
+  "prayerDhuhr": "যুহর",
+  "@prayerDhuhr": {
+    "description": "Dhuhr prayer name"
+  },
+  "prayerAsr": "আসর",
+  "@prayerAsr": {
+    "description": "Asr prayer name"
+  },
+  "prayerMaghrib": "মাগরিব",
+  "@prayerMaghrib": {
+    "description": "Maghrib prayer name"
+  },
+  "prayerIsha": "ইশা",
+  "@prayerIsha": {
+    "description": "Isha prayer name"
+  },
+  "nextPrayer": "পরবর্তী নামাজ",
+  "@nextPrayer": {
+    "description": "Label for next prayer"
+  },
+  "currentPrayer": "বর্তমান নামাজ",
+  "@currentPrayer": {
+    "description": "Label for current prayer"
+  },
+  "timeRemaining": "বাকি সময়",
+  "@timeRemaining": {
+    "description": "Label for time remaining"
+  },
+
+  "quranTitle": "কুরআন",
+  "@quranTitle": {
+    "description": "Title for Quran section"
+  },
+  "quranLastRead": "সর্বশেষ পড়া",
+  "@quranLastRead": {
+    "description": "Label for last read section"
+  },
+  "quranContinue": "চালিয়ে যান",
+  "@quranContinue": {
+    "description": "Button text to continue reading"
+  },
+  "quranSearch": "অনুসন্ধান",
+  "@quranSearch": {
+    "description": "Search placeholder text"
+  },
+  "quranNavigation": "নেভিগেশন",
+  "@quranNavigation": {
+    "description": "Navigation section title"
+  },
+  "quranSurah": "সূরা",
+  "@quranSurah": {
+    "description": "Surah navigation tab"
+  },
+  "quranPage": "পৃষ্ঠা",
+  "@quranPage": {
+    "description": "Page navigation tab"
+  },
+  "quranJuz": "জুজ",
+  "@quranJuz": {
+    "description": "Juz navigation tab"
+  },
+  "quranHizb": "হিজব",
+  "@quranHizb": {
+    "description": "Hizb navigation tab"
+  },
+  "quranRuku": "রুকু",
+  "@quranRuku": {
+    "description": "Ruku navigation tab"
+  },
+
+  "settingsTitle": "সেটিংস",
+  "@settingsTitle": {
+    "description": "Title for settings screen"
+  },
+  "settingsLanguage": "ভাষা",
+  "@settingsLanguage": {
+    "description": "Language setting option"
+  },
+  "settingsTheme": "থিম",
+  "@settingsTheme": {
+    "description": "Theme setting option"
+  },
+  "settingsNotifications": "বিজ্ঞপ্তি",
+  "@settingsNotifications": {
+    "description": "Notifications setting option"
+  },
+  "settingsPrayerTimes": "নামাজের সময়",
+  "@settingsPrayerTimes": {
+    "description": "Prayer times setting option"
+  },
+  "settingsQuran": "কুরআন",
+  "@settingsQuran": {
+    "description": "Quran setting option"
+  },
+  "settingsAbout": "সম্পর্কে",
+  "@settingsAbout": {
+    "description": "About setting option"
+  },
+
+  "commonContinue": "চালিয়ে যান",
+  "@commonContinue": {
+    "description": "Common continue button text"
+  },
+  "commonBack": "পিছনে",
+  "@commonBack": {
+    "description": "Common back button text"
+  },
+  "commonNext": "পরবর্তী",
+  "@commonNext": {
+    "description": "Common next button text"
+  },
+  "commonSave": "সংরক্ষণ",
+  "@commonSave": {
+    "description": "Common save button text"
+  },
+  "commonCancel": "বাতিল",
+  "@commonCancel": {
+    "description": "Common cancel button text"
+  },
+  "commonDone": "সম্পন্ন",
+  "@commonDone": {
+    "description": "Common done button text"
+  },
+  "commonLoading": "লোড হচ্ছে...",
+  "@commonLoading": {
+    "description": "Common loading text"
+  },
+  "commonError": "ত্রুটি",
+  "@commonError": {
+    "description": "Common error text"
+  },
+  "commonSuccess": "সফল",
+  "@commonSuccess": {
+    "description": "Common success text"
+  },
+  "commonYes": "হ্যাঁ",
+  "@commonYes": {
+    "description": "Common yes text"
+  },
+  "commonNo": "না",
+  "@commonNo": {
+    "description": "Common no text"
+  },
+  "commonOk": "ঠিক আছে",
+  "@commonOk": {
+    "description": "Common OK text"
+  },
+
+  "languageEnglish": "ইংরেজি",
+  "@languageEnglish": {
+    "description": "English language name"
+  },
+  "languageBengali": "বাংলা",
+  "@languageBengali": {
+    "description": "Bengali language name"
+  },
+  "languageUrdu": "উর্দু",
+  "@languageUrdu": {
+    "description": "Urdu language name"
+  },
+  "languageArabic": "আরবি",
+  "@languageArabic": {
+    "description": "Arabic language name"
+  },
+  "languageFullySupported": "সম্পূর্ণ সমর্থিত",
+  "@languageFullySupported": {
+    "description": "Language status - fully supported"
+  },
+  "languageComingSoon": "শীঘ্রই আসছে",
+  "@languageComingSoon": {
+    "description": "Language status - coming soon"
+  },
+
+  "themeLight": "হালকা",
+  "@themeLight": {
+    "description": "Light theme option"
+  },
+  "themeDark": "অন্ধকার",
+  "@themeDark": {
+    "description": "Dark theme option"
+  },
+  "themeSystem": "সিস্টেম",
+  "@themeSystem": {
+    "description": "System theme option"
+  },
+  "themeLightSerenity": "হালকা প্রশান্তি",
+  "@themeLightSerenity": {
+    "description": "Light Serenity theme option"
+  },
+  "themeNightCalm": "রাতের শান্তি",
+  "@themeNightCalm": {
+    "description": "Night Calm theme option"
+  },
+  "themeHeritageSepia": "ঐতিহ্য সেপিয়া",
+  "@themeHeritageSepia": {
+    "description": "Heritage Sepia theme option"
+  },
+
+  "errorGeneric": "কিছু ভুল হয়েছে",
+  "@errorGeneric": {
+    "description": "Generic error message"
+  },
+  "errorNetwork": "নেটওয়ার্ক ত্রুটি। অনুগ্রহ করে আপনার সংযোগ পরীক্ষা করুন।",
+  "@errorNetwork": {
+    "description": "Network error message"
+  },
+  "errorLocation": "সঠিক নামাজের সময়ের জন্য অবস্থান অ্যাক্সেস প্রয়োজন।",
+  "@errorLocation": {
+    "description": "Location error message"
+  },
+  "errorPermission": "অনুমতি অস্বীকৃত",
+  "@errorPermission": {
+    "description": "Permission error message"
+  },
+
+  "infoLocationRequired": "আপনার এলাকার সঠিক নামাজের সময় প্রদানের জন্য অবস্থান অ্যাক্সেস সাহায্য করে।",
+  "@infoLocationRequired": {
+    "description": "Information about location requirement"
+  },
+  "infoNotificationsHelp": "প্রতিটি নামাজের আগে বিজ্ঞপ্তি পান।",
+  "@infoNotificationsHelp": {
+    "description": "Information about notifications"
+  },
+  "infoThemeDescription": "অ্যাপের জন্য আপনার পছন্দের দৃশ্য শৈলী নির্বাচন করুন।",
+  "@infoThemeDescription": {
+    "description": "Information about theme selection"
+  }
+}

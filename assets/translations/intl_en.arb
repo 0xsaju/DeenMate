@@ -1,0 +1,337 @@
+{
+  "@@locale": "en",
+  "appTitle": "DeenMate",
+  "@appTitle": {
+    "description": "The main app title"
+  },
+
+  "onboardingWelcomeTitle": "Welcome to DeenMate",
+  "@onboardingWelcomeTitle": {
+    "description": "Title for the welcome onboarding screen"
+  },
+  "onboardingWelcomeSubtitle": "Your Complete Islamic Companion",
+  "@onboardingWelcomeSubtitle": {
+    "description": "Subtitle for the welcome onboarding screen"
+  },
+  "onboardingLanguageTitle": "Choose Your Language",
+  "@onboardingLanguageTitle": {
+    "description": "Title for language selection screen"
+  },
+  "onboardingLanguageSubtitle": "Select your preferred language for the app",
+  "@onboardingLanguageSubtitle": {
+    "description": "Subtitle for language selection screen"
+  },
+  "onboardingUsernameTitle": "What should we call you?",
+  "@onboardingUsernameTitle": {
+    "description": "Title for username input screen"
+  },
+  "onboardingUsernameSubtitle": "Enter your name or preferred nickname",
+  "@onboardingUsernameSubtitle": {
+    "description": "Subtitle for username input screen"
+  },
+  "onboardingLocationTitle": "Set Your Location",
+  "@onboardingLocationTitle": {
+    "description": "Title for location setup screen"
+  },
+  "onboardingLocationSubtitle": "This helps us provide accurate prayer times",
+  "@onboardingLocationSubtitle": {
+    "description": "Subtitle for location setup screen"
+  },
+  "onboardingCalculationTitle": "Prayer Time Calculation",
+  "@onboardingCalculationTitle": {
+    "description": "Title for calculation method screen"
+  },
+  "onboardingCalculationSubtitle": "Choose your preferred calculation method",
+  "@onboardingCalculationSubtitle": {
+    "description": "Subtitle for calculation method screen"
+  },
+  "onboardingMadhhabTitle": "Select Your Madhhab",
+  "@onboardingMadhhabTitle": {
+    "description": "Title for madhhab selection screen"
+  },
+  "onboardingMadhhabSubtitle": "Choose your Islamic school of thought",
+  "@onboardingMadhhabSubtitle": {
+    "description": "Subtitle for madhhab selection screen"
+  },
+  "onboardingNotificationsTitle": "Notifications",
+  "@onboardingNotificationsTitle": {
+    "description": "Title for notifications setup screen"
+  },
+  "onboardingNotificationsSubtitle": "Stay connected with prayer reminders",
+  "@onboardingNotificationsSubtitle": {
+    "description": "Subtitle for notifications setup screen"
+  },
+  "onboardingThemeTitle": "Choose Your Theme",
+  "@onboardingThemeTitle": {
+    "description": "Title for theme selection screen"
+  },
+  "onboardingThemeSubtitle": "Select your preferred visual style",
+  "@onboardingThemeSubtitle": {
+    "description": "Subtitle for theme selection screen"
+  },
+  "onboardingCompleteTitle": "You're All Set!",
+  "@onboardingCompleteTitle": {
+    "description": "Title for completion screen"
+  },
+  "onboardingCompleteSubtitle": "Welcome to DeenMate. Let's begin your journey.",
+  "@onboardingCompleteSubtitle": {
+    "description": "Subtitle for completion screen"
+  },
+
+  "navigationHome": "Home",
+  "@navigationHome": {
+    "description": "Navigation label for home screen"
+  },
+  "navigationQuran": "Quran",
+  "@navigationQuran": {
+    "description": "Navigation label for Quran screen"
+  },
+  "navigationHadith": "Hadith",
+  "@navigationHadith": {
+    "description": "Navigation label for Hadith screen"
+  },
+  "navigationMore": "More",
+  "@navigationMore": {
+    "description": "Navigation label for more options screen"
+  },
+
+  "prayerTimesTitle": "Prayer Times",
+  "@prayerTimesTitle": {
+    "description": "Title for prayer times section"
+  },
+  "prayerFajr": "Fajr",
+  "@prayerFajr": {
+    "description": "Fajr prayer name"
+  },
+  "prayerSunrise": "Sunrise",
+  "@prayerSunrise": {
+    "description": "Sunrise time label"
+  },
+  "prayerDhuhr": "Dhuhr",
+  "@prayerDhuhr": {
+    "description": "Dhuhr prayer name"
+  },
+  "prayerAsr": "Asr",
+  "@prayerAsr": {
+    "description": "Asr prayer name"
+  },
+  "prayerMaghrib": "Maghrib",
+  "@prayerMaghrib": {
+    "description": "Maghrib prayer name"
+  },
+  "prayerIsha": "Isha",
+  "@prayerIsha": {
+    "description": "Isha prayer name"
+  },
+  "nextPrayer": "Next Prayer",
+  "@nextPrayer": {
+    "description": "Label for next prayer"
+  },
+  "currentPrayer": "Current Prayer",
+  "@currentPrayer": {
+    "description": "Label for current prayer"
+  },
+  "timeRemaining": "Time Remaining",
+  "@timeRemaining": {
+    "description": "Label for time remaining"
+  },
+
+  "quranTitle": "Quran",
+  "@quranTitle": {
+    "description": "Title for Quran section"
+  },
+  "quranLastRead": "Last Read",
+  "@quranLastRead": {
+    "description": "Label for last read section"
+  },
+  "quranContinue": "Continue",
+  "@quranContinue": {
+    "description": "Button text to continue reading"
+  },
+  "quranSearch": "Search",
+  "@quranSearch": {
+    "description": "Search placeholder text"
+  },
+  "quranNavigation": "Navigation",
+  "@quranNavigation": {
+    "description": "Navigation section title"
+  },
+  "quranSurah": "Surah",
+  "@quranSurah": {
+    "description": "Surah navigation tab"
+  },
+  "quranPage": "Page",
+  "@quranPage": {
+    "description": "Page navigation tab"
+  },
+  "quranJuz": "Juz",
+  "@quranJuz": {
+    "description": "Juz navigation tab"
+  },
+  "quranHizb": "Hizb",
+  "@quranHizb": {
+    "description": "Hizb navigation tab"
+  },
+  "quranRuku": "Ruku",
+  "@quranRuku": {
+    "description": "Ruku navigation tab"
+  },
+
+  "settingsTitle": "Settings",
+  "@settingsTitle": {
+    "description": "Title for settings screen"
+  },
+  "settingsLanguage": "Language",
+  "@settingsLanguage": {
+    "description": "Language setting option"
+  },
+  "settingsTheme": "Theme",
+  "@settingsTheme": {
+    "description": "Theme setting option"
+  },
+  "settingsNotifications": "Notifications",
+  "@settingsNotifications": {
+    "description": "Notifications setting option"
+  },
+  "settingsPrayerTimes": "Prayer Times",
+  "@settingsPrayerTimes": {
+    "description": "Prayer times setting option"
+  },
+  "settingsQuran": "Quran",
+  "@settingsQuran": {
+    "description": "Quran setting option"
+  },
+  "settingsAbout": "About",
+  "@settingsAbout": {
+    "description": "About setting option"
+  },
+
+  "commonContinue": "Continue",
+  "@commonContinue": {
+    "description": "Common continue button text"
+  },
+  "commonBack": "Back",
+  "@commonBack": {
+    "description": "Common back button text"
+  },
+  "commonNext": "Next",
+  "@commonNext": {
+    "description": "Common next button text"
+  },
+  "commonSave": "Save",
+  "@commonSave": {
+    "description": "Common save button text"
+  },
+  "commonCancel": "Cancel",
+  "@commonCancel": {
+    "description": "Common cancel button text"
+  },
+  "commonDone": "Done",
+  "@commonDone": {
+    "description": "Common done button text"
+  },
+  "commonLoading": "Loading...",
+  "@commonLoading": {
+    "description": "Common loading text"
+  },
+  "commonError": "Error",
+  "@commonError": {
+    "description": "Common error text"
+  },
+  "commonSuccess": "Success",
+  "@commonSuccess": {
+    "description": "Common success text"
+  },
+  "commonYes": "Yes",
+  "@commonYes": {
+    "description": "Common yes text"
+  },
+  "commonNo": "No",
+  "@commonNo": {
+    "description": "Common no text"
+  },
+  "commonOk": "OK",
+  "@commonOk": {
+    "description": "Common OK text"
+  },
+
+  "languageEnglish": "English",
+  "@languageEnglish": {
+    "description": "English language name"
+  },
+  "languageBengali": "Bengali",
+  "@languageBengali": {
+    "description": "Bengali language name"
+  },
+  "languageUrdu": "Urdu",
+  "@languageUrdu": {
+    "description": "Urdu language name"
+  },
+  "languageArabic": "Arabic",
+  "@languageArabic": {
+    "description": "Arabic language name"
+  },
+  "languageFullySupported": "Fully Supported",
+  "@languageFullySupported": {
+    "description": "Language status - fully supported"
+  },
+  "languageComingSoon": "Coming Soon",
+  "@languageComingSoon": {
+    "description": "Language status - coming soon"
+  },
+
+  "themeLight": "Light",
+  "@themeLight": {
+    "description": "Light theme option"
+  },
+  "themeDark": "Dark",
+  "@themeDark": {
+    "description": "Dark theme option"
+  },
+  "themeSystem": "System",
+  "@themeSystem": {
+    "description": "System theme option"
+  },
+  "themeLightSerenity": "Light Serenity",
+  "@themeLightSerenity": {
+    "description": "Light Serenity theme option"
+  },
+  "themeNightCalm": "Night Calm",
+  "@themeNightCalm": {
+    "description": "Night Calm theme option"
+  },
+  "themeHeritageSepia": "Heritage Sepia",
+  "@themeHeritageSepia": {
+    "description": "Heritage Sepia theme option"
+  },
+
+  "errorGeneric": "Something went wrong",
+  "@errorGeneric": {
+    "description": "Generic error message"
+  },
+  "errorNetwork": "Network error. Please check your connection.",
+  "@errorNetwork": {
+    "description": "Network error message"
+  },
+  "errorLocation": "Location access is required for accurate prayer times.",
+  "@errorLocation": {
+    "description": "Location error message"
+  },
+  "errorPermission": "Permission denied",
+  "@errorPermission": {
+    "description": "Permission error message"
+  },
+
+  "infoLocationRequired": "Location access helps provide accurate prayer times for your area.",
+  "@infoLocationRequired": {
+    "description": "Information about location requirement"
+  },
+  "infoNotificationsHelp": "Get notified before each prayer time.",
+  "@infoNotificationsHelp": {
+    "description": "Information about notifications"
+  },
+  "infoThemeDescription": "Choose your preferred visual style for the app.",
+  "@infoThemeDescription": {
+    "description": "Information about theme selection"
+  }
+}

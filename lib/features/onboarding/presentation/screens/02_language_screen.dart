@@ -1,23 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/islamic_theme.dart';
-import '../../domain/entities/user_preferences.dart';
+import '../../../../core/localization/language_models.dart';
+import '../../../../core/localization/language_provider.dart';
 import '../widgets/islamic_decorative_elements.dart';
 import '../widgets/islamic_gradient_background.dart';
 
 /// Language selection screen for DeenMate onboarding
-class LanguageScreen extends StatefulWidget {
+class LanguageScreen extends ConsumerStatefulWidget {
   final VoidCallback? onNext;
   final VoidCallback? onPrevious;
 
   const LanguageScreen({super.key, this.onNext, this.onPrevious});
 
   @override
-  State<LanguageScreen> createState() => _LanguageScreenState();
+  ConsumerState<LanguageScreen> createState() => _LanguageScreenState();
 }
 
-class _LanguageScreenState extends State<LanguageScreen> {
-  AppLanguage selectedLanguage = AppLanguage.english;
+class _LanguageScreenState extends ConsumerState<LanguageScreen> {
+  SupportedLanguage selectedLanguage = SupportedLanguage.english;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with current language preference if available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final currentLanguage = ref.read(currentLanguageProvider);
+      setState(() {
+        selectedLanguage = currentLanguage;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,16 +117,23 @@ class _LanguageScreenState extends State<LanguageScreen> {
                       
                       // Language options
                       Expanded(
-                        child: ListView(
-                          children: [
-                            _buildLanguageOption(AppLanguage.english),
-                            const SizedBox(height: 16),
-                            _buildLanguageOption(AppLanguage.bengali),
-                            const SizedBox(height: 16),
-                            _buildLanguageOption(AppLanguage.urdu),
-                            const SizedBox(height: 16),
-                            _buildLanguageOption(AppLanguage.arabic),
-                          ],
+                        child: Consumer(
+                          builder: (context, ref, child) {
+                            final availableLanguages = ref.watch(availableLanguagesProvider);
+                            
+                            return ListView.builder(
+                              itemCount: availableLanguages.length,
+                              itemBuilder: (context, index) {
+                                final languageData = availableLanguages[index];
+                                final language = SupportedLanguage.fromCode(languageData.code);
+                                
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 16),
+                                  child: _buildLanguageOption(language, languageData),
+                                );
+                              },
+                            );
+                          },
                         ),
                       ),
                       
@@ -133,7 +154,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
     );
   }
 
-  Widget _buildLanguageOption(AppLanguage language) {
+  Widget _buildLanguageOption(SupportedLanguage language, LanguageData languageData) {
     final isSelected = selectedLanguage == language;
     
     return GestureDetector(
@@ -177,7 +198,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
               ),
               child: Center(
                 child: Text(
-                  _getFlagEmoji(language),
+                  languageData.flagEmoji,
                   style: const TextStyle(fontSize: 20),
                 ),
               ),
@@ -191,7 +212,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    language.nativeName,
+                    languageData.nativeName,
                     style: IslamicTheme.textTheme.titleMedium?.copyWith(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -202,10 +223,31 @@ class _LanguageScreenState extends State<LanguageScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    language.englishName,
+                    languageData.name,
                     style: IslamicTheme.textTheme.bodyMedium?.copyWith(
                       fontSize: 14,
                       color: const Color(0xFF666666),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  // Status indicator
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: languageData.isFullySupported 
+                          ? const Color(0xFF4CAF50).withOpacity(0.1)
+                          : const Color(0xFFFF9800).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      languageData.statusDescription,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: languageData.isFullySupported 
+                            ? const Color(0xFF4CAF50)
+                            : const Color(0xFFFF9800),
+                      ),
                     ),
                   ),
                 ],
@@ -240,19 +282,6 @@ class _LanguageScreenState extends State<LanguageScreen> {
         ),
       ),
     );
-  }
-
-  String _getFlagEmoji(AppLanguage language) {
-    switch (language) {
-      case AppLanguage.english:
-        return '🇺🇸';
-      case AppLanguage.bengali:
-        return '🇧🇩';
-      case AppLanguage.urdu:
-        return '🇵🇰';
-      case AppLanguage.arabic:
-        return '🇸🇦';
-    }
   }
 
   Widget _buildContinueButton(BuildContext context) {
@@ -295,13 +324,58 @@ class _LanguageScreenState extends State<LanguageScreen> {
     );
   }
 
-  void _navigateToNext(BuildContext context) {
-    // TODO: Save language preference
-    // await _preferencesService.updatePreferences(
-    //   language: selectedLanguage.code,
-    // );
-    
-    // Navigate to next onboarding screen
-    widget.onNext?.call();
+  Future<void> _navigateToNext(BuildContext context) async {
+    try {
+      // Save language preference using the language provider
+      final languageSwitcher = ref.read(languageSwitcherProvider);
+      final success = await languageSwitcher.switchLanguage(selectedLanguage);
+      
+      if (success) {
+        // Show success message for unsupported languages
+        if (!selectedLanguage.isFullySupported) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  '${selectedLanguage.nativeName} support is coming soon. The app will use English for now.',
+                  style: const TextStyle(color: Colors.white),
+                ),
+                backgroundColor: const Color(0xFFFF9800),
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+        }
+        
+        // Navigate to next onboarding screen
+        widget.onNext?.call();
+      } else {
+        // Show error message
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Failed to save language preference. Please try again.',
+                style: TextStyle(color: Colors.white),
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (error) {
+      debugPrint('Error saving language preference: $error');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'An error occurred. Please try again.',
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
